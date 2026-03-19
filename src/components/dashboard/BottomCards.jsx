@@ -1,45 +1,17 @@
 import { motion } from "framer-motion";
 import { assets } from "../../assets";
+import { NewsMiniCard } from "../news/NewsMiniCard";
 
-export function BottomCards({ newsLiked, onToggleNewsLike, onOpenNews, onOpenProjects }) {
+export function BottomCards({ newsItem, isNewsLiked, onToggleNewsLike, onOpenNews, onOpenProjects }) {
   return (
     <div className="bottom-cards">
-      <motion.article
-        className="glass-card news-card"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.24, duration: 0.36 }}
-        onClick={onOpenNews}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            onOpenNews();
-          }
-        }}
-      >
-        <div className="news-image-wrap">
-          <img src={assets.newsPhoto} alt="" />
-        </div>
-        <p className="news-text">
-          Недавно яндекс провёл митап конференцию по фронтенду, а также бесплатные вебинары по javascript и typescript
-        </p>
-        <button
-          className="news-like-btn"
-          type="button"
-          aria-label="Лайк новости"
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggleNewsLike();
-          }}
-        >
-          <img src={newsLiked ? assets.heartFilledIcon : assets.heartOutlineIcon} alt="" />
-        </button>
-        <button className="news-link-btn" type="button" onClick={onOpenNews}>
-          Подробнее
-          <img src={assets.arrow16Icon} alt="" />
-        </button>
-      </motion.article>
+      <NewsMiniCard
+        item={newsItem}
+        isLiked={isNewsLiked}
+        onToggleLike={onToggleNewsLike}
+        onOpen={onOpenNews}
+        delay={0.24}
+      />
 
       <motion.article
         className="glass-card projects-card"

@@ -4,20 +4,47 @@ import { AiChatPanel } from "./components/chat/AiChatPanel";
 import { BottomCards } from "./components/dashboard/BottomCards";
 import { SummaryCards } from "./components/dashboard/SummaryCards";
 import { TopBar } from "./components/layout/TopBar";
+import { NewsPage } from "./components/news/NewsPage";
 import { RecommendationsPanel } from "./components/recommendations/RecommendationsPanel";
 import { INITIAL_CHAT, NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
+import { FEATURED_NEWS_ITEMS, MINI_NEWS_ITEMS } from "./data/newsData";
 import { nextAssistantMessage } from "./utils/chatAssistant";
 
 function mapRecommendationsWithInstanceId() {
   return RECOMMENDATIONS.map((item, index) => ({ ...item, instanceId: `${item.id}-${index}` }));
 }
 
+function resolveTabFromHash(hashValue) {
+  const path = hashValue.replace(/^#/, "") || "/";
+
+  if (path.startsWith(NAV_LINKS.news)) {
+    return "news";
+  }
+  if (path.startsWith(NAV_LINKS.events)) {
+    return "news";
+  }
+  if (path.startsWith(NAV_LINKS.projects)) {
+    return "projects";
+  }
+  if (path.startsWith("/library")) {
+    return "library";
+  }
+  if (path.startsWith(NAV_LINKS.chat)) {
+    return "chat";
+  }
+  return "home";
+}
+
+function createInitialNewsLikes() {
+  return MINI_NEWS_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: false }), {});
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState(() => resolveTabFromHash(window.location.hash));
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(true);
   const [aiMode, setAiMode] = useState(true);
   const [isDeckOpen, setIsDeckOpen] = useState(false);
-  const [newsLiked, setNewsLiked] = useState(false);
+  const [likedNews, setLikedNews] = useState(createInitialNewsLikes);
   const [likedRecommendations, setLikedRecommendations] = useState({});
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState(INITIAL_CHAT);
@@ -29,6 +56,8 @@ function App() {
   const topCard = deck[0];
   const stackedCards = deck.slice(1, 3);
   const canDismiss = !dismissDirection;
+  const isNewsPage = activeTab === "news";
+  const homeNewsItem = MINI_NEWS_ITEMS[0];
 
   const navigateTo = (path) => {
     window.location.hash = path;
@@ -71,6 +100,14 @@ function App() {
     });
   };
 
+  const toggleNewsLike = (newsId) => {
+    setLikedNews((prev) => {
+      const next = !prev[newsId];
+      sendLikeSignal("news", newsId);
+      return { ...prev, [newsId]: next };
+    });
+  };
+
   const shareRecommendation = async (recommendation) => {
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
@@ -88,6 +125,20 @@ function App() {
     } catch {
       window.prompt("Скопируйте ссылку:", recommendation.link);
     }
+  };
+
+  const openNewsList = () => {
+    setActiveTab("news");
+    navigateTo(NAV_LINKS.news);
+  };
+
+  const openMiniNews = (newsItem) => {
+    setActiveTab("news");
+    navigateTo(newsItem?.detailsUrl || NAV_LINKS.news);
+  };
+
+  const openFeaturedEvent = (eventItem) => {
+    navigateTo(eventItem?.detailsUrl || NAV_LINKS.events);
   };
 
   const handleAiMenuClick = () => {
@@ -126,14 +177,6 @@ function App() {
     }
   };
 
-  const toggleNewsLike = () => {
-    setNewsLiked((prev) => {
-      const next = !prev;
-      sendLikeSignal("news", "main-news");
-      return next;
-    });
-  };
-
   const sendMessage = (rawText) => {
     const text = rawText.trim();
     if (!text) {
@@ -168,6 +211,15 @@ function App() {
       chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    const syncTabWithHash = () => {
+      setActiveTab(resolveTabFromHash(window.location.hash));
+    };
+
+    window.addEventListener("hashchange", syncTabWithHash);
+    return () => window.removeEventListener("hashchange", syncTabWithHash);
+  }, []);
 
   const topCardExitAnimation = useMemo(() => {
     if (dismissDirection === "right") {
@@ -221,38 +273,53 @@ function App() {
             onMenuClick={handleMenuClick}
           />
 
-          <main className="dashboard-layout">
-            <section className="left-content">
-              <h1 className="page-title">Главная панель</h1>
-              <SummaryCards
-                onOpenCourses={() => navigateTo(NAV_LINKS.courses)}
-                onOpenCourseDetails={() => navigateTo("/courses/data-science-ml")}
-                onOpenEvents={() => navigateTo(NAV_LINKS.events)}
-              />
-              <BottomCards
-                newsLiked={newsLiked}
+          <main className={`dashboard-layout ${isNewsPage ? "dashboard-layout-news" : ""}`}>
+            {isNewsPage ? (
+              <NewsPage
+                miniNewsItems={MINI_NEWS_ITEMS}
+                featuredNewsItems={FEATURED_NEWS_ITEMS}
+                likedNews={likedNews}
                 onToggleNewsLike={toggleNewsLike}
-                onOpenNews={() => navigateTo("/news/yandex-meetup")}
-                onOpenProjects={() => navigateTo(NAV_LINKS.projects)}
+                onOpenMiniNews={openMiniNews}
+                onParticipateInEvent={openFeaturedEvent}
+                onBack={handleGoHome}
               />
-            </section>
+            ) : (
+              <section className="left-content">
+                <h1 className="page-title">Главная панель</h1>
+                <SummaryCards
+                  onOpenCourses={() => navigateTo(NAV_LINKS.courses)}
+                  onOpenCourseDetails={() => navigateTo("/courses/data-science-ml")}
+                  onOpenEvents={() => navigateTo(NAV_LINKS.events)}
+                />
+                <BottomCards
+                  newsItem={homeNewsItem}
+                  isNewsLiked={Boolean(likedNews[homeNewsItem.id])}
+                  onToggleNewsLike={toggleNewsLike}
+                  onOpenNews={openNewsList}
+                  onOpenProjects={() => navigateTo(NAV_LINKS.projects)}
+                />
+              </section>
+            )}
           </main>
 
-          <RecommendationsPanel
-            isOpen={isDeckOpen}
-            onToggleOpen={() => setIsDeckOpen((prev) => !prev)}
-            onClose={() => setIsDeckOpen(false)}
-            stackedCards={stackedCards}
-            topCard={topCard}
-            canDismiss={canDismiss}
-            dismissDirection={dismissDirection}
-            topCardExitAnimation={topCardExitAnimation}
-            onDismissTopCard={dismissTopCard}
-            onTopCardExitComplete={handleTopCardExitComplete}
-            likedRecommendations={likedRecommendations}
-            onToggleRecommendationLike={toggleRecommendationLike}
-            onShareRecommendation={shareRecommendation}
-          />
+          {!isNewsPage ? (
+            <RecommendationsPanel
+              isOpen={isDeckOpen}
+              onToggleOpen={() => setIsDeckOpen((prev) => !prev)}
+              onClose={() => setIsDeckOpen(false)}
+              stackedCards={stackedCards}
+              topCard={topCard}
+              canDismiss={canDismiss}
+              dismissDirection={dismissDirection}
+              topCardExitAnimation={topCardExitAnimation}
+              onDismissTopCard={dismissTopCard}
+              onTopCardExitComplete={handleTopCardExitComplete}
+              likedRecommendations={likedRecommendations}
+              onToggleRecommendationLike={toggleRecommendationLike}
+              onShareRecommendation={shareRecommendation}
+            />
+          ) : null}
         </div>
 
         <AiChatPanel

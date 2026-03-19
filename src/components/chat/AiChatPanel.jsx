@@ -25,7 +25,7 @@ export function AiChatPanel({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.34 }}
     >
-      <button className="ai-close-btn" type="button" aria-label="Закрыть ИИ режим" onClick={onClose}>
+      <button className="ai-close-btn" type="button" aria-label="Закрыть ИИ-режим" onClick={onClose}>
         <img src={assets.group12021Icon} alt="" />
       </button>
 

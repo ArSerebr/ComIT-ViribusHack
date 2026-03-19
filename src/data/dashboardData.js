@@ -4,7 +4,7 @@ export const MENU_ITEMS = [
   { id: "home", label: "Главная", icon: assets.barsSortIcon },
   { id: "ai", label: "ИИ", icon: [assets.sparklesIconA, assets.sparklesIconB] },
   { id: "projects", label: "Проекты", icon: assets.folderOpenIcon },
-  { id: "news", label: "Новости", icon: assets.newspaperOpenIcon },
+  { id: "news", label: "Ивенты", icon: assets.newspaperOpenIcon },
   { id: "library", label: "Библиотека", icon: assets.diaryBookmarkIcon }
 ];
 
@@ -44,7 +44,7 @@ export const INITIAL_CHAT = [
     id: "m-1",
     role: "assistant",
     content:
-      "Привет. Я **ComIT AI**.\\n\\nМогу помочь:\\n- подобрать курс\\n- разобрать roadmap\\n- собрать стек под цель",
+      "Привет. Я **ComIT AI**.\n\nМогу помочь:\n- подобрать курс\n- разобрать roadmap\n- собрать стек под цель",
     actions: [
       { label: "Подобрать курс", prompt: "Подбери мне курс по ML на 3 месяца" },
       { label: "Собрать roadmap", prompt: "Собери roadmap для Junior Frontend" }
@@ -52,7 +52,7 @@ export const INITIAL_CHAT = [
   }
 ];
 
-export const QUICK_PROMPTS = ["Расскажи мне про ML", "Какой стек мне нужен?"];
+export const QUICK_PROMPTS = ["Главные новости IT", "Есть ли хакатоны от Т-Банка?"];
 
 export const NAV_LINKS = {
   courses: "/courses",

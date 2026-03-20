@@ -47,7 +47,7 @@
   }
 
   body {
-    font-family: "Onest", "Inter", sans-serif;
+    font-family: SF Pro Text, SF Pro Icons, Helvetica Neue, Helvetica, sans-serif;
     color: var(--text-main);
     background: var(--bg);
   }
@@ -154,16 +154,17 @@
   }
 
   .top-bar-news .menu-item-active {
-    min-width: 170px;
+    min-width: 210px;
     padding: 0 18px;
   }
 
   .top-bar-news .menu-item-ai-active.menu-item-active {
-    min-width: 228px;
+    min-width: 238px;
   }
 
   .top-bar-news .menu-item-active .menu-label {
     font-size: 20px;
+    font-weight: 550;
   }
 
   .top-bar-news .glass-icon-button,

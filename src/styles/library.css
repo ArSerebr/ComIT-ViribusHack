@@ -17,7 +17,7 @@
 
 .library-page-title {
   margin: 0;
-  font-size: clamp(44px, 3.3vw, 58px);
+  font-size: clamp(39px, 3.3vw, 39px);
   font-weight: 600;
   line-height: 0.96;
   letter-spacing: -0.05em;
@@ -37,14 +37,14 @@
 
 .library-hero-title {
   margin: 0;
-  font-size: clamp(42px, 3.1vw, 56px);
+  font-size: clamp(40px, 3.1vw, 40px);
   font-weight: 500;
   line-height: 1.02;
   letter-spacing: -0.05em;
 }
 
 .library-hero-updated {
-  margin-top: 22px;
+  margin-top: 16px;
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -87,19 +87,19 @@
 }
 
 .library-provider-pill {
-  margin-top: 28px;
+  margin-top: 24px;
   min-width: 318px;
   height: 58px;
   border: 0;
-  border-radius: 18px;
-  padding: 0 18px;
+  border-radius: 16px;
+  padding: 0 20px;
   background: #ffffff;
   color: #171717;
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 550;
   cursor: pointer;
 }
 
@@ -148,17 +148,17 @@
 }
 
 .library-hero-description {
-  margin: 44px 0 0;
+  margin: 24px 0 0;
   max-width: 510px;
   color: rgba(255, 255, 255, 0.92);
-  font-size: 17px;
-  line-height: 1.06;
+  font-size: 18px;
+  line-height: 1.16;
 }
 
 /* Hero showcase */
 .library-showcase {
   position: relative;
-  min-height: 520px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -176,7 +176,7 @@
   left: 50%;
   top: 50%;
   width: 140px;
-  height: 240px;
+  height: 220px;
   margin-left: -70px;
   margin-top: -120px;
   border-radius: 52% 48% 54% 46% / 26% 26% 74% 74%;
@@ -222,12 +222,13 @@
 .library-showcase-card {
   position: relative;
   width: min(100%, 624px);
-  min-height: 304px;
-  padding: 16px 28px 22px;
+  min-height: 240px;
+  padding: 25px 26px 26px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 34px;
   background: rgba(12, 14, 20, 0.9);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 12px 1px rgba(255, 255, 255, 0.128);
 }
 
 .library-showcase-card::before {
@@ -290,7 +291,7 @@
 .library-showcase-content {
   position: relative;
   z-index: 1;
-  margin-top: 28px;
+  margin-top: 24px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -321,7 +322,6 @@
   position: relative;
   width: 204px;
   height: 204px;
-  margin-right: 24px;
   border-radius: 24px;
   overflow: hidden;
   flex: 0 0 auto;
@@ -355,7 +355,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 14px;
+  bottom: -30px;
   display: flex;
   justify-content: space-between;
   padding: 0 6px;
@@ -416,8 +416,8 @@
 .library-preference-pill {
   min-height: 58px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
-  padding: 0 16px;
+  border-radius: 16px;
+  padding: 0 14px;
   background: linear-gradient(180deg, rgba(48, 55, 64, 0.72), rgba(29, 33, 40, 0.92));
   color: #ffffff;
   font-size: 17px;
@@ -426,7 +426,7 @@
 }
 
 .library-preference-pill-selected {
-  background: linear-gradient(180deg, rgba(88, 120, 152, 0.86), rgba(56, 72, 88, 0.94));
+  background: linear-gradient(110deg, rgba(90, 135, 181, 0.86), rgba(41, 56, 70, 0.94));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
@@ -453,8 +453,8 @@
 }
 
 .library-article-card {
-  min-height: 432px;
-  padding: 16px 16px 18px;
+  min-height: 242px;
+  padding: 18px 18px 18px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 30px;
   background: linear-gradient(180deg, rgba(24, 28, 32, 0.92) 0%, rgba(15, 15, 16, 0.92) 100%);
@@ -476,8 +476,8 @@
 }
 
 .library-article-tag {
-  min-height: 58px;
-  border-radius: 18px;
+  min-height: 45px;
+  border-radius: 16px;
   padding: 0 18px 0 16px;
   background: linear-gradient(180deg, rgba(55, 62, 70, 0.88), rgba(35, 42, 50, 0.92));
   color: rgba(255, 255, 255, 0.96);
@@ -489,8 +489,8 @@
 }
 
 .library-article-tag-dot {
-  width: 18px;
-  height: 18px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: #52ff33;
   box-shadow: 0 0 0 4px rgba(82, 255, 51, 0.12);
@@ -523,18 +523,18 @@
 
 .library-article-title {
   margin: 22px 0 0;
-  font-size: clamp(28px, 2vw, 40px);
+  font-size: clamp(29px, 2vw, 29px);
   font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.05em;
 }
 
 .library-article-description {
-  margin: 18px 0 0;
-  min-height: 76px;
+  margin: 12px 0 0;
+  min-height: 110px;
   color: rgba(255, 255, 255, 0.62);
-  font-size: 16px;
-  line-height: 1.06;
+  font-size: 17px;
+  line-height: 1.28;
 }
 
 .library-article-author {
@@ -547,8 +547,8 @@
 }
 
 .library-article-author-avatar {
-  width: 56px;
-  height: 56px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -556,9 +556,9 @@
 .library-article-author-name {
   min-width: 0;
   color: rgba(255, 255, 255, 0.52);
-  font-size: 28px;
+  font-size: clamp(22px, 1.95vw, 20px);
   font-weight: 500;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -802,6 +802,7 @@ input {
 .news-page {
   width: 100%;
   --news-card-height: 342px;
+  padding-bottom: clamp(24px, 4vh, 40px);
 }
 
 .news-page-head {
@@ -1105,6 +1106,7 @@ input {
    AI Chat
    ========================================================================== */
 .ai-chat-shell {
+  --ai-chat-max-height: 80vh;
   position: absolute;
   bottom: 21px;
   z-index: 40;
@@ -1114,7 +1116,7 @@ input {
   padding: 14px 18px;
   border-radius: 24px;
   background: var(--glass-soft);
-  backdrop-filter: blur(100px);
+  backdrop-filter: blur(30px);
   box-shadow: 0 0 40px rgba(0, 0, 0, 1);
   box-shadow: 0 0 80px #d122d752;
 }
@@ -1156,11 +1158,46 @@ input {
 
 .chat-messages {
   margin-top: 2px;
-  max-height: 114px;
+  max-height: calc(var(--ai-chat-max-height) - 96px);
+  min-height: 0;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 8px;
   display: grid;
   gap: 7px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 92, 92, 0.9) transparent;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(92, 92, 92, 0.9);
+}
+
+.chat-messages::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.chat-messages::-webkit-scrollbar-button:single-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.chat-messages::-webkit-scrollbar-button:start:decrement,
+.chat-messages::-webkit-scrollbar-button:end:increment {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .chat-message {

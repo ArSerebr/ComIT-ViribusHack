@@ -34,6 +34,7 @@ import sparklesMiniA from "../img/sparkles-2-1.svg";
 import sparklesMiniB from "../img/sparkles-2-2.svg";
 import group12021Icon from "../img/group-12021.svg";
 import ellipse194 from "../img/ellipse-194.svg";
+import poster120Image from "../img/poster-120-1.jpg";
 
 export const assets = {
   alignCenterIcon,
@@ -60,6 +61,7 @@ export const assets = {
   newspaperOpenIcon,
   newsPhoto,
   nodeJsIcon,
+  poster120Image,
   posterHackathon,
   posterTechConf,
   posterTechTalk,

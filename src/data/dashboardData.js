@@ -2,7 +2,7 @@ import { assets } from "../assets";
 
 export const MENU_ITEMS = [
   { id: "home", label: "Главная", icon: assets.barsSortIcon },
-  { id: "ai", label: "ИИ", icon: [assets.sparklesIconA, assets.sparklesIconB] },
+  { id: "ai", label: "Чат с ИИ", icon: [assets.sparklesIconA, assets.sparklesIconB] },
   { id: "projects", label: "Проекты", icon: assets.folderOpenIcon },
   { id: "news", label: "Ивенты", icon: assets.newspaperOpenIcon },
   { id: "library", label: "Библиотека", icon: assets.diaryBookmarkIcon }

@@ -1,14 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { assets } from "./assets";
 import { AiChatPanel } from "./components/chat/AiChatPanel";
+import { ChatPage } from "./components/chat/ChatPage";
 import { BottomCards } from "./components/dashboard/BottomCards";
 import { SummaryCards } from "./components/dashboard/SummaryCards";
+import { LibraryPage } from "./components/library/LibraryPage";
 import { TopBar } from "./components/layout/TopBar";
 import { NewsPage } from "./components/news/NewsPage";
 import { ProjectDetailsPage } from "./components/projects/ProjectDetailsPage";
 import { ProjectHubPage } from "./components/projects/ProjectHubPage";
 import { RecommendationsPanel } from "./components/recommendations/RecommendationsPanel";
 import { INITIAL_CHAT, NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
+import {
+  CHAT_PAGE_COMPOSER_PROMPTS,
+  CHAT_PAGE_HERO_ACTIONS,
+  CHAT_PAGE_HISTORY_ITEMS,
+  CHAT_PAGE_STATUS_CARD
+} from "./data/chatPageData";
+import {
+  createInitialLibraryInterestState,
+  LIBRARY_ARTICLE_ITEMS,
+  LIBRARY_HERO_RESOURCE,
+  LIBRARY_INTEREST_OPTIONS,
+  LIBRARY_SHOWCASE_ITEMS
+} from "./data/libraryData";
 import { PROJECT_DETAILS_BY_ID } from "./data/projectDetailsData";
 import { FEATURED_NEWS_ITEMS, MINI_NEWS_ITEMS } from "./data/newsData";
 import { PROJECT_HUB_COLUMNS } from "./data/projectHubData";
@@ -67,6 +82,8 @@ function App() {
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(true);
   const [aiMode, setAiMode] = useState(true);
   const [isDeckOpen, setIsDeckOpen] = useState(false);
+  const [activeLibraryShowcaseIndex, setActiveLibraryShowcaseIndex] = useState(0);
+  const [selectedLibraryInterests, setSelectedLibraryInterests] = useState(createInitialLibraryInterestState);
   const [likedNews, setLikedNews] = useState(createInitialNewsLikes);
   const [likedRecommendations, setLikedRecommendations] = useState({});
   const [chatInput, setChatInput] = useState("");
@@ -81,11 +98,14 @@ function App() {
   const canDismiss = !dismissDirection;
   const isNewsPage = activeTab === "news";
   const isProjectsPage = activeTab === "projects";
+  const isLibraryPage = activeTab === "library";
+  const isChatPage = activeTab === "chat";
   const currentProjectSlug = resolveProjectSlugFromPath(currentPath);
   const currentProjectDetails = currentProjectSlug ? PROJECT_DETAILS_BY_ID[currentProjectSlug] : null;
   const isProjectDetailPage = Boolean(currentProjectDetails);
-  const usesOverlayHeader = isNewsPage || isProjectsPage;
+  const usesOverlayHeader = isNewsPage || isProjectsPage || isLibraryPage || isChatPage;
   const homeNewsItem = MINI_NEWS_ITEMS[0];
+  const chatPageMessages = messages.some((message) => message.role === "user") ? messages.slice(1) : [];
 
   const navigateTo = (path) => {
     setCurrentPath(path);
@@ -166,6 +186,11 @@ function App() {
     navigateTo(NAV_LINKS.projects);
   };
 
+  const openLibraryPage = () => {
+    setActiveTab("library");
+    navigateTo("/library");
+  };
+
   const openMiniNews = (newsItem) => {
     setActiveTab("news");
     navigateTo(newsItem?.detailsUrl || NAV_LINKS.news);
@@ -185,6 +210,37 @@ function App() {
     // API hook placeholder
   };
 
+  const cycleLibraryShowcase = (direction) => {
+    setActiveLibraryShowcaseIndex((prev) => {
+      const offset = direction === "prev" ? -1 : 1;
+      return (prev + offset + LIBRARY_SHOWCASE_ITEMS.length) % LIBRARY_SHOWCASE_ITEMS.length;
+    });
+  };
+
+  const toggleLibraryInterest = (interestId) => {
+    setSelectedLibraryInterests((prev) => ({
+      ...prev,
+      [interestId]: !prev[interestId]
+    }));
+  };
+
+  const saveLibraryInterests = () => {
+    const selectedIds = Object.entries(selectedLibraryInterests)
+      .filter(([, isSelected]) => isSelected)
+      .map(([id]) => id);
+
+    const payload = JSON.stringify({ interests: selectedIds, ts: Date.now() });
+
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon("/api/library/interests", blob);
+      }
+    } catch {
+      // no-op
+    }
+  };
+
   const openFeaturedEvent = (eventItem) => {
     navigateTo(eventItem?.detailsUrl || NAV_LINKS.events);
   };
@@ -193,7 +249,6 @@ function App() {
     if (!aiAssistantEnabled) {
       setAiAssistantEnabled(true);
       setAiMode(true);
-      return;
     }
 
     setActiveTab("chat");
@@ -218,7 +273,7 @@ function App() {
         navigateTo(NAV_LINKS.news);
         break;
       case "library":
-        navigateTo("/library");
+        openLibraryPage();
         break;
       default:
         break;
@@ -293,6 +348,7 @@ function App() {
     setAiAssistantEnabled(false);
     if (activeTab === "chat") {
       setActiveTab("home");
+      navigateTo("/");
     }
   };
 
@@ -347,6 +403,34 @@ function App() {
                 onCreateProject={openProjectCreate}
                 onOpenProject={openProjectDetails}
               />
+            ) : isLibraryPage ? (
+              <LibraryPage
+                heroItem={LIBRARY_HERO_RESOURCE}
+                showcaseItems={LIBRARY_SHOWCASE_ITEMS}
+                activeShowcaseIndex={activeLibraryShowcaseIndex}
+                interestOptions={LIBRARY_INTEREST_OPTIONS}
+                selectedInterests={selectedLibraryInterests}
+                articleItems={LIBRARY_ARTICLE_ITEMS}
+                onBack={handleGoHome}
+                onPrevShowcase={() => cycleLibraryShowcase("prev")}
+                onNextShowcase={() => cycleLibraryShowcase("next")}
+                onToggleInterest={toggleLibraryInterest}
+                onSaveInterests={saveLibraryInterests}
+              />
+            ) : isChatPage ? (
+              <ChatPage
+                historyItems={CHAT_PAGE_HISTORY_ITEMS}
+                composerPrompts={CHAT_PAGE_COMPOSER_PROMPTS}
+                heroActions={CHAT_PAGE_HERO_ACTIONS}
+                statusCard={CHAT_PAGE_STATUS_CARD}
+                messages={chatPageMessages}
+                chatInput={chatInput}
+                chatListRef={chatListRef}
+                onClose={handleCloseAi}
+                onSendMessage={sendMessage}
+                onChangeChatInput={setChatInput}
+                onSubmit={handleChatSubmit}
+              />
             ) : (
               <section className="left-content">
                 <h1 className="page-title">Главная панель</h1>
@@ -386,7 +470,7 @@ function App() {
         </div>
 
         <AiChatPanel
-          isVisible={aiMode && !isProjectDetailPage}
+          isVisible={aiMode && !isProjectDetailPage && !isLibraryPage && !isChatPage}
           quickPrompts={QUICK_PROMPTS}
           messages={messages}
           chatInput={chatInput}

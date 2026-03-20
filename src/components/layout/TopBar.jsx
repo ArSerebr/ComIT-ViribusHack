@@ -13,15 +13,17 @@ export function TopBar({ activeTab, aiAssistantEnabled, onGoHome, onMenuClick, i
         {MENU_ITEMS.map((item) => {
           const isAi = item.id === "ai";
           const isActive = !isAi && activeTab === item.id;
+          const isAiExpanded = isAi && activeTab === "chat";
           const aiActive = isAi && aiAssistantEnabled;
+          const isExpanded = isActive || isAiExpanded;
 
           return (
             <button
               key={item.id}
-              className={`menu-item ${isActive ? "menu-item-active" : ""} ${aiActive ? "menu-item-ai-active" : ""}`}
+              className={`menu-item ${isExpanded ? "menu-item-active" : ""} ${aiActive ? "menu-item-ai-active" : ""}`}
               onClick={() => onMenuClick(item.id)}
               type="button"
-              aria-pressed={isActive || aiActive}
+              aria-pressed={isExpanded || aiActive}
             >
               {isAi ? (
                 <span className="menu-ai-icon">
@@ -31,7 +33,7 @@ export function TopBar({ activeTab, aiAssistantEnabled, onGoHome, onMenuClick, i
               ) : (
                 <img src={item.icon} alt="" className="menu-icon" />
               )}
-              {!isAi && <span className="menu-label">{item.label}</span>}
+              {(!isAi || isAiExpanded) && <span className="menu-label">{item.label}</span>}
             </button>
           );
         })}

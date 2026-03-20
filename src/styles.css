@@ -1,13 +1,26 @@
-﻿:root {
+/* ==========================================================================
+   Design Tokens
+   ========================================================================== */
+:root {
   --bg: #010101;
-  --glass: rgba(255, 255, 255, 0.08);
-  --glass-strong: rgba(255, 255, 255, 0.08);
   --text-main: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.6);
   --text-dim: #838383;
   --ok: #b1ffaf;
+
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-strong: rgba(255, 255, 255, 0.08);
+  --glass-soft: rgba(255, 255, 255, 0.06);
+
+  --radius-card: 23px;
+  --radius-pill: 100px;
+
+  --shadow-card: 0 0 24px rgba(0, 0, 0, 0.36);
 }
 
+/* ==========================================================================
+   Global Reset
+   ========================================================================== */
 * {
   box-sizing: border-box;
 }
@@ -32,38 +45,42 @@ input {
   font-family: inherit;
 }
 
+/* ==========================================================================
+   App Shell
+   ========================================================================== */
 .viewport-frame {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #010101;
+  background: var(--bg);
 }
 
 .design-canvas {
+  position: relative;
   width: 100%;
   height: 100%;
-  position: relative;
   overflow: hidden;
 }
 
 .app-shell {
   position: relative;
+  isolation: isolate;
   width: 100%;
   height: 100%;
   padding: 34px 70px 26px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  isolation: isolate;
 }
 
+/* Decorative blurred background shapes */
 .bg-shape {
   position: absolute;
+  z-index: -2;
   pointer-events: none;
   user-select: none;
   filter: blur(14px);
   opacity: 0.42;
-  z-index: -2;
 }
 
 .bg-shape-top {
@@ -82,6 +99,9 @@ input {
   transform: rotate(156deg);
 }
 
+/* ==========================================================================
+   Top Bar
+   ========================================================================== */
 .top-bar {
   display: grid;
   grid-template-columns: 220px 1fr 136px;
@@ -89,17 +109,80 @@ input {
   gap: 12px;
 }
 
+/* News-page header: glass effect + compact height */
+.top-bar-news {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  min-height: 66px;
+  padding: 24px 70px;
+  backdrop-filter: blur(6px) saturate(85%);
+  -webkit-backdrop-filter: blur(6px) saturate(85%);
+}
+
+.top-bar-news .logo-icon {
+  width: 82px;
+  height: 82px;
+}
+
+.top-bar-news .logo-text {
+  padding-bottom: 2px;
+  font-size: 24px;
+}
+
+.top-bar-news .menu-item {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  justify-content: center;
+}
+
+.top-bar-news .menu-item-active {
+  min-width: 170px;
+  padding: 0 18px;
+}
+
+.top-bar-news .menu-item-active .menu-label {
+  font-size: 20px;
+}
+
+.top-bar-news .glass-icon-button,
+.top-bar-news .account-btn {
+  width: 52px;
+  height: 52px;
+}
+
+.top-bar-news .notify-dot {
+  top: 9px;
+  right: 10px;
+}
+
+.top-bar-news .account-ring {
+  inset: -20px;
+  width: 102px;
+  height: 102px;
+}
+
+.top-bar-news .account-photo {
+  top: 1px;
+  left: 1px;
+  width: 52px;
+  height: 52px;
+}
+
 .logo-wrap {
   position: relative;
   isolation: isolate;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
   border: 0;
   padding: 0;
   background: transparent;
   color: var(--text-main);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .logo-wrap::before {
@@ -107,14 +190,14 @@ input {
   position: absolute;
   left: 36px;
   top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
   width: 144px;
   height: 144px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(126, 83, 255, 0.35) 10%, rgba(110, 62, 212, 0.15) 36%, rgba(90, 40, 188, 0) 56%);
-  transform: translate(-50%, -50%);
-  filter: blur(8px);
-  z-index: -1;
   pointer-events: none;
+  filter: blur(8px);
+  background: radial-gradient(circle, rgba(126, 83, 255, 0.35) 10%, rgba(110, 62, 212, 0.15) 36%, rgba(90, 40, 188, 0) 56%);
 }
 
 .logo-icon {
@@ -144,22 +227,22 @@ input {
   height: 52px;
   border: 0;
   border-radius: 97px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-soft);
   backdrop-filter: blur(100px);
   color: #d2d2d2;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  cursor: pointer;
   transition: min-width 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .menu-item-active {
   width: auto;
   min-width: 170px;
-  justify-content: flex-start;
   padding: 0 28px;
+  justify-content: flex-start;
   background: #ffffff;
   color: #000000;
 }
@@ -207,16 +290,16 @@ input {
 }
 
 .glass-icon-button {
+  position: relative;
   width: 52px;
   height: 52px;
   border: 0;
   border-radius: 97px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-soft);
   backdrop-filter: blur(100px);
+  cursor: pointer;
   display: grid;
   place-items: center;
-  position: relative;
-  cursor: pointer;
 }
 
 .notify-icon {
@@ -262,6 +345,9 @@ input {
   object-fit: cover;
 }
 
+/* ==========================================================================
+   Shared Layout Blocks
+   ========================================================================== */
 .dashboard-layout {
   flex: 1;
   margin-top: 0;
@@ -269,16 +355,36 @@ input {
   align-items: center;
 }
 
+/* News layout keeps its own scroll container to avoid body scrolling */
 .dashboard-layout-news {
-  margin-top: 24px;
   display: block;
-  align-items: stretch;
   min-height: 0;
+  margin-top: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 8px;
-  padding-bottom: 180px;
-  scrollbar-width: thin;
+  padding-bottom: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.dashboard-layout-news::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.app-shell-news {
+  --shell-right-padding: 70px;
+  padding-bottom: 0;
+}
+
+/* Move the scrollbar to the viewport edge instead of content edge */
+.app-shell-news .dashboard-layout-news {
+  margin-right: calc(-1 * var(--shell-right-padding));
+  padding-right: calc(var(--shell-right-padding) + 12px);
+  padding-top: 120px;
+
 }
 
 .left-content {
@@ -287,206 +393,18 @@ input {
   transform: translateY(-18px);
 }
 
-.news-page {
-  width: 100%;
-  --news-card-height: 356px;
-}
-
-.news-page-head {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.news-back-btn {
-  width: 78px;
-  height: 78px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.news-back-btn img {
-  width: 26px;
-  height: 26px;
-}
-
-.news-page-title {
-  margin: 0;
-  font-size: 52px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.news-page-rows {
-  display: grid;
-  gap: 22px;
-}
-
-.news-page-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.26fr);
-  gap: 24px;
-  align-items: stretch;
-}
-
-.news-row-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.news-page-mini-card {
-  min-height: var(--news-card-height);
-  height: var(--news-card-height);
-}
-
-.news-page-mini-card .news-image-wrap {
-  height: 176px;
-}
-
-.news-page-mini-card .news-text {
-  padding: 0 10px 72px;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.news-page-featured-card {
-  min-height: var(--news-card-height);
-  height: var(--news-card-height);
-}
-
-.featured-news-card {
-  border-radius: 30px;
-  cursor: pointer;
-  isolation: isolate;
-}
-
-.featured-news-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: right center;
-  filter: blur(1px);
-  transform: scale(1.06);
-  z-index: -3;
-}
-
-.featured-news-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(10, 10, 14, 0.94) 0%,
-    rgba(10, 10, 14, 0.86) 36%,
-    rgba(10, 10, 14, 0.6) 60%,
-    rgba(10, 10, 14, 0.22) 82%,
-    rgba(10, 10, 14, 0.12) 100%
-  );
-  z-index: -2;
-}
-
-.featured-news-content {
+.glass-card {
   position: relative;
-  z-index: 2;
-  width: min(72%, 760px);
-  min-height: 100%;
-  padding: 26px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.featured-news-content h2 {
-  margin: 0;
-  font-size: clamp(36px, 2.4vw, 48px);
-  line-height: 0.95;
-  font-weight: 550;
-}
-
-.featured-news-subtitle {
-  margin: 0;
-  font-size: clamp(21px, 1.5vw, 30px);
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 500;
-}
-
-.featured-news-description {
-  margin: 8px 0 0;
-  font-size: clamp(16px, 1.08vw, 22px);
-  line-height: 1.16;
-  color: rgba(255, 255, 255, 0.9);
-  max-width: 92%;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
   overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--glass);
+  backdrop-filter: blur(15px);
+  box-shadow: var(--shadow-card);
 }
 
-.featured-news-cta {
-  margin-top: auto;
-  width: fit-content;
-  min-width: 220px;
-  height: 64px;
-  border: 0;
-  border-radius: 100px;
-  padding: 0 30px;
-  background: linear-gradient(128deg, #cb7863 5%, #bc666c 52%, #9a5d91 100%);
-  color: #fff;
-  font-size: clamp(18px, 1.1vw, 24px);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-@media (max-width: 1700px) {
-  .news-page-row {
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
-  }
-
-  .featured-news-content {
-    width: min(76%, 720px);
-  }
-}
-
-@media (max-width: 1460px) {
-  .news-page {
-    --news-card-height: 342px;
-  }
-
-  .news-page-row {
-    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.95fr);
-  }
-
-  .featured-news-content {
-    width: min(80%, 680px);
-    padding: 22px 20px;
-  }
-
-  .featured-news-content h2 {
-    font-size: clamp(32px, 2.5vw, 42px);
-  }
-}
-
-@media (max-width: 1320px) {
-  .news-page-row {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .news-page-featured-card {
-    width: 100%;
-  }
-}
-
+/* ==========================================================================
+   Home: Title + Summary Cards
+   ========================================================================== */
 .page-title {
   margin: 0 0 34px;
   font-size: 39px;
@@ -499,15 +417,6 @@ input {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: 34px;
   row-gap: 22px;
-}
-
-.glass-card {
-  position: relative;
-  background: var(--glass);
-  border-radius: 23px;
-  backdrop-filter: blur(15px);
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.36);
-  overflow: hidden;
 }
 
 .for-you-card,
@@ -547,9 +456,9 @@ input {
   border-radius: 11px;
   border: 2px solid rgba(255, 255, 255, 0.4);
   background: transparent;
+  cursor: pointer;
   display: grid;
   place-items: center;
-  cursor: pointer;
 }
 
 .small-arrow-btn img {
@@ -568,11 +477,11 @@ input {
   border: 0;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 14px;
-  cursor: pointer;
 }
 
 .for-you-course-img {
@@ -583,8 +492,6 @@ input {
 }
 
 .for-you-course-pill {
-  display: inline-flex;
-  align-items: center;
   height: 34px;
   padding: 0 13px;
   border-radius: 9px;
@@ -592,12 +499,14 @@ input {
   color: #ffffff;
   font-size: 15px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 
 .for-you-course-arrow {
-  margin-left: auto;
   width: 32px;
   height: 32px;
+  margin-left: auto;
 }
 
 .events-info {
@@ -607,16 +516,15 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  
 }
 
 .events-info strong,
 .productivity-content strong {
+  margin-top: 9px;
   display: block;
   font-size: 40px;
-  line-height: 1;
   font-weight: 550;
-  margin-top: 9px;
+  line-height: 1;
 }
 
 .events-info span,
@@ -624,23 +532,23 @@ input {
   margin-top: 0;
   display: block;
   font-size: 13px;
-  color: var(--ok);
   font-weight: 500;
+  color: var(--ok);
 }
 
 .event-avatars {
+  margin-top: 12px;
   display: flex;
   align-items: center;
-  margin-top: 12px;
 }
 
 .avatar-chip {
   width: 53px;
   height: 53px;
+  margin-left: -14px;
   border-radius: 11px;
-  padding-left: 5px;
   padding-top: 5px;
-  margin-left: -14px; 
+  padding-left: 5px;
 }
 
 .avatar-chip:first-child {
@@ -654,7 +562,7 @@ input {
 }
 
 .chip-gray {
-  background: #999;
+  background: #999999;
 }
 
 .chip-light {
@@ -662,7 +570,7 @@ input {
 }
 
 .chip-white {
-  background: #fff;
+  background: #ffffff;
 }
 
 .chip-glass {
@@ -683,9 +591,11 @@ input {
 .productivity-content img {
   width: 60px;
   height: 60px;
-  
 }
 
+/* ==========================================================================
+   Home: Bottom Cards (News + Projects)
+   ========================================================================== */
 .bottom-cards {
   margin-top: 14px;
   display: grid;
@@ -695,7 +605,6 @@ input {
 }
 
 .news-card {
-  grid-column: 1 / span 1;
   min-height: 286px;
   padding: 18px;
   cursor: pointer;
@@ -716,10 +625,10 @@ input {
 
 .news-text {
   margin: 12px 0 0;
+  padding: 0 10px;
   font-size: 16px;
-  line-height: 1.2;
   font-weight: 500;
-  padding: 0px 10px ;
+  line-height: 1.2;
 }
 
 .news-like-btn {
@@ -731,9 +640,9 @@ input {
   border: 0;
   border-radius: 13px;
   background: #252525;
+  cursor: pointer;
   display: grid;
   place-items: center;
-  cursor: pointer;
 }
 
 .news-like-btn img {
@@ -746,16 +655,15 @@ input {
   left: 20px;
   bottom: 18px;
   border: 0;
+  padding: 0;
   background: transparent;
   color: var(--text-dim);
-  padding: 0;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 16px;
   font-weight: 550;
-  padding: 0px 0px;
-  cursor: pointer;
 }
 
 .news-link-btn img {
@@ -781,11 +689,12 @@ input {
 }
 
 .projects-title {
+  font-size: 48px;
   display: inline-flex;
   align-items: flex-start;
   gap: 5px;
-  font-size: 48px;
 }
+
 .projects-card h2 {
   margin: 0;
   font-size: 38px;
@@ -800,12 +709,12 @@ input {
 
 .project-link {
   margin-top: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-muted);
   font-size: 16px;
-  text-decoration: none;
 }
 
 .project-link img {
@@ -834,9 +743,9 @@ input {
   margin: 22px 0 0;
   padding: 0;
   list-style: none;
+  max-width: calc(100% - 210px);
   display: grid;
   gap: 3px;
-  max-width: calc(100% - 210px);
 }
 
 .tasks-list li {
@@ -870,8 +779,8 @@ input {
 .tasks-list p {
   margin: 2px 0 0;
   font-size: 14px;
-  color: var(--text-dim);
   font-weight: 600;
+  color: var(--text-dim);
 }
 
 .task-muted strong {
@@ -887,22 +796,196 @@ input {
   object-fit: cover;
 }
 
+/* ==========================================================================
+   News Page
+   ========================================================================== */
+.news-page {
+  width: 100%;
+  --news-card-height: 342px;
+}
+
+.news-page-head {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.news-back-btn {
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.news-back-btn img {
+  width: 26px;
+  height: 26px;
+}
+
+.news-page-title {
+  margin: 0;
+  font-size: 39px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Grid model:
+   Desktop: [two mini cards] [one featured card]
+   Narrow desktop: featured drops below mini pair */
+.news-page-rows {
+  display: grid;
+  gap: 22px;
+}
+
+.news-page-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.26fr);
+  align-items: stretch;
+  gap: 24px;
+}
+
+.news-row-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.news-row-mini-grid-tail {
+  max-width: 100%;
+}
+
+.news-page-mini-card {
+  height: var(--news-card-height);
+  min-height: var(--news-card-height);
+}
+
+.news-page-mini-card .news-image-wrap {
+  height: 176px;
+}
+
+/* Reserve bottom area for controls and clamp text to keep card stable */
+.news-page-mini-card .news-text {
+  padding: 0 10px 72px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-page-featured-card {
+  height: var(--news-card-height);
+  min-height: var(--news-card-height);
+}
+
+.featured-news-card {
+  border-radius: 30px;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.featured-news-image {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+  filter: blur(1px);
+  transform: scale(1.06);
+}
+
+.featured-news-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(
+    90deg,
+    rgba(10, 10, 14, 0.94) 0%,
+    rgba(10, 10, 14, 0.86) 36%,
+    rgba(10, 10, 14, 0.6) 60%,
+    rgba(10, 10, 14, 0.22) 82%,
+    rgba(10, 10, 14, 0.12) 100%
+  );
+}
+
+.featured-news-content {
+  position: relative;
+  z-index: 2;
+  width: min(72%, 760px);
+  min-height: 100%;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.featured-news-content h2 {
+  margin: 0;
+  font-size: clamp(36px, 2.4vw, 34px);
+  line-height: 0.95;
+  font-weight: 550;
+}
+
+.featured-news-subtitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.featured-news-description {
+  margin: 8px 0 0;
+  max-width: 92%;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(16px, 1.18vw, 16px);
+  line-height: 1.16;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featured-news-cta {
+  margin-top: auto;
+  width: fit-content;
+  min-width: 240px;
+  height: 56px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 0 20px;
+  background: linear-gradient(128deg, #cb7863 5%, #bc666c 52%, #9a5d91 100%);
+  color: #ffffff;
+  font-size: clamp(18px, 1.1vw, 24px);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Recommendations Deck
+   ========================================================================== */
 .deck-fab {
   position: absolute;
   right: 70px;
-  bottom: 20px;
+  bottom: 40px;
+  z-index: 30;
   width: 70px;
   height: 70px;
   border: 0;
   border-radius: 60%;
-  background: linear-gradient(147.56deg, #c46e5b 12.37%, #ab5f62 50.74%, #9b5686 89.11%);
-  box-shadow: 0 2px 40px rgba(238, 52, 173, 0.55);
-  color: #fff;
+  padding: 0;
+  color: #ffffff;
+  cursor: pointer;
   display: grid;
   place-items: center;
-  padding: 0;
-  cursor: pointer;
-  z-index: 30;
+  background: linear-gradient(147.56deg, #c46e5b 12.37%, #ab5f62 50.74%, #9b5686 89.11%);
+  box-shadow: 0 2px 40px rgba(238, 52, 173, 0.55);
 }
 
 .deck-fab img {
@@ -915,28 +998,28 @@ input {
   position: absolute;
   right: 142px;
   bottom: 20px;
+  z-index: 25;
   width: 500px;
   height: 680px;
+  padding: 16px;
   border-radius: 24px;
   background: rgba(8, 8, 12, 0.8);
   backdrop-filter: blur(22px);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
-  padding: 16px;
-  z-index: 25;
 }
 
 .deck-close-btn {
   position: absolute;
   top: 14px;
   right: 14px;
+  z-index: 2;
   width: 42px;
   height: 42px;
   border: 0;
   background: transparent;
+  cursor: pointer;
   display: grid;
   place-items: center;
-  cursor: pointer;
-  z-index: 2;
 }
 
 .deck-close-btn img {
@@ -954,8 +1037,8 @@ input {
 .recommendation-card {
   position: absolute;
   inset: 0;
-  border-radius: 20px;
   overflow: hidden;
+  border-radius: 20px;
   background: var(--glass-strong);
   box-shadow: 0 0 23.5px rgba(0, 0, 0, 0.4);
   user-select: none;
@@ -1006,10 +1089,10 @@ input {
   border: 0;
   border-radius: 14px;
   background: #252525;
-  display: grid;
-  place-items: center;
   cursor: pointer;
   box-shadow: 0 0 20px #00000081;
+  display: grid;
+  place-items: center;
 }
 
 .action-btn img {
@@ -1018,18 +1101,22 @@ input {
   object-fit: contain;
 }
 
+/* ==========================================================================
+   AI Chat
+   ========================================================================== */
 .ai-chat-shell {
   position: absolute;
   bottom: 21px;
-  transform: translateX(calc(-50% - 220px));
+  z-index: 40;
   width: min(44%, calc(100% - 140px));
+  margin-left: 28%;
+  transform: translateX(calc(-50% - 220px));
   padding: 14px 18px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-soft);
   backdrop-filter: blur(100px);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
-  z-index: 40;
-  margin-left: 28%;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 1);
+  box-shadow: 0 0 80px #d122d752;
 }
 
 .ai-close-btn {
@@ -1050,17 +1137,17 @@ input {
 
 .ai-suggestions {
   display: none;
-  align-items: center;
-  gap: 7px;
   margin-right: 42px;
   flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
 }
 
 .suggestion-pill {
   min-height: 28px;
-  padding: 4px 10px;
   border: 0;
   border-radius: 200px;
+  padding: 4px 10px;
   background: #4d4d4d;
   color: #c0c0c0;
   font-size: 13px;
@@ -1071,17 +1158,17 @@ input {
   margin-top: 2px;
   max-height: 114px;
   overflow-y: auto;
+  padding-right: 4px;
   display: grid;
   gap: 7px;
-  padding-right: 4px;
 }
 
 .chat-message {
   max-width: 96%;
   border-radius: 12px;
   padding: 7px 9px;
-  line-height: 1.35;
   font-size: 14px;
+  line-height: 1.35;
 }
 
 .chat-message p {
@@ -1115,7 +1202,7 @@ input {
   border-radius: 8px;
   padding: 5px 10px;
   background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: #ffffff;
   font-size: 13px;
   cursor: pointer;
 }
@@ -1124,26 +1211,26 @@ input {
   margin-top: 8px;
   height: 58px;
   border-radius: 200px;
+  padding: 6px;
   background: #0c0c0c;
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) 48px;
   align-items: center;
   gap: 8px;
-  padding: 6px;
 }
 
 .chat-logo-btn {
+  position: relative;
   width: 46px;
   height: 46px;
-  margin-bottom: 2px;
   margin-right: 2px;
+  margin-bottom: 2px;
   border: 0;
   border-radius: 98px;
-  background: linear-gradient(147.56deg, #c46e5b 12.37%, #ab5f62 50.74%, #9b5686 89.11%);
-  position: relative;
+  cursor: pointer;
   display: grid;
   place-items: center;
-  cursor: pointer;
+  background: linear-gradient(147.56deg, #c46e5b 12.37%, #ab5f62 50.74%, #9b5686 89.11%);
 }
 
 .chat-logo-btn img {
@@ -1165,15 +1252,15 @@ input {
 .chat-send-btn {
   width: 46px;
   height: 46px;
+  margin-right: -2px;
+  margin-bottom: 2px;
   border: 0;
   border-radius: 97px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-soft);
   backdrop-filter: blur(100px);
+  cursor: pointer;
   display: grid;
   place-items: center;
-  cursor: pointer;
-  margin-bottom: 2px;
-  margin-right: -2px;
 }
 
 .chat-send-btn img {
@@ -1183,13 +1270,99 @@ input {
   padding-right: 1px;
 }
 
+/* ==========================================================================
+   Responsive: Wide Desktop News Adjustments
+   ========================================================================== */
+@media (max-width: 1700px) {
+  .news-page-row {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  }
+
+  .featured-news-content {
+    width: min(76%, 720px);
+  }
+}
+
+@media (max-width: 1460px) {
+  .news-page {
+    --news-card-height: 342px;
+  }
+
+  .news-page-row {
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.95fr);
+  }
+
+  .featured-news-content {
+    width: min(80%, 680px);
+    padding: 22px 20px;
+  }
+
+  .featured-news-content h2 {
+    font-size: clamp(32px, 2.5vw, 42px);
+  }
+}
+
+@media (max-width: 1320px) {
+  /* Switch from side-by-side to "2 mini + 1 featured in next row" */
+  .news-page-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .news-page-featured-card {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Responsive: Tablet and Small Laptops
+   ========================================================================== */
 @media (max-width: 1200px) {
   .app-shell {
     padding: 22px 28px 20px;
   }
 
+  .app-shell-news {
+    --shell-right-padding: 28px;
+    padding-bottom: 0;
+  }
+
   .top-bar {
     grid-template-columns: 180px 1fr 120px;
+  }
+
+  .top-bar-news {
+    min-height: 60px;
+    padding: 4px 10px;
+  }
+
+  .top-bar-news .logo-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .top-bar-news .logo-text {
+    font-size: 17px;
+  }
+
+  .top-bar-news .menu-item {
+    width: 40px;
+    height: 40px;
+  }
+
+  .top-bar-news .menu-item-active {
+    min-width: 132px;
+    padding: 0 16px;
+  }
+
+  .top-bar-news .menu-item-active .menu-label {
+    font-size: 15px;
+  }
+
+  .top-bar-news .glass-icon-button,
+  .top-bar-news .account-btn {
+    width: 40px;
+    height: 40px;
   }
 
   .logo-text {
@@ -1197,13 +1370,37 @@ input {
   }
 
   .page-title {
-    font-size: 34px;
     margin-bottom: 26px;
+    font-size: 34px;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .bottom-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .news-card,
+  .projects-card {
+    grid-column: auto;
+  }
+
+  .projects-card,
+  .news-card {
+    min-height: 176px;
   }
 
   .dashboard-layout-news {
-    margin-top: 12px;
-    padding-bottom: 140px;
+    margin-top: 200px;
+    padding-bottom: 0;
+  }
+
+  .news-page {
+    --news-card-height: 300px;
   }
 
   .news-page-head {
@@ -1217,10 +1414,6 @@ input {
 
   .news-page-title {
     font-size: 42px;
-  }
-
-  .news-page {
-    --news-card-height: 300px;
   }
 
   .news-page-rows {
@@ -1262,26 +1455,6 @@ input {
     font-size: clamp(17px, 2vw, 24px);
   }
 
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-  .bottom-cards {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .news-card,
-  .projects-card {
-    grid-column: auto;
-  }
-
-  .projects-card,
-  .news-card {
-    min-height: 176px;
-  }
-
   .recommendations-popover {
     right: 98px;
     bottom: 16px;
@@ -1302,6 +1475,9 @@ input {
   }
 }
 
+/* ==========================================================================
+   Responsive: Mobile
+   ========================================================================== */
 @media (max-width: 860px) {
   html,
   body,
@@ -1321,6 +1497,41 @@ input {
     padding: 16px 12px 84px;
   }
 
+  .app-shell-news {
+    --shell-right-padding: 12px;
+    padding-bottom: 0;
+  }
+
+  .top-bar {
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+  }
+
+  .top-bar-news {
+    position: static;
+    min-height: auto;
+    border-radius: 14px;
+    padding: 6px 8px;
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+  }
+
+  .top-bar-news .logo-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .top-bar-news .logo-text {
+    font-size: 16px;
+  }
+
+  .menu-nav {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
   .dashboard-layout {
     flex: none;
     display: block;
@@ -1331,6 +1542,25 @@ input {
     transform: none;
   }
 
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    margin-bottom: 20px;
+    font-size: 32px;
+  }
+
+  .progress-track,
+  .tasks-list {
+    max-width: 100%;
+  }
+
+  .project-side-art {
+    right: -56px;
+    opacity: 0.5;
+  }
+
   .dashboard-layout-news {
     margin-top: 12px;
     overflow: visible;
@@ -1338,9 +1568,18 @@ input {
     padding-bottom: 0;
   }
 
+  .app-shell-news .dashboard-layout-news {
+    margin-right: 0;
+    padding-right: 0;
+  }
+
+  .news-page {
+    --news-card-height: 250px;
+  }
+
   .news-page-head {
-    gap: 10px;
     margin-bottom: 14px;
+    gap: 10px;
   }
 
   .news-back-btn {
@@ -1355,10 +1594,6 @@ input {
 
   .news-page-title {
     font-size: 34px;
-  }
-
-  .news-page {
-    --news-card-height: 250px;
   }
 
   .news-page-rows {
@@ -1409,37 +1644,6 @@ input {
     font-size: 16px;
   }
 
-  .top-bar {
-    grid-template-columns: 1fr auto;
-    row-gap: 10px;
-  }
-
-  .menu-nav {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 2px;
-  }
-
-  .summary-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .page-title {
-    font-size: 32px;
-    margin-bottom: 20px;
-  }
-
-  .progress-track,
-  .tasks-list {
-    max-width: 100%;
-  }
-
-  .project-side-art {
-    opacity: 0.5;
-    right: -56px;
-  }
-
   .recommendations-popover {
     right: 12px;
     left: 12px;
@@ -1450,8 +1654,8 @@ input {
   .deck-fab {
     right: 12px;
     bottom: 12px;
-    height: 48px;
     width: 48px;
+    height: 48px;
   }
 
   .ai-chat-shell {

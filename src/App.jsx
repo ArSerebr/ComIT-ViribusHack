@@ -262,7 +262,7 @@ function App() {
   return (
     <div className="viewport-frame">
       <div className="design-canvas">
-        <div className="app-shell">
+        <div className={`app-shell ${isNewsPage ? "app-shell-news" : ""}`}>
           <img className="bg-shape bg-shape-top" src={assets.backgroundShape} alt="" />
           <img className="bg-shape bg-shape-bottom" src={assets.backgroundShape} alt="" />
 
@@ -271,6 +271,7 @@ function App() {
             aiAssistantEnabled={aiAssistantEnabled}
             onGoHome={handleGoHome}
             onMenuClick={handleMenuClick}
+            isNewsView={isNewsPage}
           />
 
           <main className={`dashboard-layout ${isNewsPage ? "dashboard-layout-news" : ""}`}>

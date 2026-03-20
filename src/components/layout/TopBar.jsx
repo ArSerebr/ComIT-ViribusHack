@@ -1,9 +1,9 @@
 import { assets } from "../../assets";
 import { MENU_ITEMS } from "../../data/dashboardData";
 
-export function TopBar({ activeTab, aiAssistantEnabled, onGoHome, onMenuClick }) {
+export function TopBar({ activeTab, aiAssistantEnabled, onGoHome, onMenuClick, isNewsView = false }) {
   return (
-    <header className="top-bar">
+    <header className={`top-bar ${isNewsView ? "top-bar-news" : ""}`}>
       <button className="logo-wrap" onClick={onGoHome} type="button" aria-label="На главную">
         <img src={assets.untitledLogo} alt="" className="logo-icon" />
         <span className="logo-text">ComIT</span>

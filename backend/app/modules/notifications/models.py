@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+import uuid
+
 from app.core.db.base import Base
-from sqlalchemy import Boolean, Integer, String, Text, text
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 
 class NotificationsItem(Base):
     __tablename__ = "notifications_item"
 
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
     type: Mapped[str] = mapped_column(String(64), nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)

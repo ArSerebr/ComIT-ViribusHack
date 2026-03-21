@@ -69,11 +69,14 @@ async def test_join_project_records_when_exists():
     repo.project_exists = AsyncMock(return_value=True)
     sink = AsyncMock()
     svc = ProjectsService(repo, sink)
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
 
-    ok = await svc.join_project("proj-1", "hello")
+    ok = await svc.join_project(user, "proj-1", "hello")
 
     assert ok is True
-    sink.record_join_request.assert_awaited_once_with("proj-1", "hello")
+    sink.record_join_request.assert_awaited_once_with("proj-1", "hello", uid)
 
 
 @pytest.mark.asyncio
@@ -82,8 +85,10 @@ async def test_join_project_false_when_missing():
     repo.project_exists = AsyncMock(return_value=False)
     sink = AsyncMock()
     svc = ProjectsService(repo, sink)
+    user = MagicMock()
+    user.id = uuid.uuid4()
 
-    ok = await svc.join_project("missing", None)
+    ok = await svc.join_project(user, "missing", None)
 
     assert ok is False
     sink.record_join_request.assert_not_awaited()

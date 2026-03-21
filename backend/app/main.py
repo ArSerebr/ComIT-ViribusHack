@@ -7,6 +7,7 @@ via module layers: Router → Service → Repository → ORM.
 
 from __future__ import annotations
 
+from app.core.observability import register_observability
 from app.lifespan import lifespan
 from app.modules.analytics import router as analytics_router
 from app.modules.auth.router import router as auth_router
@@ -55,6 +56,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    register_observability(app)
     for router in _MODULE_ROUTERS:
         app.include_router(router)
     return app

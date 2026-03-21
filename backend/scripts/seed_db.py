@@ -226,8 +226,13 @@ async def seed_library(session: AsyncSession, wipe: bool) -> None:
 async def seed_notifications(session: AsyncSession, wipe: bool) -> None:
     if wipe:
         await session.execute(text("TRUNCATE notifications_item RESTART IDENTITY CASCADE"))
+    result = await session.execute(select(User).limit(1))
+    owner = result.scalar_one_or_none()
+    if owner is None:
+        return
     for i, n in enumerate(NOTIFICATIONS):
         row = NotificationsItem(
+            user_id=owner.id,
             id=n.id,
             type=n.type,
             title=n.title,

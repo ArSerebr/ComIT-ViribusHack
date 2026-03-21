@@ -113,9 +113,10 @@ async def get_project_by_id(
 async def post_project_join(
     project_id: str,
     body: JoinRequest = JoinRequest(),
+    user: User = Depends(current_active_user),
     service: ProjectsService = Depends(get_projects_service),
 ) -> JoinResponse:
-    ok = await service.join_project(project_id, body.message)
+    ok = await service.join_project(user, project_id, body.message)
     if not ok:
         raise HTTPException(status_code=404, detail="Project not found")
     return JoinResponse(ok=True, project_id=project_id)

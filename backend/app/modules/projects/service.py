@@ -115,10 +115,15 @@ class ProjectsService:
         except (ValueError, TypeError):
             return None
 
-    async def join_project(self, project_id: str, message: str | None) -> bool:
+    async def join_project(
+        self,
+        user: User,
+        project_id: str,
+        message: str | None,
+    ) -> bool:
         if not await self._repo.project_exists(project_id):
             return False
-        await self._join_sink.record_join_request(project_id, message)
+        await self._join_sink.record_join_request(project_id, message, user.id)
         return True
 
     def _blocks_from_create(self, body: ProjectCreateBody) -> dict[str, Any]:

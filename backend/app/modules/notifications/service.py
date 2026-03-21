@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import uuid
+
 from app.modules.notifications.models import NotificationsItem
 from app.modules.notifications.repository import NotificationsRepository
 from schemas import NotificationItem
@@ -25,6 +27,6 @@ class NotificationsService:
     def __init__(self, repo: NotificationsRepository) -> None:
         self._repo = repo
 
-    async def list_notifications(self) -> list[NotificationItem]:
-        rows = await self._repo.list_ordered()
+    async def list_notifications(self, user_id: uuid.UUID) -> list[NotificationItem]:
+        rows = await self._repo.list_ordered_for_user(user_id)
         return [_to_schema(r) for r in rows]

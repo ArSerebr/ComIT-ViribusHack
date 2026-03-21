@@ -741,6 +741,23 @@
   font-size: 15px;
 }
 
+.project-create-auth-hint {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+}
+
+.project-create-auth-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgba(140, 190, 255, 0.95);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
 .article-create-layout,
 .project-create-layout {
   display: grid;

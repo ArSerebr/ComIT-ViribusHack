@@ -6,6 +6,13 @@ from django.urls import reverse
 from project_admin import models
 
 
+class HealthEndpointTests(TestCase):
+    def test_health_returns_ok(self) -> None:
+        response = self.client.get("/health/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
+
 class AdminAuthFlowTests(TestCase):
     def setUp(self) -> None:
         self.user = get_user_model().objects.create_superuser(

@@ -4,6 +4,39 @@ function authHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+/** Сообщение из тела ошибки openapi-fetch / FastAPI (detail строка или массив). */
+export function formatOpenApiError(error) {
+  if (error == null || error === false) {
+    return "Неизвестная ошибка";
+  }
+  if (typeof error === "string") {
+    return error;
+  }
+  if (typeof error === "object" && error !== null) {
+    const d = error.detail;
+    if (typeof d === "string" && d.trim()) {
+      return d.trim();
+    }
+    if (Array.isArray(d) && d.length > 0) {
+      const first = d[0];
+      if (typeof first === "string") {
+        return first;
+      }
+      if (first && typeof first.msg === "string") {
+        return first.msg;
+      }
+    }
+    if (typeof error.message === "string" && error.message.trim()) {
+      return error.message.trim();
+    }
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 async function extractErrorMessage(response, fallbackMessage) {
   try {
     const data = await response.json();
@@ -56,6 +89,16 @@ export async function fetchLibraryBundle() {
   return data;
 }
 
+/** Создание статьи в БД (требуется JWT). Ответ — `LibraryArticle`. */
+export async function createLibraryArticle(token, body) {
+  const { data, error } = await apiClient.POST("/api/library/articles", {
+    headers: authHeaders(token),
+    body
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function fetchProjectsHub() {
   const { data, error } = await apiClient.GET("/api/projects/hub");
   if (error) throw error;
@@ -65,6 +108,16 @@ export async function fetchProjectsHub() {
 export async function fetchProjectById(projectId) {
   const { data, error } = await apiClient.GET("/api/projects/{project_id}", {
     params: { path: { project_id: projectId } },
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Создание проекта в БД (требуется JWT). Ответ — `ProjectDetails` с каноническим `id`. */
+export async function createProject(token, body) {
+  const { data, error } = await apiClient.POST("/api/projects", {
+    headers: authHeaders(token),
+    body
   });
   if (error) throw error;
   return data;

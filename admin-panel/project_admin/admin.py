@@ -33,6 +33,8 @@ class ProjectsProjectAdmin(admin.ModelAdmin):
     list_display = ("id", "code", "team_name", "column", "sort_order", "owner_user_id")
     search_fields = ("id", "code", "team_name", "title")
     list_filter = ("column", "is_hot", "visibility")
+    # Новые проекты получают max(sort_order)+1 в колонке — показываем сверху списка.
+    ordering = ("-sort_order", "id")
 
 
 @admin.register(ProjectsProjectDetail)

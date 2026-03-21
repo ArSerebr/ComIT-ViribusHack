@@ -28,6 +28,9 @@ class NewsRepository:
     async def add_mini(self, row: NewsMini) -> None:
         self._session.add(row)
 
+    async def commit(self) -> None:
+        await self._session.commit()
+
     async def delete_mini(self, news_id: str) -> bool:
         res = await self._session.execute(delete(NewsMini).where(NewsMini.id == news_id))
         return (res.rowcount or 0) > 0

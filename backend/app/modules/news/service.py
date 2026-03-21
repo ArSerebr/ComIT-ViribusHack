@@ -75,6 +75,7 @@ class NewsService:
             author_user_id=user.id,
         )
         await self._repo.add_mini(row)
+        await self._repo.commit()
         return ("ok", _mini_to_schema(row))
 
     async def update_news_mini(
@@ -94,6 +95,7 @@ class NewsService:
             row.image_url = body.image_url
         if body.details_url is not None:
             row.details_url = body.details_url
+        await self._repo.commit()
         return ("ok", _mini_to_schema(row))
 
     async def delete_news_mini(
@@ -107,6 +109,7 @@ class NewsService:
         if not can_edit_content(user, row.author_user_id):
             return "forbidden"
         await self._repo.delete_mini(news_id)
+        await self._repo.commit()
         return "ok"
 
     async def create_news_featured(
@@ -131,6 +134,7 @@ class NewsService:
             author_user_id=user.id,
         )
         await self._repo.add_featured(row)
+        await self._repo.commit()
         return ("ok", _featured_to_schema(row))
 
     async def update_news_featured(
@@ -156,6 +160,7 @@ class NewsService:
             row.cta_label = body.cta_label
         if body.details_url is not None:
             row.details_url = body.details_url
+        await self._repo.commit()
         return ("ok", _featured_to_schema(row))
 
     async def delete_news_featured(
@@ -169,6 +174,7 @@ class NewsService:
         if row is None:
             return "not_found"
         await self._repo.delete_featured(news_id)
+        await self._repo.commit()
         return "ok"
 
     async def participate_featured(
@@ -180,4 +186,5 @@ class NewsService:
         if row is None:
             return ("not_found", None)
         await self._repo.add_participant(user.id, news_id)
+        await self._repo.commit()
         return ("ok", None)

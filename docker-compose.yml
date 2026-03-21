@@ -37,6 +37,8 @@ services:
     restart: unless-stopped
 
   backend:
+    # Стабильные имена для Drone cleanup и прод-деплоя (не default project_service).
+    image: viribus-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -63,6 +65,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: viribus-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

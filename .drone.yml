@@ -80,9 +80,9 @@ steps:
         - pull_request
         - push
 
-  # Сборка образов на хосте с кэшем слоёв (как RoboFirst). Только push в main/master.
+  # Сборка образов на хосте с кэшем слоёв. Только push в main/master.
   - name: docker-compose-build
-    image: docker/compose:latest
+    image: docker:24-cli
     depends_on: [backend-test, frontend-build]
     volumes:
       - name: docker-sock
@@ -93,8 +93,8 @@ steps:
       - |
         set -e
         cp /configs/.env .env || true
-        export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-viribus}"
-        docker-compose build --parallel backend frontend
+        export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-comit}"
+        docker compose build backend frontend
     when:
       branch:
         include:
@@ -103,9 +103,9 @@ steps:
       event:
         - push
 
-  # Предполагается, что postgres/redis уже подняты на сервере; пересобираем только app-слой.
+  # Поднимает всё: postgres, redis, backend, frontend.
   - name: deploy
-    image: docker/compose:latest
+    image: docker:24-cli
     depends_on: [docker-compose-build]
     volumes:
       - name: docker-sock
@@ -116,10 +116,11 @@ steps:
       - |
         set -e
         cp /configs/.env .env || true
-        export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-viribus}"
-        docker-compose up -d --force-recreate --no-deps backend frontend
-        sleep 8
-        docker-compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=5).read(200)" || echo "Backend check skipped/failed, see logs"
+        export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-comit}"
+        docker compose up -d
+        sleep 10
+        docker compose ps
+        docker compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=5).read(200)" || echo "Backend health check failed, see logs"
     when:
       branch:
         include:
@@ -136,7 +137,7 @@ steps:
         path: /var/run/docker.sock
     commands:
       - |
-        docker images | grep -E "viribus-(backend|frontend)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
+        docker images | grep -E "comit-(backend|frontend)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
     when:
       branch:
         include:

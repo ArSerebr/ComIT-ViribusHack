@@ -7,6 +7,7 @@
 @import "./styles/project-details.css" layer(pages);
 @import "./styles/library.css" layer(pages);
 @import "./styles/chat.css" layer(pages);
+@import "./styles/studio-pages.css" layer(pages);
 
 @keyframes ai-agent-gradient-flow {
   0% {

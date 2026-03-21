@@ -180,6 +180,7 @@ class ProjectsService:
         )
         await self._repo.add_project(project)
         await self._repo.add_detail(detail)
+        await self._repo.commit()
         return ("ok", _project_details_from_orm(project, detail))
 
     async def update_project(
@@ -253,6 +254,7 @@ class ProjectsService:
             out = _project_details_from_orm(project, detail)
         except (ValueError, TypeError):
             return ("not_found", None)
+        await self._repo.commit()
         return ("ok", out)
 
     async def delete_project(
@@ -266,6 +268,7 @@ class ProjectsService:
         if not can_edit_content(user, project.owner_user_id):
             return "forbidden"
         await self._repo.delete_project(project_id)
+        await self._repo.commit()
         return "ok"
 
     async def admin_create_column(
@@ -277,6 +280,7 @@ class ProjectsService:
         so = await self._repo.max_column_sort_order() + 1
         col = ProjectsColumn(id=body.id, title=body.title, sort_order=so)
         await self._repo.add_column(col)
+        await self._repo.commit()
         return ("ok", ProjectColumn(id=col.id, title=col.title, count=0, projects=[]))
 
     async def admin_update_column(
@@ -291,6 +295,7 @@ class ProjectsService:
             col.title = body.title
         if body.sort_order is not None:
             col.sort_order = body.sort_order
+        await self._repo.commit()
         return "ok"
 
     async def admin_delete_column(self, column_id: str) -> Literal["ok", "not_found", "not_empty"]:
@@ -299,4 +304,5 @@ class ProjectsService:
         if await self._repo.count_projects_in_column(column_id) > 0:
             return "not_empty"
         await self._repo.delete_column(column_id)
+        await self._repo.commit()
         return "ok"

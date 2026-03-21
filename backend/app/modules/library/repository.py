@@ -88,6 +88,12 @@ class LibraryRepository:
     async def add_article(self, row: LibraryArticle) -> None:
         self._session.add(row)
 
+    async def flush(self) -> None:
+        await self._session.flush()
+
+    async def commit(self) -> None:
+        await self._session.commit()
+
     async def delete_article(self, article_id: str) -> bool:
         res = await self._session.execute(
             delete(LibraryArticle).where(LibraryArticle.id == article_id)

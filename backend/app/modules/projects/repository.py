@@ -67,6 +67,9 @@ class ProjectsRepository:
     async def add_detail(self, row: ProjectsProjectDetail) -> None:
         self._session.add(row)
 
+    async def commit(self) -> None:
+        await self._session.commit()
+
     async def delete_project(self, project_id: str) -> bool:
         res = await self._session.execute(
             delete(ProjectsProject).where(ProjectsProject.id == project_id)

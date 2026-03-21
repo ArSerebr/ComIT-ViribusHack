@@ -206,6 +206,15 @@ export async function patchProfileMe(token, body) {
   return data;
 }
 
+/** GET `/api/profile/universities` — список университетов для выбора в профиле. */
+export async function fetchUniversities(token) {
+  const { data, error } = await apiClient.GET("/api/profile/universities", {
+    headers: authHeaders(token)
+  });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function logoutCurrentUser(token) {
   const { error } = await apiClient.POST("/api/auth/jwt/logout", {
     headers: authHeaders(token)

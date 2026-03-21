@@ -12,6 +12,7 @@ import {
   fetchNotifications,
   createLibraryArticle,
   createProject,
+  fetchUniversities,
   formatOpenApiError,
   fetchProfileMe,
   fetchProjectById,
@@ -542,7 +543,14 @@ function App() {
   const profileMeQuery = useQuery({
     queryKey: ["profile", "me", authToken],
     queryFn: () => fetchProfileMe(authToken),
-    enabled: Boolean(isLibraryPage && authToken),
+    enabled: Boolean((isLibraryPage || isProfilePage) && authToken),
+    staleTime: 60_000,
+  });
+
+  const universitiesQuery = useQuery({
+    queryKey: ["profile", "universities", authToken],
+    queryFn: () => fetchUniversities(authToken),
+    enabled: Boolean(isProfilePage && authToken),
     staleTime: 60_000,
   });
 
@@ -1213,6 +1221,19 @@ function App() {
     }
   };
 
+  const handleSaveProfileModule = async (payload) => {
+    if (!authToken) {
+      return false;
+    }
+    try {
+      await patchProfileMe(authToken, payload);
+      queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleCreateArticle = async (payload) => {
     setIsArticleSaving(true);
     const draft = createArticleDraftRecord(payload);
@@ -1419,6 +1440,10 @@ function App() {
   ) : isProfilePage ? (
     <ProfilePage
       user={authUser}
+      profile={profileMeQuery.data}
+      profileLoading={profileMeQuery.isPending}
+      universities={universitiesQuery.data ?? []}
+      universitiesLoading={universitiesQuery.isPending}
       isLoading={isAuthBusy || isProfileSaving}
       isAuthenticated={Boolean(sessionToken)}
       articleDraftCount={articleDrafts.length}
@@ -1427,6 +1452,7 @@ function App() {
       onOpenAuth={() => openAuthPage("register")}
       onLogout={handleLogout}
       onSaveProfile={handleSaveProfile}
+      onSaveProfileModule={handleSaveProfileModule}
       onOpenArticleCreate={openArticleCreatePage}
       onOpenProjectCreate={openProjectCreate}
       onOpenLibrary={openLibraryPage}

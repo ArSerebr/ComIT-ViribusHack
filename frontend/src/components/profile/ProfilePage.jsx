@@ -19,6 +19,10 @@ function SummaryCard({ title, value, caption, delay = 0 }) {
 
 export function ProfilePage({
   user,
+  profile = null,
+  profileLoading = false,
+  universities = [],
+  universitiesLoading = false,
   isLoading = false,
   isAuthenticated = false,
   articleDraftCount = 0,
@@ -27,18 +31,24 @@ export function ProfilePage({
   onOpenAuth,
   onLogout,
   onSaveProfile,
+  onSaveProfileModule,
   onOpenArticleCreate,
   onOpenProjectCreate,
   onOpenLibrary
 }) {
   const [email, setEmail] = useState("");
   const [nextPassword, setNextPassword] = useState("");
+  const [selectedUniversityId, setSelectedUniversityId] = useState("");
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setEmail(user?.email ?? "");
   }, [user?.email]);
+
+  useEffect(() => {
+    setSelectedUniversityId(profile?.university?.id ?? "");
+  }, [profile?.university?.id]);
 
   const roleLabel = useMemo(() => {
     if (!user?.role) return "Гость";
@@ -53,30 +63,43 @@ export function ProfilePage({
       return;
     }
 
-    const payload = {};
+    const userPayload = {};
     if (email.trim() && email.trim() !== user?.email) {
-      payload.email = email.trim();
+      userPayload.email = email.trim();
     }
     if (nextPassword.trim()) {
-      payload.password = nextPassword.trim();
+      userPayload.password = nextPassword.trim();
     }
 
-    if (!Object.keys(payload).length) {
+    const currentUniversityId = profile?.university?.id ?? "";
+    const newUniversityId = selectedUniversityId.trim() || null;
+    const universityChanged = (newUniversityId ?? "") !== currentUniversityId;
+    const profilePayload = universityChanged && onSaveProfileModule
+      ? { universityId: newUniversityId }
+      : null;
+
+    if (!Object.keys(userPayload).length && !profilePayload) {
       setStatus("Нет изменений для сохранения.");
       return;
     }
 
     setIsSaving(true);
-    const ok = await onSaveProfile(payload);
+    let userOk = true;
+    let profileOk = true;
+    if (Object.keys(userPayload).length) {
+      userOk = await onSaveProfile(userPayload);
+    }
+    if (profilePayload) {
+      profileOk = await onSaveProfileModule(profilePayload);
+    }
     setIsSaving(false);
 
-    if (ok) {
+    if (userOk && profileOk) {
       setStatus("Профиль обновлен.");
       setNextPassword("");
-      return;
+    } else {
+      setStatus("Не удалось обновить профиль.");
     }
-
-    setStatus("Не удалось обновить профиль.");
   };
 
   if (!isAuthenticated) {
@@ -151,6 +174,22 @@ export function ProfilePage({
                 placeholder="Оставьте пустым, если менять не нужно"
                 disabled={isLoading}
               />
+            </label>
+
+            <label>
+              Университет
+              <select
+                value={selectedUniversityId}
+                onChange={(event) => setSelectedUniversityId(event.target.value)}
+                disabled={isLoading || universitiesLoading}
+              >
+                <option value="">Не указан</option>
+                {universities.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
             </label>
 
             {status ? <p className="profile-status">{status}</p> : null}

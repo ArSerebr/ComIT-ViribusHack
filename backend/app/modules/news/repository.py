@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
 
 from app.modules.news.models import NewsFeatured, NewsFeaturedParticipant, NewsMini
 from sqlalchemy import delete, func, select
@@ -65,3 +66,38 @@ class NewsRepository:
         )
         rows = (await self._session.execute(stmt)).scalars().all()
         return list(rows)
+
+    async def count_participants_by_user_ids(
+        self, user_ids: Sequence[uuid.UUID]
+    ) -> int:
+        """Count participation rows where user_id is in user_ids."""
+        if not user_ids:
+            return 0
+        stmt = (
+            select(func.count())
+            .select_from(NewsFeaturedParticipant)
+            .where(NewsFeaturedParticipant.user_id.in_(user_ids))
+        )
+        return int((await self._session.execute(stmt)).scalar_one() or 0)
+
+    async def list_participations_for_export(
+        self, user_ids: Sequence[uuid.UUID]
+    ) -> list[tuple[uuid.UUID, str, str]]:
+        """Return (user_id, featured_id, event_title) for participations of given users."""
+        if not user_ids:
+            return []
+        stmt = (
+            select(
+                NewsFeaturedParticipant.user_id,
+                NewsFeaturedParticipant.featured_id,
+                NewsFeatured.title,
+            )
+            .join(
+                NewsFeatured,
+                NewsFeatured.id == NewsFeaturedParticipant.featured_id,
+            )
+            .where(NewsFeaturedParticipant.user_id.in_(user_ids))
+            .order_by(NewsFeaturedParticipant.user_id, NewsFeaturedParticipant.featured_id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r[0], r[1], r[2]) for r in rows]

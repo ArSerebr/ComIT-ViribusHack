@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+import uuid
 from collections.abc import Sequence
 
 from app.contracts.library import InterestCatalogPort
 from app.modules.library.repository import LibraryRepository
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def get_articles_by_owner_ids(
+    session: AsyncSession, owner_ids: Sequence[uuid.UUID]
+) -> list[tuple[str, str, str, uuid.UUID | None]]:
+    """Return (id, title, author_name, owner_user_id) for articles owned by given users."""
+    repo = LibraryRepository(session)
+    return await repo.get_articles_by_owner_ids(owner_ids)
 
 
 class _InterestCatalog(InterestCatalogPort):

@@ -111,3 +111,25 @@ class ProfileRepository:
             .where(UserProfile.university_id == university_id)
         )
         return int((await self._session.execute(stmt)).scalar_one())
+
+    async def get_profiles_by_university(
+        self, university_id: str
+    ) -> list[tuple[uuid.UUID, str | None]]:
+        """Return (user_id, display_name) for profiles with this university."""
+        stmt = (
+            select(UserProfile.user_id, UserProfile.display_name)
+            .where(UserProfile.university_id == university_id)
+            .order_by(UserProfile.user_id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r[0], r[1]) for r in rows]
+
+    async def count_interests_by_university(self, university_id: str) -> int:
+        """Count total interest links for users in this university."""
+        stmt = (
+            select(func.count())
+            .select_from(UserProfileInterest)
+            .join(UserProfile, UserProfile.user_id == UserProfileInterest.user_id)
+            .where(UserProfile.university_id == university_id)
+        )
+        return int((await self._session.execute(stmt)).scalar_one() or 0)

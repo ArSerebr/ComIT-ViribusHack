@@ -25,8 +25,17 @@ def test_create_app_exposes_openapi():
     assert "/api/library/articles" in body["paths"]
     assert "/api/admin/projects/columns" in body["paths"]
     assert "/api/news/featured/{news_id}/participate" in body["paths"]
+    assert "/api/analytics/universities" in body["paths"]
+    assert "/api/analytics/universities/{university_id}/dashboard" in body["paths"]
+    assert "/api/analytics/universities/{university_id}/export/students" in body["paths"]
+    assert "/api/analytics/universities/{university_id}/export/participation" in body["paths"]
+    assert "/api/analytics/universities/{university_id}/export/projects" in body["paths"]
+    assert "/api/analytics/universities/{university_id}/export/articles" in body["paths"]
+    assert "/api/analytics/universities/{university_id}/export/join-requests" in body["paths"]
     lib_article = body["components"]["schemas"]["LibraryArticle"]
     assert "interestIds" in lib_article["properties"]
+    assert "UniversityListItem" in body["components"]["schemas"]
+    assert "UniversityDashboard" in body["components"]["schemas"]
 
 
 def test_health_live_no_db():

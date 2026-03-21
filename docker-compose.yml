@@ -130,5 +130,19 @@ services:
       - backend
     restart: unless-stopped
 
+  frontend-analytics:
+    image: comit-frontend-analytics:latest
+    build:
+      context: ./frontend_analytics
+      dockerfile: Dockerfile
+    environment:
+      BACKEND_HOST: ${BACKEND_HOST:-backend}
+      BACKEND_PORT: ${BACKEND_UPSTREAM_PORT:-8000}
+    ports:
+      - "${FRONTEND_ANALYTICS_PORT:-8081}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   postgres_data:

@@ -368,6 +368,190 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/universities:
+    get:
+      tags:
+      - university_analytics
+      summary: List Universities With Metrics
+      description: List universities with aggregated metrics (public, no auth).
+      operationId: list_universities_with_metrics_api_analytics_universities_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/UniversityListItem'
+                type: array
+                title: Response List Universities With Metrics
+  /api/analytics/universities/{university_id}/dashboard:
+    get:
+      tags:
+      - university_analytics
+      summary: Get University Dashboard
+      description: Dashboard for a single university (public, no auth).
+      operationId: get_university_dashboard_api_analytics_universities_university_id_dashboard_get
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityDashboard'
+        '404':
+          description: University not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /api/analytics/universities/{university_id}/export/students:
+    get:
+      tags:
+      - university_analytics
+      summary: Export Students CSV
+      description: Export students CSV for university (public, no auth).
+      operationId: export_students_csv_api_analytics_universities_university_id_export_students_get
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: University not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /api/analytics/universities/{university_id}/export/participation:
+    get:
+      tags:
+      - university_analytics
+      summary: Export Participation CSV
+      description: Export event participation CSV (public, no auth).
+      operationId: export_participation_csv_api_analytics_universities_university_id_export_participation_get
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: University not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /api/analytics/universities/{university_id}/export/projects:
+    get:
+      tags:
+      - university_analytics
+      summary: Export Projects CSV
+      description: Export projects CSV (public, no auth).
+      operationId: export_projects_csv_api_analytics_universities_university_id_export_projects_get
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: University not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /api/analytics/universities/{university_id}/export/articles:
+    get:
+      tags:
+      - university_analytics
+      summary: Export Articles CSV
+      description: Export articles CSV (public, no auth).
+      operationId: export_articles_csv_api_analytics_universities_university_id_export_articles_get
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: University not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /api/analytics/universities/{university_id}/export/join-requests:
+    get:
+      tags:
+      - university_analytics
+      summary: Export Join Requests CSV
+      description: Export join requests CSV (public, no auth).
+      operationId: export_join_requests_csv_api_analytics_universities_university_id_export_join_requests_get
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: University not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
   /api/news/mini:
     get:
       tags:
@@ -2561,6 +2745,80 @@ components:
       - id
       - name
       title: ProfileUniversityOut
+    UniversityListItem:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        studentsCount:
+          type: integer
+          title: Studentscount
+        projectsCount:
+          type: integer
+          title: Projectscount
+        articlesCount:
+          type: integer
+          title: Articlescount
+        eventParticipationsCount:
+          type: integer
+          title: Eventparticipationscount
+        joinRequestsCount:
+          type: integer
+          title: Joinrequestscount
+        interestsCount:
+          type: integer
+          title: Interestscount
+          default: 0
+      type: object
+      required:
+      - id
+      - name
+      - studentsCount
+      - projectsCount
+      - articlesCount
+      - eventParticipationsCount
+      - joinRequestsCount
+      title: UniversityListItem
+    UniversityDashboard:
+      properties:
+        universityId:
+          type: string
+          title: Universityid
+        universityName:
+          type: string
+          title: Universityname
+        studentsCount:
+          type: integer
+          title: Studentscount
+        eventParticipationsCount:
+          type: integer
+          title: Eventparticipationscount
+        joinRequestsCount:
+          type: integer
+          title: Joinrequestscount
+        projectsCount:
+          type: integer
+          title: Projectscount
+        articlesCount:
+          type: integer
+          title: Articlescount
+        interestsCount:
+          type: integer
+          title: Interestscount
+          default: 0
+      type: object
+      required:
+      - universityId
+      - universityName
+      - studentsCount
+      - eventParticipationsCount
+      - joinRequestsCount
+      - projectsCount
+      - articlesCount
+      title: UniversityDashboard
     ProgressBlock:
       properties:
         value:

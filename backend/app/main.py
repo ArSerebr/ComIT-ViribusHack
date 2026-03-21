@@ -10,6 +10,7 @@ from __future__ import annotations
 from app.core.observability import register_observability
 from app.lifespan import lifespan
 from app.modules.analytics import router as analytics_router
+from app.modules.university_analytics import router as university_analytics_router
 from app.modules.auth.router import router as auth_router
 from app.modules.dashboard import router as dashboard_router
 from app.modules.library import router as library_router
@@ -28,6 +29,7 @@ from fastapi.middleware.cors import CORSMiddleware
 _MODULE_ROUTERS = [
     auth_router,
     analytics_router,
+    university_analytics_router,
     news_router,
     projects_router,
     projects_admin_router,

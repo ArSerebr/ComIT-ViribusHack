@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.lifespan import lifespan
+from app.modules.auth.router import router as auth_router
 from app.modules.analytics import router as analytics_router
 from app.modules.dashboard import router as dashboard_router
 from app.modules.library import router as library_router
@@ -17,8 +18,10 @@ from app.modules.news import router as news_router
 from app.modules.notifications import router as notifications_router
 from app.modules.projects import router as projects_router
 
-# Registry of module routers — main only assembles, no logic
+# Registry of module routers — main only assembles, no logic.
+# Auth (fastapi-users): JWT /register /users under prefix `/api` (see app.modules.auth.router).
 _MODULE_ROUTERS = [
+    auth_router,
     analytics_router,
     news_router,
     projects_router,

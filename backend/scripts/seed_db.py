@@ -5,6 +5,7 @@ Usage:
   python -m scripts.seed_db --wipe               # truncate per-module tables then insert (dev)
   python -m scripts.seed_db --module news      # only listed modules (repeatable)
   python -m scripts.seed_db --module projects --wipe
+  python -m scripts.seed_db --module auth   # optional admin if SEED_ADMIN_PASSWORD is set
 
 Uses DATABASE_URL from env. Source of truth: PostgreSQL. No in-memory serving.
 """
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import os
 import sys
 from collections.abc import Awaitable, Callable, Sequence
 from pathlib import Path
@@ -20,11 +22,13 @@ from typing import TypeAlias
 # Ensure backend is on path when running as module
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sqlalchemy import text
+from fastapi_users.password import PasswordHelper
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
+from app.modules.auth.models import User
 from app.modules.dashboard.models import DashboardHomeSnapshot, DashboardRecommendation
 from app.modules.library.models import (
     LibraryArticle,
@@ -50,6 +54,7 @@ from app.seed.fixtures import (
 SeedFn: TypeAlias = Callable[[AsyncSession, bool], Awaitable[None]]
 
 MODULE_ORDER: tuple[str, ...] = (
+    "auth",
     "news",
     "projects",
     "library",
@@ -57,6 +62,30 @@ MODULE_ORDER: tuple[str, ...] = (
     "dashboard",
     "analytics",
 )
+
+
+async def seed_auth(session: AsyncSession, wipe: bool) -> None:
+    """Optional dev admin: set SEED_ADMIN_PASSWORD (and optionally SEED_ADMIN_EMAIL). Idempotent."""
+    if wipe:
+        await session.execute(text('TRUNCATE "user" RESTART IDENTITY CASCADE'))
+    password = os.environ.get("SEED_ADMIN_PASSWORD", "").strip()
+    if not password:
+        return
+    email = os.environ.get("SEED_ADMIN_EMAIL", "admin@example.com").strip()
+    result = await session.execute(select(User).where(User.email == email))
+    if result.scalar_one_or_none() is not None:
+        return
+    ph = PasswordHelper()
+    session.add(
+        User(
+            email=email,
+            hashed_password=ph.hash(password),
+            is_active=True,
+            is_superuser=True,
+            is_verified=True,
+            role="admin",
+        )
+    )
 
 
 async def seed_analytics(session: AsyncSession, wipe: bool) -> None:
@@ -236,6 +265,7 @@ async def seed_dashboard(session: AsyncSession, wipe: bool) -> None:
 
 
 SEED_REGISTRY: dict[str, SeedFn] = {
+    "auth": seed_auth,
     "analytics": seed_analytics,
     "news": seed_news,
     "projects": seed_projects,

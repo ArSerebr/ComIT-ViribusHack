@@ -31,8 +31,14 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-viribus}
       SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-false}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_LIFETIME_SECONDS: ${JWT_LIFETIME_SECONDS:-3600}
+      RESET_PASSWORD_TOKEN_SECRET: ${RESET_PASSWORD_TOKEN_SECRET:-}
+      VERIFICATION_TOKEN_SECRET: ${VERIFICATION_TOKEN_SECRET:-}
       # 1 = пропустить seed при старте (по умолчанию seed выполняется после миграций)
       SKIP_SEED: ${SKIP_SEED:-}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     depends_on:

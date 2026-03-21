@@ -4,6 +4,7 @@ set -e
 cd /app
 
 python manage.py migrate --noinput
+python manage.py collectstatic --noinput
 
 if [ -n "${DJANGO_SUPERUSER_EMAIL:-}" ] && [ -n "${DJANGO_SUPERUSER_PASSWORD:-}" ]; then
   python manage.py shell <<'PY'

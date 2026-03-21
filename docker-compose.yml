@@ -4,8 +4,8 @@ services:
     container_name: pulseai_mongo
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: mgg
-      MONGO_INITDB_ROOT_PASSWORD: 070809
+      MONGO_INITDB_ROOT_USERNAME: "mgg"
+      MONGO_INITDB_ROOT_PASSWORD: "070809"
     volumes:
       - mongo_data:/data/db
     networks:
@@ -22,7 +22,7 @@ services:
     container_name: pulseai_backend
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://mgg:070809@mongo:27017/?authSource=admin
+      - "MONGO_URL=mongodb://mgg:070809@mongo:27017/?authSource=admin"
     depends_on:
       mongo:
         condition: service_healthy

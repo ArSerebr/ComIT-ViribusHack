@@ -23,7 +23,6 @@ router = APIRouter(prefix="/api/projects", tags=["projects"])
     response_model=ProjectDetails,
     responses={
         404: {"description": "Колонка не найдена", "model": ErrorDetail},
-        409: {"description": "Проект с таким id уже есть", "model": ErrorDetail},
     },
 )
 async def create_project(
@@ -34,8 +33,6 @@ async def create_project(
     status, details = await service.create_project(user, body)
     if status == "no_column":
         raise HTTPException(status_code=404, detail="Column not found")
-    if status == "exists":
-        raise HTTPException(status_code=409, detail="Project already exists")
     assert details is not None
     return details
 
@@ -113,9 +110,10 @@ async def get_project_by_id(
 async def post_project_join(
     project_id: str,
     body: JoinRequest = JoinRequest(),
+    user: User = Depends(current_active_user),
     service: ProjectsService = Depends(get_projects_service),
 ) -> JoinResponse:
-    ok = await service.join_project(project_id, body.message)
+    ok = await service.join_project(user, project_id, body.message)
     if not ok:
         raise HTTPException(status_code=404, detail="Project not found")
     return JoinResponse(ok=True, project_id=project_id)

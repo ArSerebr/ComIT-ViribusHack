@@ -6,6 +6,7 @@ from app.modules.library.models import (
     LibraryArticle,
     LibraryArticleTag,
     LibraryInterestOption,
+    LibraryInterestTag,
     LibraryShowcaseItem,
     LibraryTag,
 )
@@ -64,6 +65,21 @@ class LibraryRepository:
             .order_by(LibraryArticleTag.position, LibraryTag.id)
         )
         return list((await self._session.execute(stmt)).scalars().all())
+
+    async def list_interest_ids_for_articles(self, article_ids: Sequence[str]) -> dict[str, list[str]]:
+        """Interest option ids per article, derived from article tags and ``library_interest_tag``."""
+        if not article_ids:
+            return {}
+        stmt = (
+            select(LibraryArticleTag.article_id, LibraryInterestTag.interest_id)
+            .join(LibraryInterestTag, LibraryInterestTag.tag_id == LibraryArticleTag.tag_id)
+            .where(LibraryArticleTag.article_id.in_(article_ids))
+        )
+        rows = (await self._session.execute(stmt)).all()
+        by_article: dict[str, set[str]] = {}
+        for aid, iid in rows:
+            by_article.setdefault(str(aid), set()).add(str(iid))
+        return {aid: sorted(ids) for aid, ids in by_article.items()}
 
     async def get_article(self, article_id: str) -> LibraryArticle | None:
         stmt = select(LibraryArticle).where(LibraryArticle.id == article_id)

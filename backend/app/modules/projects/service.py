@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import secrets
 from collections import defaultdict
 from typing import Any, Literal, cast
 
 from app.contracts.analytics import JoinRequestSink
 from app.core.permissions import can_edit_content
+from app.core.slug import project_details_path, slugify_project_identifier
 from app.modules.auth.models import User
 from app.modules.projects.models import ProjectsColumn, ProjectsProject, ProjectsProjectDetail
 from app.modules.projects.repository import ProjectsRepository
@@ -115,10 +117,15 @@ class ProjectsService:
         except (ValueError, TypeError):
             return None
 
-    async def join_project(self, project_id: str, message: str | None) -> bool:
+    async def join_project(
+        self,
+        user: User,
+        project_id: str,
+        message: str | None,
+    ) -> bool:
         if not await self._repo.project_exists(project_id):
             return False
-        await self._join_sink.record_join_request(project_id, message)
+        await self._join_sink.record_join_request(project_id, message, user.id)
         return True
 
     def _blocks_from_create(self, body: ProjectCreateBody) -> dict[str, Any]:
@@ -135,22 +142,25 @@ class ProjectsService:
         self,
         user: User,
         body: ProjectCreateBody,
-    ) -> tuple[Literal["ok", "no_column", "exists"], ProjectDetails | None]:
-        if await self._repo.project_exists(body.id):
-            return ("exists", None)
+    ) -> tuple[Literal["ok", "no_column"], ProjectDetails | None]:
         if not await self._repo.column_exists(body.column_id):
             return ("no_column", None)
+        base_slug = slugify_project_identifier(body.id, title=body.title)
+        canonical_id = base_slug
+        while await self._repo.project_exists(canonical_id):
+            canonical_id = f"{base_slug}-{secrets.token_hex(3)}"
         sort_order = await self._repo.max_sort_order_in_column(body.column_id) + 1
         vis = body.visibility
+        details_url = project_details_path(canonical_id)
         project = ProjectsProject(
-            id=body.id,
+            id=canonical_id,
             code=body.code,
             title=body.title,
             description=body.description,
             team_name=body.team_name,
             updated_label=body.updated_label,
             team_avatar_url=body.team_avatar_url,
-            details_url=body.details_url,
+            details_url=details_url,
             visibility=vis,
             is_hot=body.is_hot,
             column_id=body.column_id,
@@ -158,7 +168,7 @@ class ProjectsService:
             owner_user_id=user.id,
         )
         detail = ProjectsProjectDetail(
-            project_id=body.id,
+            project_id=canonical_id,
             owner_name=body.owner_name,
             join_label=body.join_label,
             team_caption=body.team_caption,

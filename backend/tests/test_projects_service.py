@@ -69,11 +69,14 @@ async def test_join_project_records_when_exists():
     repo.project_exists = AsyncMock(return_value=True)
     sink = AsyncMock()
     svc = ProjectsService(repo, sink)
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
 
-    ok = await svc.join_project("proj-1", "hello")
+    ok = await svc.join_project(user, "proj-1", "hello")
 
     assert ok is True
-    sink.record_join_request.assert_awaited_once_with("proj-1", "hello")
+    sink.record_join_request.assert_awaited_once_with("proj-1", "hello", uid)
 
 
 @pytest.mark.asyncio
@@ -82,8 +85,10 @@ async def test_join_project_false_when_missing():
     repo.project_exists = AsyncMock(return_value=False)
     sink = AsyncMock()
     svc = ProjectsService(repo, sink)
+    user = MagicMock()
+    user.id = uuid.uuid4()
 
-    ok = await svc.join_project("missing", None)
+    ok = await svc.join_project(user, "missing", None)
 
     assert ok is False
     sink.record_join_request.assert_not_awaited()
@@ -145,6 +150,31 @@ async def test_create_project_ok():
     assert details.id == "new-proj"
     proj = repo.add_project.call_args[0][0]
     assert proj.owner_user_id == uid
+
+
+@pytest.mark.asyncio
+async def test_create_project_transliterates_cyrillic_id():
+    repo = AsyncMock()
+    repo.project_exists = AsyncMock(return_value=False)
+    repo.column_exists = AsyncMock(return_value=True)
+    repo.max_sort_order_in_column = AsyncMock(return_value=-1)
+    repo.add_project = AsyncMock()
+    repo.add_detail = AsyncMock()
+    sink = AsyncMock()
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
+    user.role = "user"
+    svc = ProjectsService(repo, sink)
+    body = _minimal_create_body("сырок-r110", "col-a")
+    status, details = await svc.create_project(user, body)
+    assert status == "ok"
+    assert details is not None
+    assert details.id == "syrok-r110"
+    assert details.detailsUrl == "/projects/syrok-r110"
+    proj = repo.add_project.call_args[0][0]
+    assert proj.id == "syrok-r110"
+    assert proj.details_url == "/projects/syrok-r110"
 
 
 @pytest.mark.asyncio

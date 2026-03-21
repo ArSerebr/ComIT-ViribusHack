@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import uuid
+
 from app.modules.analytics.models import (
     AnalyticsInterestEvent,
     AnalyticsJoinRequest,
@@ -22,7 +24,17 @@ class AnalyticsRepository:
         self._session.add(row)
         await self._session.flush()
 
-    async def add_join_request(self, *, project_id: str, message: str | None) -> None:
-        row = AnalyticsJoinRequest(project_id=project_id, message=message)
+    async def add_join_request(
+        self,
+        *,
+        project_id: str,
+        message: str | None,
+        applicant_user_id: uuid.UUID,
+    ) -> None:
+        row = AnalyticsJoinRequest(
+            project_id=project_id,
+            message=message,
+            applicant_user_id=applicant_user_id,
+        )
         self._session.add(row)
         await self._session.flush()

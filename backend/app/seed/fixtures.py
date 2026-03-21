@@ -41,6 +41,7 @@ __all__ = [
     "FEATURED_NEWS",
     "KNOWN_PROJECT_IDS",
     "LIBRARY_BUNDLE",
+    "LIBRARY_INTEREST_TAG_LINKS",
     "NEWS_MINI",
     "NOTIFICATIONS",
     "PROJECT_DETAILS_BY_ID",
@@ -410,6 +411,7 @@ LIBRARY_BUNDLE = LibraryBundle(
             ),
             authorName="PythonGo PRO",
             authorAvatarUrl=AV,
+            interestIds=["backend"],
         ),
         LibraryArticle(
             id="catboost-xgboost-trees",
@@ -424,6 +426,7 @@ LIBRARY_BUNDLE = LibraryBundle(
             ),
             authorName="Top MLman",
             authorAvatarUrl=AV,
+            interestIds=["backend", "ml-engineering"],
         ),
         LibraryArticle(
             id="neural-generation-comparison",
@@ -439,9 +442,20 @@ LIBRARY_BUNDLE = LibraryBundle(
             ),
             authorName="MaxabouAI",
             authorAvatarUrl=AV,
+            interestIds=["backend", "ml-engineering"],
         ),
     ],
 )
+
+# Pairs (interest_id, tag_id) for ``library_interest_tag``; matches tag sets in ``LIBRARY_BUNDLE.articles``.
+LIBRARY_INTEREST_TAG_LINKS: list[tuple[str, str]] = [
+    ("ml-engineering", "ml"),
+    ("ml-engineering", "ai"),
+    ("ml-engineering", "gen-model"),
+    ("backend", "python"),
+    ("backend", "golang"),
+    ("backend", "fullstack"),
+]
 
 NOTIFICATIONS: list[NotificationItem] = [
     NotificationItem(

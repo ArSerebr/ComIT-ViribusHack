@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export function LibraryArticleCard({ item, delay = 0 }) {
+export function LibraryArticleCard({ item, delay = 0, onOpen }) {
   return (
     <motion.article
       className="glass-card library-article-card"
@@ -8,6 +8,12 @@ export function LibraryArticleCard({ item, delay = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.32 }}
     >
+      <button
+        type="button"
+        className="library-article-hit"
+        aria-label={`Открыть статью ${item.title}`}
+        onClick={() => onOpen?.(item)}
+      />
       <div className="library-article-tags">
         {item.tags.map((tag) => (
           <span key={tag.id} className={`library-article-tag library-article-tag-${tag.tone}`}>

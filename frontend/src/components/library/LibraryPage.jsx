@@ -190,6 +190,8 @@ export function LibraryPage({
   selectedInterests,
   articleItems,
   onBack,
+  onOpenArticle,
+  onOpenCourse,
   onPrevShowcase,
   onNextShowcase,
   onToggleInterest,
@@ -253,7 +255,7 @@ export function LibraryPage({
 
         <div className="library-articles-grid">
           {articleItems.map((item, index) => (
-            <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} />
+            <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} onOpen={onOpenArticle} />
           ))}
         </div>
       </section>
@@ -308,7 +310,12 @@ export function LibraryPage({
                 <span>{activeHeroItem.updatedLabel}</span>
               </motion.div>
 
-              <motion.button className="library-provider-pill" type="button" variants={SHOWCASE_ITEM_VARIANTS}>
+              <motion.button
+                className="library-provider-pill"
+                type="button"
+                variants={SHOWCASE_ITEM_VARIANTS}
+                onClick={() => onOpenCourse(activeShowcaseItem)}
+              >
                 <ProviderIcon />
                 <span>{activeHeroItem.providerLabel}</span>
                 <img src={assets.arrow16Icon} alt="" className="library-provider-chevron" />
@@ -446,7 +453,7 @@ export function LibraryPage({
 
       <div className="library-articles-grid">
         {articleItems.map((item, index) => (
-          <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} />
+          <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} onOpen={onOpenArticle} />
         ))}
       </div>
     </section>

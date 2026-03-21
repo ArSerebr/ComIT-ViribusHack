@@ -22,11 +22,14 @@ export function ProjectCard({ project, tone, delay = 0, onOpenProject }) {
   const visibilityLabel = formatVisibility(project.visibility);
 
   return (
-    <motion.article
+    <motion.button
+      type="button"
       className={`glass-card project-hub-card project-hub-card-${tone}`}
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.32 }}
+      aria-label={`Открыть проект ${project.title}`}
+      onClick={() => onOpenProject(project)}
     >
       <div className="project-hub-card-top">
         <span className={`project-hub-card-code project-hub-card-code-${tone}`}>
@@ -60,16 +63,11 @@ export function ProjectCard({ project, tone, delay = 0, onOpenProject }) {
           <span>{project.updatedLabel}</span>
         </div>
 
-        <button
-          className="project-hub-card-open"
-          type="button"
-          aria-label={`Открыть проект ${project.title}`}
-          onClick={() => onOpenProject(project)}
-        >
-          <span className="project-hub-card-open-arrow" aria-hidden="true" />
-        </button>
+        <span className="project-hub-card-open" aria-hidden="true">
+          <span className="project-hub-card-open-arrow" />
+        </span>
       </div>
-    </motion.article>
+    </motion.button>
   );
 }
 

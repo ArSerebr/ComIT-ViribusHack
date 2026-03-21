@@ -1,4 +1,4 @@
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+﻿import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { assets } from "../../assets";
 import { MENU_ITEMS } from "../../data/dashboardData";
@@ -22,6 +22,7 @@ export function TopBar({
   notificationItems,
   onCloseNotifications,
   onGoHome,
+  onOpenProfile,
   onMenuClick,
   onOpenNotification,
   onToggleNotifications,
@@ -141,7 +142,8 @@ export function TopBar({
         <motion.button
           className="account-btn"
           type="button"
-          aria-label="Аккаунт"
+          aria-label="Профиль"
+          onClick={onOpenProfile}
           whileHover={CONTROL_HOVER}
           whileTap={CONTROL_TAP}
         >

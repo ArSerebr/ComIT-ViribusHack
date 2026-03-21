@@ -10,6 +10,12 @@ services:
       - mongo_data:/data/db
     networks:
       - pulseai_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')", "-u", "mgg", "-p", "070809", "--authenticationDatabase", "admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   backend:
     build: .
@@ -18,7 +24,8 @@ services:
     environment:
       - MONGO_URL=mongodb://mgg:070809@mongo:27017/?authSource=admin
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     networks:
       - pulseai_net
 

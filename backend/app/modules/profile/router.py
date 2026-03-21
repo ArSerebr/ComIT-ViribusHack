@@ -9,7 +9,7 @@ from app.modules.auth.models import User
 from app.modules.profile.deps import get_profile_service
 from app.modules.profile.service import ProfileService
 from fastapi import APIRouter, Depends
-from schemas import ProfileMe, ProfileMePatch
+from schemas import ProfileInterestsAdd, ProfileMe, ProfileMePatch
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
@@ -35,3 +35,16 @@ async def patch_my_profile(
     if not isinstance(uid, uuid.UUID):
         uid = uuid.UUID(str(uid))
     return await service.patch_me(uid, body)
+
+
+@router.post("/me/interests", response_model=ProfileMe)
+async def post_my_profile_interests(
+    body: ProfileInterestsAdd,
+    user: User = Depends(current_active_user),
+    service: ProfileService = Depends(get_profile_service),
+):
+    """Добавить интересы к профилю (уже выбранные и дубликаты в теле запроса игнорируются)."""
+    uid = user.id
+    if not isinstance(uid, uuid.UUID):
+        uid = uuid.UUID(str(uid))
+    return await service.add_interests(uid, body)

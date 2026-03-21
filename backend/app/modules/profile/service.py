@@ -5,7 +5,7 @@ import uuid
 from app.contracts.library import InterestCatalogPort
 from app.modules.profile.repository import ProfileRepository
 from fastapi import HTTPException
-from schemas import ProfileInterest, ProfileMe, ProfileMePatch
+from schemas import ProfileInterest, ProfileInterestsAdd, ProfileMe, ProfileMePatch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -50,5 +50,14 @@ class ProfileService:
         if "interestIds" in data:
             await self._repo.replace_interests(user_id, list(data["interestIds"]))
 
+        await self._session.commit()
+        return await self.get_me(user_id)
+
+    async def add_interests(self, user_id: uuid.UUID, body: ProfileInterestsAdd) -> ProfileMe:
+        ok = await self._interest_catalog.all_interest_option_ids_exist(body.interestIds)
+        if not ok:
+            raise HTTPException(status_code=400, detail="Unknown interest id")
+        _, _ = await self._repo.get_or_create_profile(user_id)
+        await self._repo.add_interests(user_id, list(body.interestIds))
         await self._session.commit()
         return await self.get_me(user_id)

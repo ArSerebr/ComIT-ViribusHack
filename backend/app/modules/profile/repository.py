@@ -36,3 +36,19 @@ class ProfileRepository:
         for iid in interest_ids:
             self._session.add(UserProfileInterest(user_id=user_id, interest_id=iid))
         await self._session.flush()
+
+    async def add_interests(self, user_id: uuid.UUID, interest_ids: list[str]) -> None:
+        """Добавить интересы; дубликаты во входе и уже существующие связи пропускаются."""
+        if not interest_ids:
+            return
+        seen: set[str] = set()
+        ordered_unique: list[str] = []
+        for iid in interest_ids:
+            if iid not in seen:
+                seen.add(iid)
+                ordered_unique.append(iid)
+        existing = frozenset(await self.list_interest_ids(user_id))
+        for iid in ordered_unique:
+            if iid not in existing:
+                self._session.add(UserProfileInterest(user_id=user_id, interest_id=iid))
+        await self._session.flush()

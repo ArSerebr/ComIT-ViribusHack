@@ -233,3 +233,9 @@ class ProfileMePatch(BaseModel):
     displayName: str | None = None
     bio: str | None = None
     interestIds: list[str] | None = None
+
+
+class ProfileInterestsAdd(BaseModel):
+    """Добавить интересы к текущему набору (без удаления уже выбранных)."""
+
+    interestIds: list[str] = Field(..., min_length=1)

@@ -7,7 +7,7 @@ name: checks
 trigger:
   event: [push, pull_request]
   branch:
-    include: [main, master, develop, feature/*, fix/*]
+    include: [main, master, develop, feature/*, fix/*, dev]
 
 platform:
   os: linux

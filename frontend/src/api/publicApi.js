@@ -1,4 +1,4 @@
-﻿import { apiClient, resolveApiUrl } from "./client";
+import { apiClient, resolveApiUrl } from "./client";
 
 function authHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -127,6 +127,25 @@ export async function fetchCurrentUserProfile(token) {
 
 export async function patchCurrentUserProfile(token, body) {
   const { data, error } = await apiClient.PATCH("/api/users/me", {
+    headers: authHeaders(token),
+    body
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Profile (interests, bio): GET `/api/profile/me` (OpenAPI `ProfileMe`). */
+export async function fetchProfileMe(token) {
+  const { data, error } = await apiClient.GET("/api/profile/me", {
+    headers: authHeaders(token)
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** PATCH `/api/profile/me` (`ProfileMePatch`, e.g. `interestIds`). */
+export async function patchProfileMe(token, body) {
+  const { data, error } = await apiClient.PATCH("/api/profile/me", {
     headers: authHeaders(token),
     body
   });

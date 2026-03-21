@@ -29,6 +29,7 @@ from app.modules.library.models import (
     LibraryArticle,
     LibraryArticleTag,
     LibraryInterestOption,
+    LibraryInterestTag,
     LibraryShowcaseItem,
     LibraryTag,
 )
@@ -39,6 +40,7 @@ from app.seed.fixtures import (
     DASHBOARD_HOME,
     FEATURED_NEWS,
     LIBRARY_BUNDLE,
+    LIBRARY_INTEREST_TAG_LINKS,
     NEWS_MINI,
     NOTIFICATIONS,
     PROJECT_DETAILS_BY_ID,
@@ -178,7 +180,7 @@ async def seed_library(session: AsyncSession, wipe: bool) -> None:
     if wipe:
         await session.execute(
             text(
-                "TRUNCATE library_article_tag, library_article, library_showcase_item, "
+                "TRUNCATE library_article_tag, library_interest_tag, library_article, library_showcase_item, "
                 "library_interest_option, library_tag RESTART IDENTITY CASCADE"
             )
         )
@@ -221,6 +223,10 @@ async def seed_library(session: AsyncSession, wipe: bool) -> None:
         for pos, t in enumerate(art.tags):
             at = LibraryArticleTag(article_id=art.id, tag_id=t.id, position=pos)
             await session.merge(at)
+    await session.flush()
+    for interest_id, tag_id in LIBRARY_INTEREST_TAG_LINKS:
+        link = LibraryInterestTag(interest_id=interest_id, tag_id=tag_id)
+        await session.merge(link)
 
 
 async def seed_notifications(session: AsyncSession, wipe: bool) -> None:

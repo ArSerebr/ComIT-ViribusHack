@@ -741,6 +741,8 @@ export interface components {
             authorName: string;
             /** Authoravatarurl */
             authorAvatarUrl: string;
+            /** Interestids */
+            interestIds?: string[];
         };
         /** LibraryArticleCreateBody */
         LibraryArticleCreateBody: {

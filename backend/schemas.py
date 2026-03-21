@@ -166,6 +166,7 @@ class LibraryArticle(BaseModel):
     description: str
     authorName: str
     authorAvatarUrl: str
+    interestIds: list[str] = Field(default_factory=list)
 
 
 class LibraryBundle(BaseModel):

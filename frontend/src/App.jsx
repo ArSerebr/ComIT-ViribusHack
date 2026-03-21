@@ -1,4 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiClient, resolveApiUrl } from "./api/client";
@@ -10,11 +10,13 @@ import {
   fetchNewsFeatured,
   fetchNewsMini,
   fetchNotifications,
+  fetchProfileMe,
   fetchProjectById,
   fetchProjectsHub,
   loginWithPassword,
   logoutCurrentUser,
   patchCurrentUserProfile,
+  patchProfileMe,
   postLibraryInterests,
   postRecommendationLike,
   registerWithEmail
@@ -396,6 +398,7 @@ function mapProjectDraftToDetails(draft) {
 }
 
 function App() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(() => resolveTabFromHash(window.location.hash));
   const [currentPath, setCurrentPath] = useState(() => resolvePathFromHash(window.location.hash));
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
@@ -436,6 +439,7 @@ function App() {
   const pendingAssistantRepliesRef = useRef(0);
   const routeStateRef = useRef({ tab: activeTab, path: currentPath });
   const libraryInterestsSyncedRef = useRef(false);
+  const libraryProfileInterestsSyncedRef = useRef({ token: null, applied: false });
 
   const isHomePage = activeTab === "home";
   const isNewsPage = activeTab === "news";
@@ -491,6 +495,13 @@ function App() {
     queryKey: ["library"],
     queryFn: fetchLibraryBundle,
     enabled: isLibraryPage,
+    staleTime: 60_000,
+  });
+
+  const profileMeQuery = useQuery({
+    queryKey: ["profile", "me", authToken],
+    queryFn: () => fetchProfileMe(authToken),
+    enabled: Boolean(isLibraryPage && authToken),
     staleTime: 60_000,
   });
 
@@ -629,7 +640,19 @@ function App() {
         ? LIBRARY_ARTICLE_ITEMS
         : [];
   const draftLibraryArticleItems = articleDrafts.map(mapArticleDraftToLibraryItem);
-  const libraryArticleItems = [...draftLibraryArticleItems, ...libraryArticleItemsBase];
+  const filteredLibraryArticleItemsBase = useMemo(() => {
+    const selectedIds = Object.entries(selectedLibraryInterests)
+      .filter(([, isSelected]) => isSelected)
+      .map(([id]) => id);
+    if (selectedIds.length === 0) {
+      return libraryArticleItemsBase;
+    }
+    return libraryArticleItemsBase.filter((article) => {
+      const ids = article.interestIds ?? [];
+      return ids.some((i) => selectedIds.includes(i));
+    });
+  }, [libraryArticleItemsBase, selectedLibraryInterests]);
+  const libraryArticleItems = [...draftLibraryArticleItems, ...filteredLibraryArticleItemsBase];
 
   const topCard = deck[0];
   const stackedCards = deck.slice(1, 3);
@@ -673,14 +696,40 @@ function App() {
   }, [recommendationsQuery.data]);
 
   useEffect(() => {
-    if (!libraryBundle?.interestOptions?.length || libraryInterestsSyncedRef.current) {
+    libraryInterestsSyncedRef.current = false;
+    libraryProfileInterestsSyncedRef.current = { token: null, applied: false };
+  }, [authToken]);
+
+  useEffect(() => {
+    if (!libraryBundle?.interestOptions?.length) {
+      return;
+    }
+    if (authToken) {
+      if (!profileMeQuery.isSuccess || profileMeQuery.data === undefined) {
+        return;
+      }
+      const prev = libraryProfileInterestsSyncedRef.current;
+      if (prev.token === authToken && prev.applied) {
+        return;
+      }
+      const selectedSet = new Set((profileMeQuery.data.interests ?? []).map((i) => i.id));
+      setSelectedLibraryInterests(
+        libraryBundle.interestOptions.reduce(
+          (acc, option) => ({ ...acc, [option.id]: selectedSet.has(option.id) }),
+          {},
+        ),
+      );
+      libraryProfileInterestsSyncedRef.current = { token: authToken, applied: true };
+      return;
+    }
+    if (libraryInterestsSyncedRef.current) {
       return;
     }
     setSelectedLibraryInterests(
       libraryBundle.interestOptions.reduce((acc, option) => ({ ...acc, [option.id]: option.selected }), {}),
     );
     libraryInterestsSyncedRef.current = true;
-  }, [libraryBundle]);
+  }, [libraryBundle, authToken, profileMeQuery.isSuccess, profileMeQuery.data]);
 
   useEffect(() => {
     if (!libraryShowcaseItems.length) {
@@ -903,7 +952,17 @@ function App() {
   };
 
   const openProjectDetails = (project) => {
-    openPath(project?.detailsUrl || NAV_LINKS.projects);
+    const id = project?.id;
+    const detailsUrl = typeof project?.detailsUrl === "string" ? project.detailsUrl.trim() : "";
+    if (detailsUrl.startsWith("/")) {
+      openPath(detailsUrl);
+      return;
+    }
+    if (id) {
+      openPath(`${NAV_LINKS.projects}/${id}`);
+      return;
+    }
+    openPath(NAV_LINKS.projects);
   };
 
   const openProjectCreate = () => {
@@ -959,6 +1018,13 @@ function App() {
       return;
     }
     void postLibraryInterests(body).catch(() => {});
+    if (authToken) {
+      void patchProfileMe(authToken, { interestIds: selectedIds })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+        })
+        .catch(() => {});
+    }
   };
 
   const openFeaturedEvent = (eventItem) => {

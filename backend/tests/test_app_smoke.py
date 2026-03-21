@@ -22,6 +22,8 @@ def test_create_app_exposes_openapi():
     assert "/api/profile/me/interests" in body["paths"]
     assert "/api/library/articles" in body["paths"]
     assert "/api/admin/projects/columns" in body["paths"]
+    lib_article = body["components"]["schemas"]["LibraryArticle"]
+    assert "interestIds" in lib_article["properties"]
 
 
 def test_health_live_no_db():

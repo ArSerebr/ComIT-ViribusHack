@@ -95,6 +95,18 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.project-hub-card:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
 }
 
 .project-hub-card::before {

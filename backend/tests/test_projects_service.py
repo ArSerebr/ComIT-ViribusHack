@@ -153,6 +153,31 @@ async def test_create_project_ok():
 
 
 @pytest.mark.asyncio
+async def test_create_project_transliterates_cyrillic_id():
+    repo = AsyncMock()
+    repo.project_exists = AsyncMock(return_value=False)
+    repo.column_exists = AsyncMock(return_value=True)
+    repo.max_sort_order_in_column = AsyncMock(return_value=-1)
+    repo.add_project = AsyncMock()
+    repo.add_detail = AsyncMock()
+    sink = AsyncMock()
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
+    user.role = "user"
+    svc = ProjectsService(repo, sink)
+    body = _minimal_create_body("сырок-r110", "col-a")
+    status, details = await svc.create_project(user, body)
+    assert status == "ok"
+    assert details is not None
+    assert details.id == "syrok-r110"
+    assert details.detailsUrl == "/projects/syrok-r110"
+    proj = repo.add_project.call_args[0][0]
+    assert proj.id == "syrok-r110"
+    assert proj.details_url == "/projects/syrok-r110"
+
+
+@pytest.mark.asyncio
 async def test_delete_project_forbidden_for_stranger():
     owner = uuid.uuid4()
     p = MagicMock(spec=ProjectsProject)

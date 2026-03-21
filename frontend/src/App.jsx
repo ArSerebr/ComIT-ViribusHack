@@ -21,6 +21,7 @@ import {
   logoutCurrentUser,
   patchCurrentUserProfile,
   patchProfileMe,
+  postFeaturedParticipate,
   postLibraryInterests,
   postRecommendationLike,
   registerWithEmail
@@ -465,6 +466,7 @@ function App() {
   });
   const [isArticleSaving, setIsArticleSaving] = useState(false);
   const [isProjectSaving, setIsProjectSaving] = useState(false);
+  const [participatedFeaturedIds, setParticipatedFeaturedIds] = useState(() => new Set());
 
   const chatListRef = useRef(null);
   const pendingAssistantRepliesRef = useRef(0);
@@ -508,8 +510,8 @@ function App() {
   });
 
   const newsFeaturedQuery = useQuery({
-    queryKey: ["news", "featured"],
-    queryFn: fetchNewsFeatured,
+    queryKey: ["news", "featured", sessionToken],
+    queryFn: () => fetchNewsFeatured(sessionToken?.trim() || undefined),
     staleTime: 60_000,
   });
 
@@ -1096,7 +1098,23 @@ function App() {
     }
   };
 
-  const openFeaturedEvent = (eventItem) => {
+  const openFeaturedEvent = async (eventItem) => {
+    if (!eventItem?.id) {
+      openPath(NAV_LINKS.events);
+      return;
+    }
+    const alreadyParticipated =
+      participatedFeaturedIds.has(eventItem.id) || Boolean(eventItem.participated);
+    if (authToken && !alreadyParticipated) {
+      try {
+        await postFeaturedParticipate(authToken, eventItem.id);
+        setParticipatedFeaturedIds((prev) => new Set([...prev, eventItem.id]));
+        queryClient.invalidateQueries({ queryKey: ["news", "featured"] });
+      } catch (error) {
+        alert(formatOpenApiError(error));
+        return;
+      }
+    }
     openPath(eventItem?.detailsUrl || NAV_LINKS.events);
   };
 
@@ -1496,6 +1514,7 @@ function App() {
       miniNewsItems={miniNewsItems}
       featuredNewsItems={featuredNewsItems}
       likedNews={likedNews}
+      participatedFeaturedIds={participatedFeaturedIds}
       onToggleNewsLike={toggleNewsLike}
       onOpenMiniNews={openMiniNews}
       onParticipateInEvent={openFeaturedEvent}

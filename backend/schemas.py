@@ -50,6 +50,7 @@ class FeaturedNewsItem(BaseModel):
     imageUrl: str
     ctaLabel: str
     detailsUrl: str
+    participated: bool | None = None
 
 
 class HubProject(BaseModel):

@@ -17,6 +17,7 @@ export function NewsPage({
   miniNewsItems,
   featuredNewsItems,
   likedNews,
+  participatedFeaturedIds = new Set(),
   onToggleNewsLike,
   onOpenMiniNews,
   onParticipateInEvent,
@@ -67,6 +68,7 @@ export function NewsPage({
             <FeaturedNewsCard
               item={row.featuredItem}
               className="news-page-featured-card"
+              isParticipated={participatedFeaturedIds.has(row.featuredItem.id) || Boolean(row.featuredItem.participated)}
               onParticipate={onParticipateInEvent}
               delay={0.16 + rowIndex * 0.09}
             />

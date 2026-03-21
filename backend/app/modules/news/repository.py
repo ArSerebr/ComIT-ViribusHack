@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from app.modules.news.models import NewsFeatured, NewsMini
+import uuid
+
+from app.modules.news.models import NewsFeatured, NewsFeaturedParticipant, NewsMini
 from sqlalchemy import delete, func, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -48,3 +51,17 @@ class NewsRepository:
         stmt = select(func.coalesce(func.max(NewsFeatured.sort_order), -1))
         v = (await self._session.execute(stmt)).scalar_one()
         return int(v) if v is not None else -1
+
+    async def add_participant(self, user_id: uuid.UUID, featured_id: str) -> None:
+        stmt = insert(NewsFeaturedParticipant).values(
+            user_id=user_id,
+            featured_id=featured_id,
+        ).on_conflict_do_nothing(index_elements=["user_id", "featured_id"])
+        await self._session.execute(stmt)
+
+    async def get_participant_ids(self, user_id: uuid.UUID) -> list[str]:
+        stmt = select(NewsFeaturedParticipant.featured_id).where(
+            NewsFeaturedParticipant.user_id == user_id
+        )
+        rows = (await self._session.execute(stmt)).scalars().all()
+        return list(rows)

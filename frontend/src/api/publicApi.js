@@ -71,10 +71,22 @@ export async function fetchNewsMini() {
   return data ?? [];
 }
 
-export async function fetchNewsFeatured() {
-  const { data, error } = await apiClient.GET("/api/news/featured");
+/** GET `/api/news/featured`. Если передан token, добавит Authorization для получения participated. */
+export async function fetchNewsFeatured(token) {
+  const { data, error } = await apiClient.GET("/api/news/featured", {
+    headers: authHeaders(token)
+  });
   if (error) throw error;
   return data ?? [];
+}
+
+/** POST `/api/news/featured/{news_id}/participate` — участие в мероприятии (требуется JWT). */
+export async function postFeaturedParticipate(token, newsId) {
+  const { error } = await apiClient.POST("/api/news/featured/{news_id}/participate", {
+    params: { path: { news_id: newsId } },
+    headers: authHeaders(token)
+  });
+  if (error) throw error;
 }
 
 export async function fetchNotifications() {

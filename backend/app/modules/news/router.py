@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.modules.auth.deps import current_active_user
+from app.modules.auth.deps import current_active_user, current_user_optional
 from app.modules.auth.models import User
 from app.modules.news.deps import get_news_service
 from app.modules.news.schemas import (
@@ -86,8 +86,11 @@ async def delete_news_mini(
 
 
 @router.get("/featured", response_model=list[FeaturedNewsItem])
-async def get_news_featured(service: NewsService = Depends(get_news_service)):
-    return await service.list_featured()
+async def get_news_featured(
+    user: User | None = Depends(current_user_optional),
+    service: NewsService = Depends(get_news_service),
+):
+    return await service.list_featured(user=user)
 
 
 @router.post(
@@ -133,6 +136,25 @@ async def patch_news_featured(
         raise HTTPException(status_code=404, detail="News not found")
     assert item is not None
     return item
+
+
+@router.post(
+    "/featured/{news_id}/participate",
+    status_code=204,
+    response_class=Response,
+    responses={
+        404: {"description": "Мероприятие не найдено", "model": ErrorDetail},
+    },
+)
+async def participate_featured(
+    news_id: str,
+    user: User = Depends(current_active_user),
+    service: NewsService = Depends(get_news_service),
+) -> Response:
+    status, _ = await service.participate_featured(user, news_id)
+    if status == "not_found":
+        raise HTTPException(status_code=404, detail="Featured event not found")
+    return Response(status_code=204)
 
 
 @router.delete(

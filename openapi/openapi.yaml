@@ -513,6 +513,8 @@ paths:
                   $ref: '#/components/schemas/FeaturedNewsItem'
                 type: array
                 title: Response Get News Featured Api News Featured Get
+      security:
+      - OAuth2PasswordBearer: []
     post:
       tags:
       - news
@@ -622,6 +624,36 @@ paths:
                 $ref: '#/components/schemas/ErrorDetail'
         '403':
           description: Только модератор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/news/featured/{news_id}/participate:
+    post:
+      tags:
+      - news
+      summary: Participate Featured
+      operationId: participate_featured_api_news_featured__news_id__participate_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: News Id
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          description: Мероприятие не найдено
           content:
             application/json:
               schema:
@@ -1747,6 +1779,11 @@ components:
         detailsUrl:
           type: string
           title: Detailsurl
+        participated:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Participated
       type: object
       required:
       - id

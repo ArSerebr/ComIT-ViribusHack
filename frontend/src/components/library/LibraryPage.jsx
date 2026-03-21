@@ -193,10 +193,72 @@ export function LibraryPage({
   onPrevShowcase,
   onNextShowcase,
   onToggleInterest,
-  onSaveInterests
+  onSaveInterests,
+  isLoading = false,
+  showOfflineFallbackNotice = false
 }) {
   const activeShowcaseItem = showcaseItems[activeShowcaseIndex] || showcaseItems[0];
   const activeHeroItem = activeShowcaseItem?.hero || heroItem;
+
+  if (!showcaseItems.length) {
+    return (
+      <section className="library-page">
+        <div className="library-page-head">
+          <button className="news-back-btn library-back-btn" type="button" aria-label="Назад на главную" onClick={onBack}>
+            <img src={assets.arrowSmallLeftIcon} alt="" />
+          </button>
+          <h1 className="library-page-title">Статьи и курсы</h1>
+        </div>
+
+        {isLoading ? (
+          <div className="api-banner api-banner--loading" role="status" aria-live="polite">
+            <span className="loading-spinner" aria-hidden />
+            Загрузка библиотеки…
+          </div>
+        ) : null}
+        {showOfflineFallbackNotice ? (
+          <p className="api-banner api-banner--warn" role="status">
+            Не удалось получить данные с сервера — показаны демо-материалы из приложения.
+          </p>
+        ) : null}
+
+        <p className="projects-hub-empty" role="status">
+          Не удалось загрузить витрину курсов. Проверьте сеть или что backend запущен.
+        </p>
+
+        <motion.aside
+          className="glass-card library-preferences-card"
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.14, duration: 0.34 }}
+        >
+          <h2>Настрой свою ленту</h2>
+          <p>Выбери темы и интересы для лучших рекомендаций</p>
+
+          <div className="library-preferences-grid">
+            {interestOptions.map((option) => (
+              <PreferenceButton
+                key={option.id}
+                option={option}
+                isSelected={Boolean(selectedInterests[option.id])}
+                onToggle={onToggleInterest}
+              />
+            ))}
+          </div>
+
+          <button className="library-save-btn" type="button" onClick={onSaveInterests}>
+            Сохранить интересы
+          </button>
+        </motion.aside>
+
+        <div className="library-articles-grid">
+          {articleItems.map((item, index) => (
+            <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="library-page">
@@ -206,6 +268,18 @@ export function LibraryPage({
         </button>
         <h1 className="library-page-title">Статьи и курсы</h1>
       </div>
+
+      {isLoading ? (
+        <div className="api-banner api-banner--loading" role="status" aria-live="polite">
+          <span className="loading-spinner" aria-hidden />
+          Загрузка библиотеки…
+        </div>
+      ) : null}
+      {showOfflineFallbackNotice ? (
+        <p className="api-banner api-banner--warn" role="status">
+          Не удалось получить данные с сервера — показаны демо-материалы из приложения.
+        </p>
+      ) : null}
 
       <div className="library-top-layout">
         <motion.section

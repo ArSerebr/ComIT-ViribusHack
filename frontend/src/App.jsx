@@ -1,5 +1,19 @@
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { apiClient, resolveApiUrl } from "./api/client";
+import {
+  fetchDashboardHome,
+  fetchDashboardRecommendations,
+  fetchLibraryBundle,
+  fetchNewsFeatured,
+  fetchNewsMini,
+  fetchNotifications,
+  fetchProjectById,
+  fetchProjectsHub,
+  postLibraryInterests,
+  postRecommendationLike
+} from "./api/publicApi";
 import { assets } from "./assets";
 import { AiChatPanel } from "./components/chat/AiChatPanel";
 import { ChatPage } from "./components/chat/ChatPage";
@@ -26,10 +40,12 @@ import {
   LIBRARY_SHOWCASE_ITEMS
 } from "./data/libraryData";
 import { NOTIFICATION_ITEMS } from "./data/notificationsData";
-import { FEATURED_NEWS_ITEMS, MINI_NEWS_ITEMS } from "./data/newsData";
-import { PROJECT_DETAILS_BY_ID } from "./data/projectDetailsData";
+import { FEATURED_NEWS_ITEMS, mapApiFeaturedNews, mapApiMiniNews, MINI_NEWS_ITEMS } from "./data/newsData";
 import { PROJECT_HUB_COLUMNS } from "./data/projectHubData";
 import { nextAssistantMessage } from "./utils/chatAssistant";
+
+/** When not `"false"`, failed API requests fall back to `src/data/*` demo content (hackathon default). */
+const STATIC_FALLBACK = import.meta.env.VITE_API_STATIC_FALLBACK !== "false";
 
 function mapRecommendationsWithInstanceId() {
   return RECOMMENDATIONS.map((item, index) => ({ ...item, instanceId: `${item.id}-${index}` }));
@@ -144,6 +160,16 @@ function createInitialNewsLikes() {
   return MINI_NEWS_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: false }), {});
 }
 
+function normalizeNotificationItem(item) {
+  const type =
+    item.type === "invite" || item.type === "article"
+      ? item.type
+      : item.type === "project_invite"
+        ? "invite"
+        : "article";
+  return { ...item, type };
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState(() => resolveTabFromHash(window.location.hash));
   const [currentPath, setCurrentPath] = useState(() => resolvePathFromHash(window.location.hash));
@@ -166,23 +192,198 @@ function App() {
   const chatListRef = useRef(null);
   const pendingAssistantRepliesRef = useRef(0);
   const routeStateRef = useRef({ tab: activeTab, path: currentPath });
+  const libraryInterestsSyncedRef = useRef(false);
 
-  const topCard = deck[0];
-  const stackedCards = deck.slice(1, 3);
-  const canDismiss = !dismissDirection;
   const isHomePage = activeTab === "home";
   const isNewsPage = activeTab === "news";
   const isProjectsPage = activeTab === "projects";
   const isLibraryPage = activeTab === "library";
   const isChatPage = activeTab === "chat";
   const currentProjectSlug = resolveProjectSlugFromPath(currentPath);
-  const currentProjectDetails = currentProjectSlug ? PROJECT_DETAILS_BY_ID[currentProjectSlug] : null;
-  const isProjectDetailPage = Boolean(currentProjectDetails);
-  const homeNewsItem = MINI_NEWS_ITEMS[0];
+
+  const dashboardHomeQuery = useQuery({
+    queryKey: ["dashboard", "home"],
+    queryFn: fetchDashboardHome,
+    staleTime: 60_000,
+  });
+
+  const recommendationsQuery = useQuery({
+    queryKey: ["dashboard", "recommendations"],
+    queryFn: fetchDashboardRecommendations,
+    staleTime: 60_000,
+  });
+
+  const newsMiniQuery = useQuery({
+    queryKey: ["news", "mini"],
+    queryFn: fetchNewsMini,
+    staleTime: 60_000,
+  });
+
+  const newsFeaturedQuery = useQuery({
+    queryKey: ["news", "featured"],
+    queryFn: fetchNewsFeatured,
+    staleTime: 60_000,
+  });
+
+  const notificationsQuery = useQuery({
+    queryKey: ["notifications"],
+    queryFn: fetchNotifications,
+    staleTime: 30_000,
+  });
+
+  const projectsHubQuery = useQuery({
+    queryKey: ["projects", "hub"],
+    queryFn: fetchProjectsHub,
+    staleTime: 60_000,
+  });
+
+  const libraryQuery = useQuery({
+    queryKey: ["library"],
+    queryFn: fetchLibraryBundle,
+    enabled: isLibraryPage,
+    staleTime: 60_000,
+  });
+
+  const projectDetailsQuery = useQuery({
+    queryKey: ["projects", "detail", currentProjectSlug],
+    queryFn: () => fetchProjectById(currentProjectSlug),
+    enabled: Boolean(isProjectsPage && currentProjectSlug),
+    staleTime: 60_000,
+  });
+
+  const miniNewsItems = (() => {
+    if (newsMiniQuery.isError) {
+      return STATIC_FALLBACK ? MINI_NEWS_ITEMS : [];
+    }
+    const mapped = mapApiMiniNews(newsMiniQuery.data ?? []);
+    if (mapped.length) return mapped;
+    return STATIC_FALLBACK ? MINI_NEWS_ITEMS : [];
+  })();
+
+  const featuredNewsItems = (() => {
+    if (newsFeaturedQuery.isError) {
+      return STATIC_FALLBACK ? FEATURED_NEWS_ITEMS : [];
+    }
+    const mapped = mapApiFeaturedNews(newsFeaturedQuery.data ?? []);
+    if (mapped.length) return mapped;
+    return STATIC_FALLBACK ? FEATURED_NEWS_ITEMS : [];
+  })();
+
+  const notificationItems = (() => {
+    if (notificationsQuery.isError) {
+      return STATIC_FALLBACK ? NOTIFICATION_ITEMS.map(normalizeNotificationItem) : [];
+    }
+    return (notificationsQuery.data ?? []).map(normalizeNotificationItem);
+  })();
+
+  const hubColumnsRaw = (() => {
+    if (projectsHubQuery.isError) {
+      return STATIC_FALLBACK ? PROJECT_HUB_COLUMNS : [];
+    }
+    const data = projectsHubQuery.data;
+    if (data && data.length > 0) return data;
+    if (projectsHubQuery.isPending && !STATIC_FALLBACK) {
+      return [];
+    }
+    return STATIC_FALLBACK ? PROJECT_HUB_COLUMNS : [];
+  })();
+  const hubColumns = hubColumnsRaw.map((column) => ({
+    ...column,
+    projects: column.projects.map((project) => ({
+      ...project,
+      teamAvatarUrl: project.teamAvatarUrl || assets.avatarPhoto,
+    })),
+  }));
+
+  const summaryHome =
+    dashboardHomeQuery.isError && !STATIC_FALLBACK ? null : dashboardHomeQuery.data;
+
+  const newsPageLoading =
+    !STATIC_FALLBACK &&
+    ((newsMiniQuery.isPending && newsMiniQuery.data === undefined) ||
+      (newsFeaturedQuery.isPending && newsFeaturedQuery.data === undefined));
+
+  const showNewsOfflineNotice =
+    STATIC_FALLBACK && (newsMiniQuery.isError || newsFeaturedQuery.isError);
+
+  const recommendationsDeckLoading =
+    recommendationsQuery.isPending &&
+    recommendationsQuery.data === undefined &&
+    !STATIC_FALLBACK;
+
+  const libraryPageLoading =
+    isLibraryPage &&
+    libraryQuery.isPending &&
+    libraryQuery.data === undefined &&
+    !STATIC_FALLBACK;
+
+  const showLibraryOfflineNotice = STATIC_FALLBACK && libraryQuery.isError;
+
+  const firstHubProject = hubColumns[0]?.projects?.[0];
+  const projectHighlight = firstHubProject
+    ? {
+        title: firstHubProject.title,
+        detailsUrl: firstHubProject.detailsUrl || `${NAV_LINKS.projects}/${firstHubProject.id}`,
+        updatedLabel: firstHubProject.updatedLabel,
+      }
+    : null;
+
+  const libraryBundle = libraryQuery.isError ? null : libraryQuery.data;
+  const libraryShowcaseItems =
+    libraryBundle?.showcaseItems?.length > 0
+      ? libraryBundle.showcaseItems
+      : STATIC_FALLBACK
+        ? LIBRARY_SHOWCASE_ITEMS
+        : [];
+  const libraryInterestOptionsFromApi =
+    libraryBundle?.interestOptions?.length > 0
+      ? libraryBundle.interestOptions
+      : STATIC_FALLBACK
+        ? LIBRARY_INTEREST_OPTIONS
+        : [];
+  const libraryArticleItems =
+    libraryBundle?.articles?.length > 0
+      ? libraryBundle.articles.map((article) => ({
+          ...article,
+          authorAvatarUrl: article.authorAvatarUrl?.trim() ? article.authorAvatarUrl : assets.avatarPhoto,
+        }))
+      : STATIC_FALLBACK
+        ? LIBRARY_ARTICLE_ITEMS
+        : [];
+
+  const topCard = deck[0];
+  const stackedCards = deck.slice(1, 3);
+  const canDismiss = !dismissDirection;
+  const showProjectDetailRoute = Boolean(currentProjectSlug);
+  const homeNewsItem = miniNewsItems[0];
   const chatPageMessages = messages.some((message) => message.role === "user") ? messages.slice(1) : [];
-  const activeLibraryHero = LIBRARY_SHOWCASE_ITEMS[activeLibraryShowcaseIndex]?.hero || LIBRARY_HERO_RESOURCE;
+  const activeLibraryHero = libraryShowcaseItems[activeLibraryShowcaseIndex]?.hero || LIBRARY_HERO_RESOURCE;
   const shouldShowAiPopup = aiMode;
   const mainContentKey = activeTab === "projects" || activeTab === "chat" ? currentPath : activeTab;
+
+  useEffect(() => {
+    const items = recommendationsQuery.data;
+    if (items?.length) {
+      setDeck(items.map((item, index) => ({ ...item, instanceId: `${item.id}-${index}` })));
+    }
+  }, [recommendationsQuery.data]);
+
+  useEffect(() => {
+    if (!libraryBundle?.interestOptions?.length || libraryInterestsSyncedRef.current) {
+      return;
+    }
+    setSelectedLibraryInterests(
+      libraryBundle.interestOptions.reduce((acc, option) => ({ ...acc, [option.id]: option.selected }), {}),
+    );
+    libraryInterestsSyncedRef.current = true;
+  }, [libraryBundle]);
+
+  useEffect(() => {
+    if (!libraryShowcaseItems.length) {
+      return;
+    }
+    setActiveLibraryShowcaseIndex((prev) => (prev < libraryShowcaseItems.length ? prev : 0));
+  }, [libraryShowcaseItems.length]);
 
   const syncRouteState = (path) => {
     const nextRoute = {
@@ -217,15 +418,19 @@ function App() {
   };
 
   const sendLikeSignal = (entity, id) => {
-    const payload = JSON.stringify({ entity, id, ts: Date.now() });
-    try {
-      if (navigator.sendBeacon) {
-        const blob = new Blob([payload], { type: "application/json" });
-        navigator.sendBeacon("/api/recommendations/like", blob);
+    const body = { entity, id, ts: Date.now() };
+    if (typeof fetch !== "function") {
+      try {
+        if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
+          navigator.sendBeacon(resolveApiUrl("/api/recommendations/like"), blob);
+        }
+      } catch {
+        // no-op
       }
-    } catch {
-      // no-op
+      return;
     }
+    void postRecommendationLike(body).catch(() => {});
   };
 
   const rotateDeck = () => {
@@ -317,15 +522,26 @@ function App() {
     openPath(`${NAV_LINKS.projects}/create`);
   };
 
-  const joinProject = () => {
-    // API hook placeholder
+  const joinProject = async (project) => {
+    const projectId = project?.id;
+    if (!projectId) {
+      return;
+    }
+    const { error } = await apiClient.POST("/api/projects/{project_id}/join", {
+      params: { path: { project_id: projectId } },
+      body: { message: null },
+    });
+    if (error) {
+      window.alert("Не удалось отправить заявку. Попробуйте позже.");
+    }
   };
 
   const cycleLibraryShowcase = (direction) => {
     setLibraryShowcaseDirection(direction === "prev" ? -1 : 1);
     setActiveLibraryShowcaseIndex((prev) => {
       const offset = direction === "prev" ? -1 : 1;
-      return (prev + offset + LIBRARY_SHOWCASE_ITEMS.length) % LIBRARY_SHOWCASE_ITEMS.length;
+      const len = libraryShowcaseItems.length || 1;
+      return (prev + offset + len) % len;
     });
   };
 
@@ -341,16 +557,20 @@ function App() {
       .filter(([, isSelected]) => isSelected)
       .map(([id]) => id);
 
-    const payload = JSON.stringify({ interests: selectedIds, ts: Date.now() });
+    const body = { interests: selectedIds, ts: Date.now() };
 
-    try {
-      if (navigator.sendBeacon) {
-        const blob = new Blob([payload], { type: "application/json" });
-        navigator.sendBeacon("/api/library/interests", blob);
+    if (typeof fetch !== "function") {
+      try {
+        if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
+          navigator.sendBeacon(resolveApiUrl("/api/library/interests"), blob);
+        }
+      } catch {
+        // no-op
       }
-    } catch {
-      // no-op
+      return;
     }
+    void postLibraryInterests(body).catch(() => {});
   };
 
   const openFeaturedEvent = (eventItem) => {
@@ -528,41 +748,68 @@ function App() {
 
   const mainContent = isNewsPage ? (
     <NewsPage
-      miniNewsItems={MINI_NEWS_ITEMS}
-      featuredNewsItems={FEATURED_NEWS_ITEMS}
+      miniNewsItems={miniNewsItems}
+      featuredNewsItems={featuredNewsItems}
       likedNews={likedNews}
       onToggleNewsLike={toggleNewsLike}
       onOpenMiniNews={openMiniNews}
       onParticipateInEvent={openFeaturedEvent}
       onBack={handleGoHome}
+      isLoading={newsPageLoading}
+      showOfflineFallbackNotice={showNewsOfflineNotice}
     />
-  ) : isProjectsPage && isProjectDetailPage ? (
-    <ProjectDetailsPage
-      project={currentProjectDetails}
-      onBack={openProjectsHub}
-      onJoinProject={joinProject}
-    />
+  ) : isProjectsPage && showProjectDetailRoute ? (
+    projectDetailsQuery.isLoading ? (
+      <section className="project-details-page">
+        <div className="library-page-head">
+          <button type="button" className="news-back-btn" aria-label="Назад к проектам" onClick={openProjectsHub}>
+            <img src={assets.arrowSmallLeftIcon} alt="" />
+          </button>
+          <p className="page-title">Загрузка проекта…</p>
+        </div>
+      </section>
+    ) : projectDetailsQuery.isError ? (
+      <section className="project-details-page">
+        <div className="library-page-head">
+          <button type="button" className="news-back-btn" aria-label="Назад к проектам" onClick={openProjectsHub}>
+            <img src={assets.arrowSmallLeftIcon} alt="" />
+          </button>
+          <p className="page-title">Проект не найден или недоступен.</p>
+        </div>
+      </section>
+    ) : (
+      <ProjectDetailsPage
+        project={projectDetailsQuery.data}
+        onBack={openProjectsHub}
+        onJoinProject={joinProject}
+      />
+    )
   ) : isProjectsPage ? (
     <ProjectHubPage
-      columns={PROJECT_HUB_COLUMNS}
+      columns={hubColumns}
       onBack={handleGoHome}
       onCreateProject={openProjectCreate}
       onOpenProject={openProjectDetails}
+      isLoading={projectsHubQuery.isPending && !STATIC_FALLBACK}
+      isError={projectsHubQuery.isError}
+      useStaticFallback={STATIC_FALLBACK}
     />
   ) : isLibraryPage ? (
     <LibraryPage
       heroItem={activeLibraryHero}
-      showcaseItems={LIBRARY_SHOWCASE_ITEMS}
+      showcaseItems={libraryShowcaseItems}
       activeShowcaseIndex={activeLibraryShowcaseIndex}
       showcaseDirection={libraryShowcaseDirection}
-      interestOptions={LIBRARY_INTEREST_OPTIONS}
+      interestOptions={libraryInterestOptionsFromApi}
       selectedInterests={selectedLibraryInterests}
-      articleItems={LIBRARY_ARTICLE_ITEMS}
+      articleItems={libraryArticleItems}
       onBack={handleGoHome}
       onPrevShowcase={() => cycleLibraryShowcase("prev")}
       onNextShowcase={() => cycleLibraryShowcase("next")}
       onToggleInterest={toggleLibraryInterest}
       onSaveInterests={saveLibraryInterests}
+      isLoading={libraryPageLoading}
+      showOfflineFallbackNotice={showLibraryOfflineNotice}
     />
   ) : isChatPage ? (
     <ChatPage
@@ -582,16 +829,25 @@ function App() {
     <section className="left-content">
       <h1 className="page-title">Главная панель</h1>
       <SummaryCards
+        home={summaryHome}
+        isLoading={dashboardHomeQuery.isLoading}
+        isError={dashboardHomeQuery.isError}
+        useStaticFallback={STATIC_FALLBACK}
         onOpenCourses={() => navigateTo(NAV_LINKS.courses)}
-        onOpenCourseDetails={() => navigateTo("/courses/data-science-ml")}
+        onOpenCourseDetails={(path) => navigateTo(path || "/courses/data-science-ml")}
         onOpenEvents={() => navigateTo(NAV_LINKS.events)}
       />
       <BottomCards
         newsItem={homeNewsItem}
-        isNewsLiked={Boolean(likedNews[homeNewsItem.id])}
+        projectHighlight={projectHighlight}
+        isNewsLiked={Boolean(homeNewsItem && likedNews[homeNewsItem.id])}
         onToggleNewsLike={toggleNewsLike}
         onOpenNews={openNewsList}
         onOpenProjects={openProjectsHub}
+        onOpenProjectLink={openProjectDetails}
+        isNewsLoading={newsMiniQuery.isPending && !STATIC_FALLBACK}
+        isNewsError={newsMiniQuery.isError}
+        useStaticFallback={STATIC_FALLBACK}
       />
     </section>
   );
@@ -620,7 +876,7 @@ function App() {
             aiAssistantEnabled={aiAssistantEnabled}
             isAiOpen={aiMode}
             isNotificationsOpen={isNotificationsOpen}
-            notificationItems={NOTIFICATION_ITEMS}
+            notificationItems={notificationItems}
             onCloseNotifications={() => setIsNotificationsOpen(false)}
             onGoHome={handleGoHome}
             onMenuClick={handleMenuClick}
@@ -661,6 +917,7 @@ function App() {
               likedRecommendations={likedRecommendations}
               onToggleRecommendationLike={toggleRecommendationLike}
               onShareRecommendation={shareRecommendation}
+              isLoading={recommendationsDeckLoading}
             />
           ) : null}
         </div>

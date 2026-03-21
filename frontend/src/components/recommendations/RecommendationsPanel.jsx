@@ -44,7 +44,8 @@ export function RecommendationsPanel({
   onTopCardExitComplete,
   likedRecommendations,
   onToggleRecommendationLike,
-  onShareRecommendation
+  onShareRecommendation,
+  isLoading = false
 }) {
   const dragX = useMotionValue(0);
   const dragY = useMotionValue(0);
@@ -150,7 +151,7 @@ export function RecommendationsPanel({
               <img src={assets.group12021Icon} alt="" />
             </button>
 
-            <div className="deck-wrap">
+            <div className={`deck-wrap${isLoading ? " deck-wrap--busy" : ""}`} aria-busy={isLoading || undefined}>
               {stackedCards
                 .slice()
                 .reverse()

@@ -2,16 +2,57 @@ import { motion } from "framer-motion";
 import { assets } from "../../assets";
 import { NewsMiniCard } from "../news/NewsMiniCard";
 
-export function BottomCards({ newsItem, isNewsLiked, onToggleNewsLike, onOpenNews, onOpenProjects }) {
+const FALLBACK_PROJECT = {
+  title: "API для доставки еды",
+  detailsUrl: "/projects/api-food-delivery",
+  updatedLabel: "Недавняя активность",
+};
+
+export function BottomCards({
+  newsItem,
+  projectHighlight,
+  isNewsLiked,
+  onToggleNewsLike,
+  onOpenNews,
+  onOpenProjects,
+  onOpenProjectLink,
+  isNewsLoading = false,
+  isNewsError = false,
+  useStaticFallback = true
+}) {
+  const project = projectHighlight ?? FALLBACK_PROJECT;
+  const projectHash = project.detailsUrl?.startsWith("/") ? `#${project.detailsUrl}` : `#/projects`;
+
+  const handleProjectNavigate = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (onOpenProjectLink) {
+      onOpenProjectLink(project);
+      return;
+    }
+    if (project.detailsUrl) {
+      window.location.hash = project.detailsUrl.startsWith("/") ? project.detailsUrl : `/${project.detailsUrl}`;
+    }
+  };
+
+  const showNewsSkeleton = isNewsLoading || (!newsItem && (isNewsError || !useStaticFallback));
+
   return (
     <div className="bottom-cards">
-      <NewsMiniCard
-        item={newsItem}
-        isLiked={isNewsLiked}
-        onToggleLike={onToggleNewsLike}
-        onOpen={onOpenNews}
-        delay={0.24}
-      />
+      {showNewsSkeleton ? (
+        <div className="glass-card news-card news-card-skeleton" aria-busy="true" aria-label="Загрузка новостей">
+          <div className="news-skeleton-image glass-skeleton" />
+          <div className="news-skeleton-text glass-skeleton" />
+        </div>
+      ) : (
+        <NewsMiniCard
+          item={newsItem}
+          isLiked={isNewsLiked}
+          onToggleLike={onToggleNewsLike}
+          onOpen={onOpenNews}
+          delay={0.24}
+        />
+      )}
 
       <motion.article
         className="glass-card projects-card"
@@ -36,8 +77,8 @@ export function BottomCards({ newsItem, isNewsLiked, onToggleNewsLike, onOpenNew
             <img src={assets.alignCenterIcon} alt="" />
           </button>
         </div>
-        <a className="project-link" href="#/projects/api-food-delivery">
-          API для доставки еды
+        <a className="project-link" href={projectHash} onClick={handleProjectNavigate}>
+          {project.title}
           <img src={assets.arrow15Icon} alt="" />
         </a>
         <div className="progress-track">
@@ -47,15 +88,15 @@ export function BottomCards({ newsItem, isNewsLiked, onToggleNewsLike, onOpenNew
           <li>
             <span className="task-dot" />
             <div>
-              <strong>Завершить расчет LTV, ARPU и CAC</strong>
-              <p>2 часа назад</p>
+              <strong>Последнее обновление</strong>
+              <p>{project.updatedLabel}</p>
             </div>
           </li>
           <li className="task-muted">
             <span className="task-dot task-dot-muted" />
             <div>
-              <strong>Завершить расчет LTV, ARPU и CAC</strong>
-              <p>2 часа назад</p>
+              <strong>Откройте хаб проектов</strong>
+              <p>чтобы увидеть все команды</p>
             </div>
           </li>
         </ul>

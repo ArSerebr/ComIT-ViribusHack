@@ -20,7 +20,9 @@ export function NewsPage({
   onToggleNewsLike,
   onOpenMiniNews,
   onParticipateInEvent,
-  onBack
+  onBack,
+  isLoading = false,
+  showOfflineFallbackNotice = false
 }) {
   const { rows, remainingMiniItems } = buildNewsRows(miniNewsItems, featuredNewsItems);
 
@@ -32,6 +34,18 @@ export function NewsPage({
         </button>
         <h1 className="news-page-title">Новости и ивенты</h1>
       </div>
+
+      {isLoading ? (
+        <div className="api-banner api-banner--loading" role="status" aria-live="polite">
+          <span className="loading-spinner" aria-hidden />
+          Загрузка новостей…
+        </div>
+      ) : null}
+      {showOfflineFallbackNotice ? (
+        <p className="api-banner api-banner--warn" role="status">
+          Не удалось получить данные с сервера — показаны демо-материалы из приложения.
+        </p>
+      ) : null}
 
       <div className="news-page-rows">
         {rows.map((row, rowIndex) => (

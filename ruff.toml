@@ -1,6 +1,3 @@
-# Ruff — линтер и форматтер для CI и локальной разработки
-# https://docs.astral.sh/ruff/
-
 target-version = "py312"
 line-length = 100
 

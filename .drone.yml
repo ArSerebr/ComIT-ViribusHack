@@ -1,0 +1,82 @@
+---
+
+kind: pipeline
+type: docker
+name: checks
+
+trigger:
+  event: [push, pull_request]
+  branch:
+    include: [main, master, develop, feature/*, fix/*]
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: backend-lint
+    image: ghcr.io/astral-sh/ruff:0.8.4
+    commands:
+      - ruff check backend/app backend/tests --output-format=concise
+      - ruff format --check backend/app backend/tests
+
+  - name: backend-test
+    image: python:3.12-slim
+    depends_on: [backend-lint]
+    commands:
+      - cd backend
+      - pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
+      - python -m pytest tests -v --cov=app --cov-report=term-missing --cov-report=xml
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/viribus
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET: ci-secret-do-not-use
+
+  - name: frontend-build
+    image: node:20-alpine
+    depends_on: [backend-lint]
+    commands:
+      - cd frontend
+      - npm ci
+      - npm run build
+    environment:
+      NODE_ENV: production
+
+---
+kind: pipeline
+type: docker
+name: docker-build
+
+trigger:
+  event: [push]
+  branch:
+    include: [main, master]
+
+depends_on: [checks]
+
+platform:
+  os: linux
+  arch: amd64
+
+services:
+  - name: docker
+    image: docker:24-dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+
+steps:
+  - name: build-backend
+    image: docker:24-cli
+    environment:
+      DOCKER_HOST: tcp://docker:2375
+    commands:
+      - docker build -t viribus-backend:${DRONE_COMMIT_SHA:0:7} ./backend
+
+  - name: build-frontend
+    image: docker:24-cli
+    environment:
+      DOCKER_HOST: tcp://docker:2375
+    commands:
+      - docker build -t viribus-frontend:${DRONE_COMMIT_SHA:0:7} ./frontend
+    depends_on: [build-backend]

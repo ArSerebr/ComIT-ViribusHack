@@ -1,0 +1,19 @@
+# Ruff — линтер и форматтер для CI и локальной разработки
+# https://docs.astral.sh/ruff/
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "C4"]
+ignore = [
+    "E501",   # line too long — контролируется formatter
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex
+]
+
+[lint.per-file-ignores]
+"backend/tests/*" = ["S101"]  # assert в тестах — ок
+
+[format]
+quote-style = "double"

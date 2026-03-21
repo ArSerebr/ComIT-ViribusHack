@@ -1,5 +1,4 @@
 ---
-
 kind: pipeline
 type: docker
 name: checks
@@ -13,6 +12,11 @@ platform:
   os: linux
   arch: amd64
 
+volumes:
+  - name: drone-dotenv
+    host:
+      path: /home/s1rne/drone-configs/${DRONE_REPO_NAME}/.env
+
 steps:
   - name: backend-lint
     image: python:3.12-slim
@@ -23,24 +27,35 @@ steps:
   - name: backend-test
     image: python:3.12-slim
     depends_on: [backend-lint]
+    volumes:
+      - name: drone-dotenv
+        path: /drone-config/.env
     commands:
-      - cd backend
-      - pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
-      - python -m pytest tests -v --cov=app --cov-report=term-missing --cov-report=xml
-    environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/viribus
-      REDIS_URL: redis://localhost:6379/0
-      JWT_SECRET: ci-secret-do-not-use
+      - |
+        set -e
+        test -f /drone-config/.env || { echo >&2 "Нет .env на раннере: /home/s1rne/drone-configs/${DRONE_REPO_NAME}/.env"; exit 1; }
+        set -a
+        . /drone-config/.env
+        set +a
+        cd backend
+        pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
+        python -m pytest tests -v --cov=app --cov-report=term-missing --cov-report=xml
 
+  # NODE_ENV=production на npm ci отключает devDependencies → vite не ставится.
   - name: frontend-build
     image: node:20-alpine
     depends_on: [backend-lint]
+    volumes:
+      - name: drone-dotenv
+        path: /drone-config/.env
     commands:
-      - cd frontend
-      - npm ci
-      - npm run build
-    environment:
-      NODE_ENV: production
+      - |
+        set -e
+        test -f /drone-config/.env || { echo >&2 "Нет .env на раннере: /home/s1rne/drone-configs/${DRONE_REPO_NAME}/.env"; exit 1; }
+        cp /drone-config/.env .env
+        cd frontend
+        npm ci
+        NODE_ENV=production npm run build
 
 ---
 kind: pipeline
@@ -58,6 +73,11 @@ platform:
   os: linux
   arch: amd64
 
+volumes:
+  - name: drone-dotenv
+    host:
+      path: /home/s1rne/drone-configs/${DRONE_REPO_NAME}/.env
+
 services:
   - name: docker
     image: docker:24-dind
@@ -68,15 +88,33 @@ services:
 steps:
   - name: build-backend
     image: docker:24-cli
+    volumes:
+      - name: drone-dotenv
+        path: /drone-config/.env
     environment:
       DOCKER_HOST: tcp://docker:2375
     commands:
-      - docker build -t viribus-backend:${DRONE_COMMIT_SHA:0:7} ./backend
+      - |
+        set -e
+        test -f /drone-config/.env || { echo >&2 "Нет .env на раннере"; exit 1; }
+        set -a
+        . /drone-config/.env
+        set +a
+        docker build -t viribus-backend:${DRONE_COMMIT_SHA:0:7} ./backend
 
   - name: build-frontend
     image: docker:24-cli
+    volumes:
+      - name: drone-dotenv
+        path: /drone-config/.env
     environment:
       DOCKER_HOST: tcp://docker:2375
     commands:
-      - docker build -t viribus-frontend:${DRONE_COMMIT_SHA:0:7} ./frontend
+      - |
+        set -e
+        test -f /drone-config/.env || { echo >&2 "Нет .env на раннере"; exit 1; }
+        set -a
+        . /drone-config/.env
+        set +a
+        docker build -t viribus-frontend:${DRONE_COMMIT_SHA:0:7} ./frontend
     depends_on: [build-backend]

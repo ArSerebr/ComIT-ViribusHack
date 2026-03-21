@@ -9,6 +9,7 @@ Usage:
 
 Uses DATABASE_URL from env. Source of truth: PostgreSQL. No in-memory serving.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -17,15 +18,9 @@ import os
 import sys
 from collections.abc import Awaitable, Callable, Sequence
 from pathlib import Path
-from typing import TypeAlias
 
 # Ensure backend is on path when running as module
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from fastapi_users.password import PasswordHelper
-from sqlalchemy import select, text
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
 from app.modules.auth.models import User
@@ -50,8 +45,12 @@ from app.seed.fixtures import (
     PROJECT_HUB_COLUMNS,
     RECOMMENDATIONS,
 )
+from fastapi_users.password import PasswordHelper
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
-SeedFn: TypeAlias = Callable[[AsyncSession, bool], Awaitable[None]]
+type SeedFn = Callable[[AsyncSession, bool], Awaitable[None]]
 
 MODULE_ORDER: tuple[str, ...] = (
     "auth",
@@ -248,7 +247,9 @@ async def seed_notifications(session: AsyncSession, wipe: bool) -> None:
 async def seed_dashboard(session: AsyncSession, wipe: bool) -> None:
     if wipe:
         await session.execute(
-            text("TRUNCATE dashboard_recommendation, dashboard_home_snapshot RESTART IDENTITY CASCADE")
+            text(
+                "TRUNCATE dashboard_recommendation, dashboard_home_snapshot RESTART IDENTITY CASCADE"
+            )
         )
     for i, r in enumerate(RECOMMENDATIONS):
         row = DashboardRecommendation(
@@ -292,7 +293,9 @@ class SeedOrchestrator:
     async def run(self) -> None:
         unknown = [m for m in self._modules if m not in SEED_REGISTRY]
         if unknown:
-            raise ValueError(f"Unknown module(s): {', '.join(unknown)}. Valid: {', '.join(MODULE_ORDER)}")
+            raise ValueError(
+                f"Unknown module(s): {', '.join(unknown)}. Valid: {', '.join(MODULE_ORDER)}"
+            )
         for name in self._modules:
             await SEED_REGISTRY[name](self._session, self._wipe)
 

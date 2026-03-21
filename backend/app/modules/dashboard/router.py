@@ -1,10 +1,10 @@
 """Dashboard HTTP adapter: thin router → service only. No DB/repo access."""
-from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from __future__ import annotations
 
 from app.modules.dashboard.deps import get_dashboard_service
 from app.modules.dashboard.service import DashboardService
+from fastapi import APIRouter, Depends, HTTPException
 from schemas import DashboardHome, ErrorDetail, RecommendationCard
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])

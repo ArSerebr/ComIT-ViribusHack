@@ -1,11 +1,11 @@
 """HTTP: роутеры fastapi-users под префиксом `/api`."""
-from __future__ import annotations
 
-from fastapi import APIRouter
+from __future__ import annotations
 
 from app.modules.auth.deps import fastapi_users
 from app.modules.auth.jwt_backend import auth_backend
 from app.modules.auth.schemas import UserCreate, UserRead, UserUpdate
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/api")
 

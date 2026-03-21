@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.contracts.analytics import JoinRequestSink
 from app.modules.analytics.repository import AnalyticsRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class _JoinRequestSink:

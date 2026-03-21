@@ -1,10 +1,10 @@
 """Bearer transport + Redis-backed session tokens для fastapi-users (opaque access_token)."""
-from __future__ import annotations
 
-from fastapi_users.authentication import AuthenticationBackend, BearerTransport, RedisStrategy
+from __future__ import annotations
 
 from app.config import get_settings
 from app.core.redis_client import get_redis
+from fastapi_users.authentication import AuthenticationBackend, BearerTransport, RedisStrategy
 
 _settings = get_settings()
 

@@ -1,10 +1,10 @@
 """Согласование role ↔ is_superuser в UserManager._sync_role_superuser."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from app.modules.auth.manager import UserManager
 from app.modules.auth.models import UserRole
 

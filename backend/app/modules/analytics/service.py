@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.modules.analytics.repository import AnalyticsRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AnalyticsService:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from app.modules.dashboard.repository import DashboardRepository
 from app.modules.dashboard.models import DashboardRecommendation
+from app.modules.dashboard.repository import DashboardRepository
 from schemas import DashboardHome, RecommendationCard
 
 

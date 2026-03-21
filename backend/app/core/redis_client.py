@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import redis.asyncio as redis_async
-
 from app.config import get_settings
 
 _settings = get_settings()

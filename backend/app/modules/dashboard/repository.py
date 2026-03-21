@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from app.modules.dashboard.models import DashboardHomeSnapshot, DashboardRecommendation
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.modules.dashboard.models import DashboardHomeSnapshot, DashboardRecommendation
 
 
 class DashboardRepository:

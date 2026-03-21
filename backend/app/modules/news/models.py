@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from sqlalchemy import Integer, String, Text, text
-from sqlalchemy.orm import Mapped, mapped_column
+import uuid
 
 from app.core.db.base import Base
+from sqlalchemy import ForeignKey, Integer, String, Text, text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class NewsMini(Base):
@@ -17,6 +19,11 @@ class NewsMini(Base):
         Integer,
         nullable=False,
         server_default=text("0"),
+    )
+    author_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="SET NULL"),
+        nullable=True,
     )
 
 
@@ -34,4 +41,9 @@ class NewsFeatured(Base):
         Integer,
         nullable=False,
         server_default=text("0"),
+    )
+    author_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="SET NULL"),
+        nullable=True,
     )

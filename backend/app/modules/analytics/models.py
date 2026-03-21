@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from app.core.db.base import Base
 from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
-
-from app.core.db.base import Base
 
 
 class AnalyticsLikeEvent(Base):

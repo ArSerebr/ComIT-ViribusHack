@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.contracts.projects import ProjectQueryPort
 from app.modules.projects.repository import ProjectsRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class _ProjectQuery(ProjectQueryPort):

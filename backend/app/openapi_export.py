@@ -1,4 +1,5 @@
 """Запись актуального OpenAPI в YAML при старте приложения."""
+
 from __future__ import annotations
 
 import logging

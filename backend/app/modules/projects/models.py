@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
-from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text, text
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
-
 from app.core.db.base import Base
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class ProjectsColumn(Base):
@@ -44,6 +44,11 @@ class ProjectsProject(Base):
         Integer,
         nullable=False,
         server_default=text("0"),
+    )
+    owner_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="SET NULL"),
+        nullable=True,
     )
 
 

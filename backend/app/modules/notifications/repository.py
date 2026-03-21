@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from app.modules.notifications.models import NotificationsItem
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.modules.notifications.models import NotificationsItem
 
 
 class NotificationsRepository:

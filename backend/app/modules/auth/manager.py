@@ -1,14 +1,14 @@
 """UserManager: пароли, синхронизация role ↔ is_superuser."""
+
 from __future__ import annotations
 
 import uuid
-from typing import Any, Optional
-
-from fastapi import Request
-from fastapi_users import BaseUserManager, UUIDIDMixin
+from typing import Any
 
 from app.config import get_settings
 from app.modules.auth.models import User, UserRole
+from fastapi import Request
+from fastapi_users import BaseUserManager, UUIDIDMixin
 
 _settings = get_settings()
 
@@ -17,14 +17,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = _settings.reset_password_token_secret  # type: ignore[assignment]
     verification_token_secret = _settings.verification_token_secret  # type: ignore[assignment]
 
-    async def on_after_register(self, user: User, request: Optional[Request] = None) -> None:
+    async def on_after_register(self, user: User, request: Request | None = None) -> None:
         await self._sync_role_superuser(user)
 
     async def on_after_update(
         self,
         user: User,
         update_dict: dict[str, Any],
-        request: Optional[Request] = None,
+        request: Request | None = None,
     ) -> None:
         await self._sync_role_superuser(user)
 

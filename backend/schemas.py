@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -27,7 +27,7 @@ class InterestsPayload(BaseModel):
 
 
 class JoinRequest(BaseModel):
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class JoinResponse(BaseModel):
@@ -61,8 +61,8 @@ class HubProject(BaseModel):
     updatedLabel: str
     teamAvatarUrl: str
     detailsUrl: str
-    visibility: Optional[Literal["public", "private"]] = None
-    isHot: Optional[bool] = None
+    visibility: Literal["public", "private"] | None = None
+    isHot: bool | None = None
 
 
 class ProjectColumn(BaseModel):
@@ -80,11 +80,11 @@ class PersonPreview(BaseModel):
 
 
 class ParticipantRow(PersonPreview):
-    comitId: Optional[str] = None
-    timeInProject: Optional[str] = None
-    role: Optional[str] = None
-    status: Optional[str] = None
-    lastTask: Optional[str] = None
+    comitId: str | None = None
+    timeInProject: str | None = None
+    role: str | None = None
+    status: str | None = None
+    lastTask: str | None = None
 
 
 class ProductivityBlock(BaseModel):
@@ -180,12 +180,12 @@ class NotificationItem(BaseModel):
     title: str
     dateLabel: str
     dateCaption: str
-    unread: Optional[bool] = None
-    authorLabel: Optional[str] = None
-    authorName: Optional[str] = None
-    accentText: Optional[str] = None
-    ctaLabel: Optional[str] = None
-    path: Optional[str] = None
+    unread: bool | None = None
+    authorLabel: str | None = None
+    authorName: str | None = None
+    accentText: str | None = None
+    ctaLabel: str | None = None
+    path: str | None = None
 
 
 class RecommendationCard(BaseModel):
@@ -216,3 +216,20 @@ class DashboardHome(BaseModel):
     events: DashboardHomeEvents
     productivity: DashboardHomeProductivity
     highlightCourse: DashboardHomeCourse
+
+
+class ProfileInterest(BaseModel):
+    id: str
+    label: str
+
+
+class ProfileMe(BaseModel):
+    displayName: str | None = None
+    bio: str | None = None
+    interests: list[ProfileInterest] = Field(default_factory=list)
+
+
+class ProfileMePatch(BaseModel):
+    displayName: str | None = None
+    bio: str | None = None
+    interestIds: list[str] | None = None

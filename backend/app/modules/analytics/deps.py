@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.db.session import get_db
 from app.modules.analytics.service import AnalyticsService
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_analytics_service(

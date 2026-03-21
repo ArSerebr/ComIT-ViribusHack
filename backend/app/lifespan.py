@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-
-from fastapi import FastAPI
 
 from app.core.db.session import engine
 from app.core.redis_client import close_redis
 from app.openapi_export import export_openapi_yaml
+from fastapi import FastAPI
 
 
 @asynccontextmanager

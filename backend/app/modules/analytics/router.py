@@ -1,11 +1,11 @@
 """Analytics HTTP adapter: thin router → service only. No DB/repo access."""
-from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from __future__ import annotations
 
 from app.modules.analytics.deps import get_analytics_service
 from app.modules.analytics.schemas import InterestsPayload, LikePayload, OkResponse
 from app.modules.analytics.service import AnalyticsService
+from fastapi import APIRouter, Depends
 
 router = APIRouter(prefix="/api", tags=["analytics"])
 

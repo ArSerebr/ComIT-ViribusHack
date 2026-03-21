@@ -1,10 +1,10 @@
 """DashboardService: маппинг репозитория в схемы API."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from app.modules.dashboard.models import DashboardRecommendation
 from app.modules.dashboard.service import DashboardService
 from schemas import DashboardHome

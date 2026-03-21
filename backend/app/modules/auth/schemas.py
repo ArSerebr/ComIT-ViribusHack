@@ -1,12 +1,12 @@
 """Pydantic-схемы пользователя для fastapi-users."""
+
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID
 
-from fastapi_users import schemas
-
 from app.modules.auth.models import UserRole
+from fastapi_users import schemas
 
 
 class UserRead(schemas.BaseUser[UUID]):
@@ -18,7 +18,7 @@ class UserCreate(schemas.BaseUserCreate):
 
 
 class UserUpdate(schemas.BaseUserUpdate):
-    role: Optional[UserRole] = None
+    role: UserRole | None = None
 
     def create_update_dict(self) -> dict[str, Any]:
         return schemas.model_dump(

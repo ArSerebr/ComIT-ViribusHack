@@ -1,13 +1,13 @@
 """ORM: пользователь fastapi-users + роль."""
+
 from __future__ import annotations
 
 from enum import StrEnum
 
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-
 from app.core.db.base import Base
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class UserRole(StrEnum):

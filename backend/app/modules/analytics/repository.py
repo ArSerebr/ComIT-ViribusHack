@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from app.modules.analytics.models import (
+    AnalyticsInterestEvent,
+    AnalyticsJoinRequest,
+    AnalyticsLikeEvent,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.modules.analytics.models import AnalyticsInterestEvent, AnalyticsJoinRequest, AnalyticsLikeEvent
 
 
 class AnalyticsRepository:

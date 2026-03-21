@@ -1,15 +1,15 @@
 """Проверка хранения сессионных токенов в Redis (через RedisStrategy / fakeredis в conftest)."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
-from fastapi_users.authentication.strategy.redis import RedisStrategy
-
 from app.config import get_settings
 from app.core.redis_client import get_redis
 from app.modules.auth.jwt_backend import auth_backend, get_redis_strategy
+from fastapi_users.authentication.strategy.redis import RedisStrategy
 
 
 def test_auth_backend_wires_redis_strategy():

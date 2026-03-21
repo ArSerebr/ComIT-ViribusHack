@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.db.session import get_db
 from app.modules.analytics.public_api import create_join_request_sink
 from app.modules.projects.repository import ProjectsRepository
 from app.modules.projects.service import ProjectsService
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_projects_service(

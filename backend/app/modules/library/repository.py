@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from collections.abc import Sequence
 
 from app.modules.library.models import (
     LibraryArticle,
@@ -10,6 +9,8 @@ from app.modules.library.models import (
     LibraryShowcaseItem,
     LibraryTag,
 )
+from sqlalchemy import delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class LibraryRepository:
@@ -30,6 +31,27 @@ class LibraryRepository:
         )
         return list((await self._session.execute(stmt)).scalars().all())
 
+    async def all_interest_option_ids_exist(self, interest_ids: Sequence[str]) -> bool:
+        unique = frozenset(interest_ids)
+        if not unique:
+            return True
+        stmt = (
+            select(func.count())
+            .select_from(LibraryInterestOption)
+            .where(LibraryInterestOption.id.in_(unique))
+        )
+        n = (await self._session.execute(stmt)).scalar_one()
+        return int(n) == len(unique)
+
+    async def labels_for_interest_ids(self, interest_ids: Sequence[str]) -> dict[str, str]:
+        if not interest_ids:
+            return {}
+        stmt = select(LibraryInterestOption.id, LibraryInterestOption.label).where(
+            LibraryInterestOption.id.in_(interest_ids)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return {str(r[0]): str(r[1]) for r in rows}
+
     async def list_articles_ordered(self) -> list[LibraryArticle]:
         stmt = select(LibraryArticle).order_by(LibraryArticle.id)
         return list((await self._session.execute(stmt)).scalars().all())
@@ -42,3 +64,86 @@ class LibraryRepository:
             .order_by(LibraryArticleTag.position, LibraryTag.id)
         )
         return list((await self._session.execute(stmt)).scalars().all())
+
+    async def get_article(self, article_id: str) -> LibraryArticle | None:
+        stmt = select(LibraryArticle).where(LibraryArticle.id == article_id)
+        return (await self._session.execute(stmt)).scalar_one_or_none()
+
+    async def add_article(self, row: LibraryArticle) -> None:
+        self._session.add(row)
+
+    async def delete_article(self, article_id: str) -> bool:
+        res = await self._session.execute(
+            delete(LibraryArticle).where(LibraryArticle.id == article_id)
+        )
+        return (res.rowcount or 0) > 0
+
+    async def all_tag_ids_exist(self, tag_ids: Sequence[str]) -> bool:
+        unique = frozenset(tag_ids)
+        if not unique:
+            return True
+        stmt = select(func.count()).select_from(LibraryTag).where(LibraryTag.id.in_(unique))
+        n = (await self._session.execute(stmt)).scalar_one()
+        return int(n) == len(unique)
+
+    async def replace_article_tags(self, article_id: str, tag_ids: list[str]) -> None:
+        await self._session.execute(
+            delete(LibraryArticleTag).where(LibraryArticleTag.article_id == article_id)
+        )
+        for pos, tid in enumerate(tag_ids):
+            self._session.add(
+                LibraryArticleTag(article_id=article_id, tag_id=tid, position=pos),
+            )
+
+    async def get_showcase(self, item_id: str) -> LibraryShowcaseItem | None:
+        stmt = select(LibraryShowcaseItem).where(LibraryShowcaseItem.id == item_id)
+        return (await self._session.execute(stmt)).scalar_one_or_none()
+
+    async def add_showcase(self, row: LibraryShowcaseItem) -> None:
+        self._session.add(row)
+
+    async def delete_showcase(self, item_id: str) -> bool:
+        res = await self._session.execute(
+            delete(LibraryShowcaseItem).where(LibraryShowcaseItem.id == item_id)
+        )
+        return (res.rowcount or 0) > 0
+
+    async def max_showcase_sort_order(self) -> int:
+        stmt = select(func.coalesce(func.max(LibraryShowcaseItem.sort_order), -1))
+        v = (await self._session.execute(stmt)).scalar_one()
+        return int(v) if v is not None else -1
+
+    async def get_interest(self, interest_id: str) -> LibraryInterestOption | None:
+        stmt = select(LibraryInterestOption).where(LibraryInterestOption.id == interest_id)
+        return (await self._session.execute(stmt)).scalar_one_or_none()
+
+    async def add_interest(self, row: LibraryInterestOption) -> None:
+        self._session.add(row)
+
+    async def delete_interest(self, interest_id: str) -> bool:
+        res = await self._session.execute(
+            delete(LibraryInterestOption).where(LibraryInterestOption.id == interest_id)
+        )
+        return (res.rowcount or 0) > 0
+
+    async def max_interest_sort_order(self) -> int:
+        stmt = select(func.coalesce(func.max(LibraryInterestOption.sort_order), -1))
+        v = (await self._session.execute(stmt)).scalar_one()
+        return int(v) if v is not None else -1
+
+    async def get_tag(self, tag_id: str) -> LibraryTag | None:
+        stmt = select(LibraryTag).where(LibraryTag.id == tag_id)
+        return (await self._session.execute(stmt)).scalar_one_or_none()
+
+    async def add_tag(self, row: LibraryTag) -> None:
+        self._session.add(row)
+
+    async def delete_tag(self, tag_id: str) -> bool:
+        res = await self._session.execute(delete(LibraryTag).where(LibraryTag.id == tag_id))
+        return (res.rowcount or 0) > 0
+
+    async def article_references_tag(self, tag_id: str) -> bool:
+        stmt = (
+            select(LibraryArticleTag.article_id).where(LibraryArticleTag.tag_id == tag_id).limit(1)
+        )
+        return (await self._session.execute(stmt)).first() is not None

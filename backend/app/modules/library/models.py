@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
-from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text, text
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
-
 from app.core.db.base import Base
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class LibraryShowcaseItem(Base):
@@ -46,6 +46,11 @@ class LibraryArticle(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     author_name: Mapped[str] = mapped_column(String(255), nullable=False)
     author_avatar_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    owner_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
 
 class LibraryTag(Base):

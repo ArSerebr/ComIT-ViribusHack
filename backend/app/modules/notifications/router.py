@@ -1,10 +1,10 @@
 """Notifications HTTP adapter: thin router → service only. No DB/repo access."""
-from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from __future__ import annotations
 
 from app.modules.notifications.deps import get_notifications_service
 from app.modules.notifications.service import NotificationsService
+from fastapi import APIRouter, Depends
 from schemas import NotificationItem
 
 router = APIRouter(prefix="/api", tags=["notifications"])

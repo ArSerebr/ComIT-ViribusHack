@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from app.core.db.base import Base
 from sqlalchemy import Boolean, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
-
-from app.core.db.base import Base
 
 
 class NotificationsItem(Base):

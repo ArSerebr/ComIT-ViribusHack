@@ -1,9 +1,9 @@
 """Smoke: приложение собирается, OpenAPI и документация отдаются без обращения к БД."""
+
 from __future__ import annotations
 
-from fastapi.testclient import TestClient
-
 from app.main import create_app
+from fastapi.testclient import TestClient
 
 
 def test_create_app_exposes_openapi():
@@ -15,6 +15,10 @@ def test_create_app_exposes_openapi():
     assert str(body.get("openapi", "")).startswith("3.")
     assert "paths" in body
     assert "/api/projects/hub" in body["paths"]
+    assert "/api/projects" in body["paths"]
+    assert "/api/profile/me" in body["paths"]
+    assert "/api/library/articles" in body["paths"]
+    assert "/api/admin/projects/columns" in body["paths"]
 
 
 def test_docs_available():

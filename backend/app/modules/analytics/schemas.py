@@ -1,4 +1,5 @@
 """Analytics module API schemas (request/response). Router uses these as adapters."""
+
 from __future__ import annotations
 
 from typing import Literal

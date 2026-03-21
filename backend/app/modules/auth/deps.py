@@ -1,18 +1,19 @@
 """Зависимости auth: БД пользователей, FastAPI Users, роли."""
+
 from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator
 
+from app.core.db.session import get_db
+from app.modules.auth.jwt_backend import auth_backend
+from app.modules.auth.manager import UserManager
+from app.modules.auth.models import User
 from fastapi import Depends, HTTPException
 from fastapi_users import FastAPIUsers
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db.session import get_db
-from app.modules.auth.jwt_backend import auth_backend
-from app.modules.auth.manager import UserManager
-from app.modules.auth.models import User
 
 async def get_user_db(
     session: AsyncSession = Depends(get_db),

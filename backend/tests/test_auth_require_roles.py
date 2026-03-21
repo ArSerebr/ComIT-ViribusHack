@@ -1,13 +1,13 @@
 """Проверка зависимости require_roles: 403 при недостаточной роли, успех при допустимой."""
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from fastapi import Depends, FastAPI
-from fastapi.testclient import TestClient
-
 from app.modules.auth.deps import current_active_user, require_roles
 from app.modules.auth.models import User, UserRole
+from fastapi import Depends, FastAPI
+from fastapi.testclient import TestClient
 
 
 def _make_app():

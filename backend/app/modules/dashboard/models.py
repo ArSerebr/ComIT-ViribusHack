@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.core.db.base import Base
 from sqlalchemy import Integer, SmallInteger, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
-
-from app.core.db.base import Base
 
 
 class DashboardRecommendation(Base):

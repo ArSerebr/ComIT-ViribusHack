@@ -136,11 +136,30 @@ export interface paths {
         /** Get News Mini */
         get: operations["get_news_mini_api_news_mini_get"];
         put?: never;
-        post?: never;
+        /** Create News Mini */
+        post: operations["create_news_mini_api_news_mini_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/news/mini/{news_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete News Mini */
+        delete: operations["delete_news_mini_api_news_mini__news_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch News Mini */
+        patch: operations["patch_news_mini_api_news_mini__news_id__patch"];
         trace?: never;
     };
     "/api/news/featured": {
@@ -153,7 +172,43 @@ export interface paths {
         /** Get News Featured */
         get: operations["get_news_featured_api_news_featured_get"];
         put?: never;
+        /** Create News Featured */
+        post: operations["create_news_featured_api_news_featured_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/news/featured/{news_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         post?: never;
+        /** Delete News Featured */
+        delete: operations["delete_news_featured_api_news_featured__news_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch News Featured */
+        patch: operations["patch_news_featured_api_news_featured__news_id__patch"];
+        trace?: never;
+    };
+    "/api/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Project */
+        post: operations["create_project_api_projects_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -188,10 +243,12 @@ export interface paths {
         get: operations["get_project_by_id_api_projects__project_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Project */
+        delete: operations["delete_project_api_projects__project_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Patch Project */
+        patch: operations["patch_project_api_projects__project_id__patch"];
         trace?: never;
     };
     "/api/projects/{project_id}/join": {
@@ -211,6 +268,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/projects/columns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin Create Column */
+        post: operations["admin_create_column_api_admin_projects_columns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/projects/columns/{column_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Delete Column */
+        delete: operations["admin_delete_column_api_admin_projects_columns__column_id__delete"];
+        options?: never;
+        head?: never;
+        /** Admin Update Column */
+        patch: operations["admin_update_column_api_admin_projects_columns__column_id__patch"];
+        trace?: never;
+    };
     "/api/library": {
         parameters: {
             query?: never;
@@ -226,6 +318,164 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/library/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Library Article */
+        post: operations["create_library_article_api_library_articles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/library/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Library Article */
+        delete: operations["delete_library_article_api_library_articles__article_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch Library Article */
+        patch: operations["patch_library_article_api_library_articles__article_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/library/showcase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin Create Showcase */
+        post: operations["admin_create_showcase_api_admin_library_showcase_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/library/showcase/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Delete Showcase */
+        delete: operations["admin_delete_showcase_api_admin_library_showcase__item_id__delete"];
+        options?: never;
+        head?: never;
+        /** Admin Update Showcase */
+        patch: operations["admin_update_showcase_api_admin_library_showcase__item_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/library/interests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin Create Interest */
+        post: operations["admin_create_interest_api_admin_library_interests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/library/interests/{interest_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Delete Interest */
+        delete: operations["admin_delete_interest_api_admin_library_interests__interest_id__delete"];
+        options?: never;
+        head?: never;
+        /** Admin Update Interest */
+        patch: operations["admin_update_interest_api_admin_library_interests__interest_id__patch"];
+        trace?: never;
+    };
+    "/api/admin/library/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin Create Tag */
+        post: operations["admin_create_tag_api_admin_library_tags_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/library/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Delete Tag */
+        delete: operations["admin_delete_tag_api_admin_library_tags__tag_id__delete"];
+        options?: never;
+        head?: never;
+        /** Admin Update Tag */
+        patch: operations["admin_update_tag_api_admin_library_tags__tag_id__patch"];
+        trace?: never;
+    };
+    "/api/profile/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Profile */
+        get: operations["get_my_profile_api_profile_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch My Profile */
+        patch: operations["patch_my_profile_api_profile_me_patch"];
         trace?: never;
     };
     "/api/notifications": {
@@ -434,6 +684,27 @@ export interface components {
             /** Selected */
             selected: boolean;
         };
+        /** InterestOptionCreateBody */
+        InterestOptionCreateBody: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Selected
+             * @default false
+             */
+            selected: boolean;
+        };
+        /** InterestOptionUpdateBody */
+        InterestOptionUpdateBody: {
+            /** Label */
+            label?: string | null;
+            /** Selected */
+            selected?: boolean | null;
+            /** Sortorder */
+            sortOrder?: number | null;
+        };
         /** InterestsPayload */
         InterestsPayload: {
             /** Interests */
@@ -471,6 +742,34 @@ export interface components {
             /** Authoravatarurl */
             authorAvatarUrl: string;
         };
+        /** LibraryArticleCreateBody */
+        LibraryArticleCreateBody: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Authorname */
+            authorName: string;
+            /** Authoravatarurl */
+            authorAvatarUrl: string;
+            /** Tagids */
+            tagIds?: string[];
+        };
+        /** LibraryArticleUpdateBody */
+        LibraryArticleUpdateBody: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Authorname */
+            authorName?: string | null;
+            /** Authoravatarurl */
+            authorAvatarUrl?: string | null;
+            /** Tagids */
+            tagIds?: string[] | null;
+        };
         /** LibraryBundle */
         LibraryBundle: {
             /** Showcaseitems */
@@ -507,6 +806,26 @@ export interface components {
             imageUrl: string;
             hero: components["schemas"]["LibraryHero"];
         };
+        /** LibraryTagCreateBody */
+        LibraryTagCreateBody: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Tone */
+            tone: string;
+            /** Sortorder */
+            sortOrder?: number | null;
+        };
+        /** LibraryTagUpdateBody */
+        LibraryTagUpdateBody: {
+            /** Label */
+            label?: string | null;
+            /** Tone */
+            tone?: string | null;
+            /** Sortorder */
+            sortOrder?: number | null;
+        };
         /** LikePayload */
         LikePayload: {
             /**
@@ -519,6 +838,49 @@ export interface components {
             /** Ts */
             ts: number;
         };
+        /** NewsFeaturedCreateBody */
+        NewsFeaturedCreateBody: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle: string;
+            /** Description */
+            description: string;
+            /** Imageurl */
+            imageUrl: string;
+            /** Ctalabel */
+            ctaLabel: string;
+            /** Detailsurl */
+            detailsUrl: string;
+        };
+        /** NewsFeaturedUpdateBody */
+        NewsFeaturedUpdateBody: {
+            /** Title */
+            title?: string | null;
+            /** Subtitle */
+            subtitle?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Imageurl */
+            imageUrl?: string | null;
+            /** Ctalabel */
+            ctaLabel?: string | null;
+            /** Detailsurl */
+            detailsUrl?: string | null;
+        };
+        /** NewsMiniCreateBody */
+        NewsMiniCreateBody: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Imageurl */
+            imageUrl: string;
+            /** Detailsurl */
+            detailsUrl: string;
+        };
         /** NewsMiniItem */
         NewsMiniItem: {
             /** Id */
@@ -529,6 +891,15 @@ export interface components {
             imageUrl: string;
             /** Detailsurl */
             detailsUrl: string;
+        };
+        /** NewsMiniUpdateBody */
+        NewsMiniUpdateBody: {
+            /** Title */
+            title?: string | null;
+            /** Imageurl */
+            imageUrl?: string | null;
+            /** Detailsurl */
+            detailsUrl?: string | null;
         };
         /** NotificationItem */
         NotificationItem: {
@@ -602,6 +973,31 @@ export interface components {
             /** Delta */
             delta: string;
         };
+        /** ProfileInterest */
+        ProfileInterest: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** ProfileMe */
+        ProfileMe: {
+            /** Displayname */
+            displayName?: string | null;
+            /** Bio */
+            bio?: string | null;
+            /** Interests */
+            interests?: components["schemas"]["ProfileInterest"][];
+        };
+        /** ProfileMePatch */
+        ProfileMePatch: {
+            /** Displayname */
+            displayName?: string | null;
+            /** Bio */
+            bio?: string | null;
+            /** Interestids */
+            interestIds?: string[] | null;
+        };
         /** ProgressBlock */
         ProgressBlock: {
             /** Value */
@@ -619,6 +1015,54 @@ export interface components {
             count: number;
             /** Projects */
             projects: components["schemas"]["HubProject"][];
+        };
+        /** ProjectCreateBody */
+        ProjectCreateBody: {
+            /** Id */
+            id: string;
+            /** Columnid */
+            columnId: string;
+            /** Code */
+            code: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Teamname */
+            teamName: string;
+            /** Updatedlabel */
+            updatedLabel: string;
+            /** Teamavatarurl */
+            teamAvatarUrl: string;
+            /** Detailsurl */
+            detailsUrl: string;
+            /** Visibility */
+            visibility?: ("public" | "private") | null;
+            /** Ishot */
+            isHot?: boolean | null;
+            /** Ownername */
+            ownerName: string;
+            /** Joinlabel */
+            joinLabel: string;
+            /** Teamcaption */
+            teamCaption: string;
+            /** Productivitycaption */
+            productivityCaption: string;
+            /** Progresscaption */
+            progressCaption: string;
+            /** Todocaption */
+            todoCaption: string;
+            /** Integrationcaption */
+            integrationCaption: string;
+            /** Teammemberspreview */
+            teamMembersPreview: components["schemas"]["PersonPreview"][];
+            productivity: components["schemas"]["ProductivityBlock"];
+            progress: components["schemas"]["ProgressBlock"];
+            todo: components["schemas"]["TodoBlock"];
+            /** Integrations */
+            integrations: components["schemas"]["IntegrationItem"][];
+            /** Participants */
+            participants: components["schemas"]["ParticipantRow"][];
         };
         /** ProjectDetails */
         ProjectDetails: {
@@ -654,6 +1098,66 @@ export interface components {
             /** Participants */
             participants: components["schemas"]["ParticipantRow"][];
         };
+        /** ProjectUpdateBody */
+        ProjectUpdateBody: {
+            /** Columnid */
+            columnId?: string | null;
+            /** Code */
+            code?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Teamname */
+            teamName?: string | null;
+            /** Updatedlabel */
+            updatedLabel?: string | null;
+            /** Teamavatarurl */
+            teamAvatarUrl?: string | null;
+            /** Detailsurl */
+            detailsUrl?: string | null;
+            /** Visibility */
+            visibility?: ("public" | "private") | null;
+            /** Ishot */
+            isHot?: boolean | null;
+            /** Ownername */
+            ownerName?: string | null;
+            /** Joinlabel */
+            joinLabel?: string | null;
+            /** Teamcaption */
+            teamCaption?: string | null;
+            /** Productivitycaption */
+            productivityCaption?: string | null;
+            /** Progresscaption */
+            progressCaption?: string | null;
+            /** Todocaption */
+            todoCaption?: string | null;
+            /** Integrationcaption */
+            integrationCaption?: string | null;
+            /** Teammemberspreview */
+            teamMembersPreview?: components["schemas"]["PersonPreview"][] | null;
+            productivity?: components["schemas"]["ProductivityBlock"] | null;
+            progress?: components["schemas"]["ProgressBlock"] | null;
+            todo?: components["schemas"]["TodoBlock"] | null;
+            /** Integrations */
+            integrations?: components["schemas"]["IntegrationItem"][] | null;
+            /** Participants */
+            participants?: components["schemas"]["ParticipantRow"][] | null;
+        };
+        /** ProjectsColumnCreate */
+        ProjectsColumnCreate: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+        };
+        /** ProjectsColumnUpdate */
+        ProjectsColumnUpdate: {
+            /** Title */
+            title?: string | null;
+            /** Sortorder */
+            sortOrder?: number | null;
+        };
         /** RecommendationCard */
         RecommendationCard: {
             /** Id */
@@ -666,6 +1170,34 @@ export interface components {
             image: string;
             /** Link */
             link: string;
+        };
+        /** ShowcaseCreateBody */
+        ShowcaseCreateBody: {
+            /** Id */
+            id: string;
+            /** Brandlabel */
+            brandLabel: string;
+            /** Eyebrow */
+            eyebrow: string;
+            /** Title */
+            title: string;
+            /** Imageurl */
+            imageUrl: string;
+            hero: components["schemas"]["LibraryHero"];
+        };
+        /** ShowcaseUpdateBody */
+        ShowcaseUpdateBody: {
+            /** Brandlabel */
+            brandLabel?: string | null;
+            /** Eyebrow */
+            eyebrow?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Imageurl */
+            imageUrl?: string | null;
+            hero?: components["schemas"]["LibraryHero"] | null;
+            /** Sortorder */
+            sortOrder?: number | null;
         };
         /** TodoBlock */
         TodoBlock: {
@@ -1214,6 +1746,148 @@ export interface operations {
             };
         };
     };
+    create_news_mini_api_news_mini_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewsMiniCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsMiniItem"];
+                };
+            };
+            /** @description Уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_news_mini_api_news_mini__news_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                news_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Нет прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_news_mini_api_news_mini__news_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                news_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewsMiniUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsMiniItem"];
+                };
+            };
+            /** @description Нет прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_news_featured_api_news_featured_get: {
         parameters: {
             query?: never;
@@ -1230,6 +1904,208 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FeaturedNewsItem"][];
+                };
+            };
+        };
+    };
+    create_news_featured_api_news_featured_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewsFeaturedCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeaturedNewsItem"];
+                };
+            };
+            /** @description Только модератор */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_news_featured_api_news_featured__news_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                news_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Только модератор */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_news_featured_api_news_featured__news_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                news_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewsFeaturedUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeaturedNewsItem"];
+                };
+            };
+            /** @description Только модератор */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_project_api_projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectDetails"];
+                };
+            };
+            /** @description Колонка не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Проект с таким id уже есть */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1272,6 +2148,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectDetails"];
+                };
+            };
+            /** @description Проект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_project_api_projects__project_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Нет прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Проект не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_project_api_projects__project_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectDetails"];
+                };
+            };
+            /** @description Нет прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
                 };
             };
             /** @description Проект не найден */
@@ -1338,6 +2314,110 @@ export interface operations {
             };
         };
     };
+    admin_create_column_api_admin_projects_columns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectsColumnCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectColumn"];
+                };
+            };
+            /** @description Колонка уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_column_api_admin_projects_columns__column_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                column_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_column_api_admin_projects_columns__column_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                column_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectsColumnUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_library_api_library_get: {
         parameters: {
             query?: never;
@@ -1354,6 +2434,537 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LibraryBundle"];
+                };
+            };
+        };
+    };
+    create_library_article_api_library_articles_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LibraryArticleCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryArticle"];
+                };
+            };
+            /** @description Неизвестные теги */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Статья уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_library_article_api_library_articles__article_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Нет прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_library_article_api_library_articles__article_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LibraryArticleUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryArticle"];
+                };
+            };
+            /** @description Неизвестные теги */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Нет прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_create_showcase_api_admin_library_showcase_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShowcaseCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryShowcaseItem"];
+                };
+            };
+            /** @description Уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_showcase_api_admin_library_showcase__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_showcase_api_admin_library_showcase__item_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShowcaseUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryShowcaseItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_create_interest_api_admin_library_interests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterestOptionCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterestOption"];
+                };
+            };
+            /** @description Уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_interest_api_admin_library_interests__interest_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_interest_api_admin_library_interests__interest_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterestOptionUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterestOption"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_create_tag_api_admin_library_tags_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LibraryTagCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleTag"];
+                };
+            };
+            /** @description Уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_tag_api_admin_library_tags__tag_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_tag_api_admin_library_tags__tag_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LibraryTagUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleTag"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_profile_api_profile_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileMe"];
+                };
+            };
+        };
+    };
+    patch_my_profile_api_profile_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileMePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileMe"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -352,6 +352,119 @@ paths:
                   $ref: '#/components/schemas/NewsMiniItem'
                 type: array
                 title: Response Get News Mini Api News Mini Get
+    post:
+      tags:
+      - news
+      summary: Create News Mini
+      operationId: create_news_mini_api_news_mini_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsMiniCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsMiniItem'
+        '409':
+          description: Уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/news/mini/{news_id}:
+    patch:
+      tags:
+      - news
+      summary: Patch News Mini
+      operationId: patch_news_mini_api_news_mini__news_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: News Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsMiniUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsMiniItem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Нет прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - news
+      summary: Delete News Mini
+      operationId: delete_news_mini_api_news_mini__news_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: News Id
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Нет прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/news/featured:
     get:
       tags:
@@ -368,6 +481,164 @@ paths:
                   $ref: '#/components/schemas/FeaturedNewsItem'
                 type: array
                 title: Response Get News Featured Api News Featured Get
+    post:
+      tags:
+      - news
+      summary: Create News Featured
+      operationId: create_news_featured_api_news_featured_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsFeaturedCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturedNewsItem'
+        '409':
+          description: Уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Только модератор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/news/featured/{news_id}:
+    patch:
+      tags:
+      - news
+      summary: Patch News Featured
+      operationId: patch_news_featured_api_news_featured__news_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: News Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsFeaturedUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturedNewsItem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Только модератор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - news
+      summary: Delete News Featured
+      operationId: delete_news_featured_api_news_featured__news_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: News Id
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Только модератор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/projects:
+    post:
+      tags:
+      - projects
+      summary: Create Project
+      operationId: create_project_api_projects_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetails'
+        '404':
+          description: Колонка не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: Проект с таким id уже есть
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/projects/hub:
     get:
       tags:
@@ -385,6 +656,86 @@ paths:
                 type: array
                 title: Response Get Projects Hub Api Projects Hub Get
   /api/projects/{project_id}:
+    patch:
+      tags:
+      - projects
+      summary: Patch Project
+      operationId: patch_project_api_projects__project_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetails'
+        '404':
+          description: Проект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Нет прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - projects
+      summary: Delete Project
+      operationId: delete_project_api_projects__project_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Id
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          description: Проект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Нет прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     get:
       tags:
       - projects
@@ -454,6 +805,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/projects/columns:
+    post:
+      tags:
+      - projects-admin
+      summary: Admin Create Column
+      operationId: admin_create_column_api_admin_projects_columns_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectsColumnCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectColumn'
+        '409':
+          description: Колонка уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/projects/columns/{column_id}:
+    patch:
+      tags:
+      - projects-admin
+      summary: Admin Update Column
+      operationId: admin_update_column_api_admin_projects_columns__column_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: column_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Column Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectsColumnUpdate'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - projects-admin
+      summary: Admin Delete Column
+      operationId: admin_delete_column_api_admin_projects_columns__column_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: column_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Column Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/library:
     get:
       tags:
@@ -467,6 +904,443 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LibraryBundle'
+  /api/library/articles:
+    post:
+      tags:
+      - library
+      summary: Create Library Article
+      operationId: create_library_article_api_library_articles_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryArticleCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryArticle'
+        '409':
+          description: Статья уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '400':
+          description: Неизвестные теги
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/library/articles/{article_id}:
+    patch:
+      tags:
+      - library
+      summary: Patch Library Article
+      operationId: patch_library_article_api_library_articles__article_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: article_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Article Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryArticleUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryArticle'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Нет прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '400':
+          description: Неизвестные теги
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - library
+      summary: Delete Library Article
+      operationId: delete_library_article_api_library_articles__article_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: article_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Article Id
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '403':
+          description: Нет прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/library/showcase:
+    post:
+      tags:
+      - library-admin
+      summary: Admin Create Showcase
+      operationId: admin_create_showcase_api_admin_library_showcase_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowcaseCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryShowcaseItem'
+        '409':
+          description: Уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/library/showcase/{item_id}:
+    patch:
+      tags:
+      - library-admin
+      summary: Admin Update Showcase
+      operationId: admin_update_showcase_api_admin_library_showcase__item_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowcaseUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryShowcaseItem'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - library-admin
+      summary: Admin Delete Showcase
+      operationId: admin_delete_showcase_api_admin_library_showcase__item_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/library/interests:
+    post:
+      tags:
+      - library-admin
+      summary: Admin Create Interest
+      operationId: admin_create_interest_api_admin_library_interests_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestOptionCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestOption'
+        '409':
+          description: Уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/library/interests/{interest_id}:
+    patch:
+      tags:
+      - library-admin
+      summary: Admin Update Interest
+      operationId: admin_update_interest_api_admin_library_interests__interest_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: interest_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Interest Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestOptionUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestOption'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - library-admin
+      summary: Admin Delete Interest
+      operationId: admin_delete_interest_api_admin_library_interests__interest_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: interest_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Interest Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/library/tags:
+    post:
+      tags:
+      - library-admin
+      summary: Admin Create Tag
+      operationId: admin_create_tag_api_admin_library_tags_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryTagCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleTag'
+        '409':
+          description: Уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/library/tags/{tag_id}:
+    patch:
+      tags:
+      - library-admin
+      summary: Admin Update Tag
+      operationId: admin_update_tag_api_admin_library_tags__tag_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: tag_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tag Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryTagUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleTag'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - library-admin
+      summary: Admin Delete Tag
+      operationId: admin_delete_tag_api_admin_library_tags__tag_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: tag_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tag Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/profile/me:
+    get:
+      tags:
+      - profile
+      summary: Get My Profile
+      operationId: get_my_profile_api_profile_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMe'
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      tags:
+      - profile
+      summary: Patch My Profile
+      operationId: patch_my_profile_api_profile_me_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileMePatch'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMe'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/notifications:
     get:
       tags:
@@ -799,6 +1673,42 @@ components:
       - label
       - selected
       title: InterestOption
+    InterestOptionCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+        selected:
+          type: boolean
+          title: Selected
+          default: false
+      type: object
+      required:
+      - id
+      - label
+      title: InterestOptionCreateBody
+    InterestOptionUpdateBody:
+      properties:
+        label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Label
+        selected:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Selected
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      title: InterestOptionUpdateBody
     InterestsPayload:
       properties:
         interests:
@@ -867,6 +1777,67 @@ components:
       - authorName
       - authorAvatarUrl
       title: LibraryArticle
+    LibraryArticleCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        description:
+          type: string
+          title: Description
+        authorName:
+          type: string
+          title: Authorname
+        authorAvatarUrl:
+          type: string
+          title: Authoravatarurl
+        tagIds:
+          items:
+            type: string
+          type: array
+          title: Tagids
+      type: object
+      required:
+      - id
+      - title
+      - description
+      - authorName
+      - authorAvatarUrl
+      title: LibraryArticleCreateBody
+    LibraryArticleUpdateBody:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        authorName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorname
+        authorAvatarUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authoravatarurl
+        tagIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tagids
+      type: object
+      title: LibraryArticleUpdateBody
     LibraryBundle:
       properties:
         showcaseItems:
@@ -943,6 +1914,47 @@ components:
       - imageUrl
       - hero
       title: LibraryShowcaseItem
+    LibraryTagCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+        tone:
+          type: string
+          title: Tone
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      required:
+      - id
+      - label
+      - tone
+      title: LibraryTagCreateBody
+    LibraryTagUpdateBody:
+      properties:
+        label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Label
+        tone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tone
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      title: LibraryTagUpdateBody
     LikePayload:
       properties:
         entity:
@@ -963,6 +1975,94 @@ components:
       - id
       - ts
       title: LikePayload
+    NewsFeaturedCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        subtitle:
+          type: string
+          title: Subtitle
+        description:
+          type: string
+          title: Description
+        imageUrl:
+          type: string
+          title: Imageurl
+        ctaLabel:
+          type: string
+          title: Ctalabel
+        detailsUrl:
+          type: string
+          title: Detailsurl
+      type: object
+      required:
+      - id
+      - title
+      - subtitle
+      - description
+      - imageUrl
+      - ctaLabel
+      - detailsUrl
+      title: NewsFeaturedCreateBody
+    NewsFeaturedUpdateBody:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        subtitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subtitle
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        imageUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imageurl
+        ctaLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ctalabel
+        detailsUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detailsurl
+      type: object
+      title: NewsFeaturedUpdateBody
+    NewsMiniCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        imageUrl:
+          type: string
+          title: Imageurl
+        detailsUrl:
+          type: string
+          title: Detailsurl
+      type: object
+      required:
+      - id
+      - title
+      - imageUrl
+      - detailsUrl
+      title: NewsMiniCreateBody
     NewsMiniItem:
       properties:
         id:
@@ -984,6 +2084,25 @@ components:
       - imageUrl
       - detailsUrl
       title: NewsMiniItem
+    NewsMiniUpdateBody:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        imageUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imageurl
+        detailsUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detailsurl
+      type: object
+      title: NewsMiniUpdateBody
     NotificationItem:
       properties:
         id:
@@ -1127,6 +2246,59 @@ components:
       - value
       - delta
       title: ProductivityBlock
+    ProfileInterest:
+      properties:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+      type: object
+      required:
+      - id
+      - label
+      title: ProfileInterest
+    ProfileMe:
+      properties:
+        displayName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Displayname
+        bio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bio
+        interests:
+          items:
+            $ref: '#/components/schemas/ProfileInterest'
+          type: array
+          title: Interests
+      type: object
+      title: ProfileMe
+    ProfileMePatch:
+      properties:
+        displayName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Displayname
+        bio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bio
+        interestIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Interestids
+      type: object
+      title: ProfileMePatch
     ProgressBlock:
       properties:
         value:
@@ -1163,6 +2335,115 @@ components:
       - count
       - projects
       title: ProjectColumn
+    ProjectCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        columnId:
+          type: string
+          title: Columnid
+        code:
+          type: string
+          title: Code
+        title:
+          type: string
+          title: Title
+        description:
+          type: string
+          title: Description
+        teamName:
+          type: string
+          title: Teamname
+        updatedLabel:
+          type: string
+          title: Updatedlabel
+        teamAvatarUrl:
+          type: string
+          title: Teamavatarurl
+        detailsUrl:
+          type: string
+          title: Detailsurl
+        visibility:
+          anyOf:
+          - type: string
+            enum:
+            - public
+            - private
+          - type: 'null'
+          title: Visibility
+        isHot:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Ishot
+        ownerName:
+          type: string
+          title: Ownername
+        joinLabel:
+          type: string
+          title: Joinlabel
+        teamCaption:
+          type: string
+          title: Teamcaption
+        productivityCaption:
+          type: string
+          title: Productivitycaption
+        progressCaption:
+          type: string
+          title: Progresscaption
+        todoCaption:
+          type: string
+          title: Todocaption
+        integrationCaption:
+          type: string
+          title: Integrationcaption
+        teamMembersPreview:
+          items:
+            $ref: '#/components/schemas/PersonPreview'
+          type: array
+          title: Teammemberspreview
+        productivity:
+          $ref: '#/components/schemas/ProductivityBlock'
+        progress:
+          $ref: '#/components/schemas/ProgressBlock'
+        todo:
+          $ref: '#/components/schemas/TodoBlock'
+        integrations:
+          items:
+            $ref: '#/components/schemas/IntegrationItem'
+          type: array
+          title: Integrations
+        participants:
+          items:
+            $ref: '#/components/schemas/ParticipantRow'
+          type: array
+          title: Participants
+      type: object
+      required:
+      - id
+      - columnId
+      - code
+      - title
+      - description
+      - teamName
+      - updatedLabel
+      - teamAvatarUrl
+      - detailsUrl
+      - ownerName
+      - joinLabel
+      - teamCaption
+      - productivityCaption
+      - progressCaption
+      - todoCaption
+      - integrationCaption
+      - teamMembersPreview
+      - productivity
+      - progress
+      - todo
+      - integrations
+      - participants
+      title: ProjectCreateBody
     ProjectDetails:
       properties:
         id:
@@ -1239,6 +2520,158 @@ components:
       - integrations
       - participants
       title: ProjectDetails
+    ProjectUpdateBody:
+      properties:
+        columnId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Columnid
+        code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        teamName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Teamname
+        updatedLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updatedlabel
+        teamAvatarUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Teamavatarurl
+        detailsUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detailsurl
+        visibility:
+          anyOf:
+          - type: string
+            enum:
+            - public
+            - private
+          - type: 'null'
+          title: Visibility
+        isHot:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Ishot
+        ownerName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ownername
+        joinLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Joinlabel
+        teamCaption:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Teamcaption
+        productivityCaption:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Productivitycaption
+        progressCaption:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Progresscaption
+        todoCaption:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Todocaption
+        integrationCaption:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Integrationcaption
+        teamMembersPreview:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PersonPreview'
+            type: array
+          - type: 'null'
+          title: Teammemberspreview
+        productivity:
+          anyOf:
+          - $ref: '#/components/schemas/ProductivityBlock'
+          - type: 'null'
+        progress:
+          anyOf:
+          - $ref: '#/components/schemas/ProgressBlock'
+          - type: 'null'
+        todo:
+          anyOf:
+          - $ref: '#/components/schemas/TodoBlock'
+          - type: 'null'
+        integrations:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/IntegrationItem'
+            type: array
+          - type: 'null'
+          title: Integrations
+        participants:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ParticipantRow'
+            type: array
+          - type: 'null'
+          title: Participants
+      type: object
+      title: ProjectUpdateBody
+    ProjectsColumnCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+      type: object
+      required:
+      - id
+      - title
+      title: ProjectsColumnCreate
+    ProjectsColumnUpdate:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      title: ProjectsColumnUpdate
     RecommendationCard:
       properties:
         id:
@@ -1264,6 +2697,67 @@ components:
       - image
       - link
       title: RecommendationCard
+    ShowcaseCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        brandLabel:
+          type: string
+          title: Brandlabel
+        eyebrow:
+          type: string
+          title: Eyebrow
+        title:
+          type: string
+          title: Title
+        imageUrl:
+          type: string
+          title: Imageurl
+        hero:
+          $ref: '#/components/schemas/LibraryHero'
+      type: object
+      required:
+      - id
+      - brandLabel
+      - eyebrow
+      - title
+      - imageUrl
+      - hero
+      title: ShowcaseCreateBody
+    ShowcaseUpdateBody:
+      properties:
+        brandLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brandlabel
+        eyebrow:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Eyebrow
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        imageUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imageurl
+        hero:
+          anyOf:
+          - $ref: '#/components/schemas/LibraryHero'
+          - type: 'null'
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      title: ShowcaseUpdateBody
     TodoBlock:
       properties:
         task:

@@ -82,6 +82,8 @@ services:
       context: ./admin-panel
       dockerfile: Dockerfile
     environment:
+      # Тот же DSN, что у backend — одна БД для FastAPI и Django admin.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
       POSTGRES_HOST: postgres
       POSTGRES_DB: ${POSTGRES_DB:-comit}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

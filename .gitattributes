@@ -1,0 +1,2 @@
+# Shell scripts in Linux images must use LF line endings (CRLF breaks shebang).
+*.sh text eol=lf

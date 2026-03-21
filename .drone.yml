@@ -1,0 +1,146 @@
+---
+
+kind: pipeline
+type: docker
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+trigger:
+  branch:
+    include:
+      - dev
+      - master
+      - main
+      - feature/*
+      - fix/*
+  event:
+    - push
+    - pull_request
+
+volumes:
+  - name: docker-sock
+    host:
+      path: /var/run/docker.sock
+  - name: env-configs
+    host:
+      path: /home/s1rne/drone-configs/${DRONE_REPO_NAME}
+
+steps:
+  - name: backend-lint
+    image: python:3.12-slim
+    commands:
+      - pip install --no-cache-dir "ruff==0.8.4"
+      - ruff check backend/app backend/tests --output-format=concise
+    when:
+      event:
+        - pull_request
+        - push
+
+  - name: backend-test
+    image: python:3.12-slim
+    depends_on: [backend-lint]
+    volumes:
+      - name: env-configs
+        path: /configs
+    commands:
+      - |
+        set -e
+        test -f /configs/.env || { echo >&2 "Нет /configs/.env → /home/s1rne/drone-configs/${DRONE_REPO_NAME}/.env"; exit 1; }
+        cp /configs/.env .env
+        set -a
+        . /configs/.env
+        set +a
+        cd backend
+        pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
+        python -m pytest tests -v --cov=app --cov-report=term-missing --cov-report=xml
+    when:
+      event:
+        - pull_request
+        - push
+
+  - name: frontend-build
+    image: node:20-alpine
+    depends_on: [backend-lint]
+    volumes:
+      - name: env-configs
+        path: /configs
+    commands:
+      - |
+        set -e
+        test -f /configs/.env || { echo >&2 "Нет /configs/.env"; exit 1; }
+        cp /configs/.env .env
+        cd frontend
+        npm ci
+        npm run build
+    when:
+      event:
+        - pull_request
+        - push
+
+  # Сборка образов на хосте с кэшем слоёв (как RoboFirst). Только push в main/master.
+  - name: docker-compose-build
+    image: docker/compose:latest
+    depends_on: [backend-test, frontend-build]
+    volumes:
+      - name: docker-sock
+        path: /var/run/docker.sock
+      - name: env-configs
+        path: /configs
+    commands:
+      - |
+        set -e
+        cp /configs/.env .env || true
+        export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-viribus}"
+        docker-compose build --parallel backend frontend
+    when:
+      branch:
+        include:
+          - master
+          - main
+      event:
+        - push
+
+  # Предполагается, что postgres/redis уже подняты на сервере; пересобираем только app-слой.
+  - name: deploy
+    image: docker/compose:latest
+    depends_on: [docker-compose-build]
+    volumes:
+      - name: docker-sock
+        path: /var/run/docker.sock
+      - name: env-configs
+        path: /configs
+    commands:
+      - |
+        set -e
+        cp /configs/.env .env || true
+        export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-viribus}"
+        docker-compose up -d --force-recreate --no-deps backend frontend
+        sleep 8
+        docker-compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=5).read(200)" || echo "Backend check skipped/failed, see logs"
+    when:
+      branch:
+        include:
+          - master
+          - main
+      event:
+        - push
+
+  - name: cleanup
+    image: docker:latest
+    depends_on: [deploy]
+    volumes:
+      - name: docker-sock
+        path: /var/run/docker.sock
+    commands:
+      - |
+        docker images | grep -E "viribus-(backend|frontend)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
+    when:
+      branch:
+        include:
+          - master
+          - main
+      event:
+        - push

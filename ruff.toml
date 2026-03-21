@@ -1,0 +1,11 @@
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["E", "F"]
+ignore = [
+    "E501",   # длина строки
+    "F401",   # неиспользуемые импорты (часто ложные в __init__ / реэкспортах)
+    "F403",   # import *
+    "F405",   # star import + __all__
+]

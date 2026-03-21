@@ -1,0 +1,11 @@
+pyyaml>=6.0,<7
+fastapi>=0.115.0,<1
+uvicorn[standard]>=0.32.0,<1
+pydantic>=2.0,<3
+pydantic-settings>=2.0,<3
+sqlalchemy[asyncio]>=2.0,<3
+asyncpg>=0.29,<1
+alembic>=1.13,<2
+greenlet>=3.0,<4
+fastapi-users[sqlalchemy,redis]>=14.0,<15
+redis>=5.0,<6

@@ -1,0 +1,7 @@
+Alembic migrations for the modular monolith (single chain, async PostgreSQL).
+
+Run from `backend/`:
+
+  alembic upgrade head
+
+Ensure `DATABASE_URL` / `.env` matches your PostgreSQL instance (see `app.config.Settings`).

@@ -9,6 +9,12 @@ class OkResponse(BaseModel):
     ok: bool = True
 
 
+class ErrorDetail(BaseModel):
+    """Тело ответа HTTPException (например 404)."""
+
+    detail: str
+
+
 class LikePayload(BaseModel):
     entity: Literal["recommendation", "news"]
     id: str

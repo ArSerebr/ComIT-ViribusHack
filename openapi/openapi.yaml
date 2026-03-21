@@ -1,567 +1,957 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: ComIT Viribus API
   description: REST API для SPA (без эндпоинтов ИИ-чата)
   version: 1.0.0
-
-servers:
-  - url: /
-    description: Относительно хоста приложения
-
-tags:
-  - name: analytics
-    description: События и предпочтения
-  - name: news
-    description: Новости и ивенты
-  - name: projects
-    description: Проектный хаб и карточки
-  - name: library
-    description: Библиотека материалов
-  - name: notifications
-    description: Уведомления
-  - name: dashboard
-    description: Главная панель
-
 paths:
   /api/recommendations/like:
     post:
-      tags: [analytics]
-      summary: Зафиксировать лайк (рекомендация или новость)
-      operationId: postRecommendationLike
+      tags:
+      - analytics
+      summary: Post Recommendation Like
+      operationId: post_recommendation_like_api_recommendations_like_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LikePayload"
+              $ref: '#/components/schemas/LikePayload'
+        required: true
       responses:
-        "200":
-          description: Событие принято
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkResponse"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
+                $ref: '#/components/schemas/OkResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/library/interests:
     post:
-      tags: [analytics]
-      summary: Сохранить выбранные интересы библиотеки
-      operationId: postLibraryInterests
+      tags:
+      - analytics
+      summary: Post Library Interests
+      operationId: post_library_interests_api_library_interests_post
       requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestsPayload'
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InterestsPayload"
       responses:
-        "200":
-          description: Сохранено
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkResponse"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-  /api/projects/{project_id}/join:
-    post:
-      tags: [projects]
-      summary: Запрос на вступление в проект (заглушка)
-      operationId: postProjectJoin
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/JoinRequest"
-      responses:
-        "200":
-          description: Заявка принята (заглушка)
+                $ref: '#/components/schemas/OkResponse'
+        '422':
+          description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JoinResponse"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/news/mini:
     get:
-      tags: [news]
-      summary: Короткая лента новостей
-      operationId: getNewsMini
+      tags:
+      - news
+      summary: Get News Mini
+      operationId: get_news_mini_api_news_mini_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: array
                 items:
-                  $ref: "#/components/schemas/NewsMiniItem"
-
+                  $ref: '#/components/schemas/NewsMiniItem'
+                type: array
+                title: Response Get News Mini Api News Mini Get
   /api/news/featured:
     get:
-      tags: [news]
-      summary: Избранные ивенты
-      operationId: getNewsFeatured
+      tags:
+      - news
+      summary: Get News Featured
+      operationId: get_news_featured_api_news_featured_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: array
                 items:
-                  $ref: "#/components/schemas/FeaturedNewsItem"
-
+                  $ref: '#/components/schemas/FeaturedNewsItem'
+                type: array
+                title: Response Get News Featured Api News Featured Get
   /api/projects/hub:
     get:
-      tags: [projects]
-      summary: Канбан колонок проектов
-      operationId: getProjectsHub
+      tags:
+      - projects
+      summary: Get Projects Hub
+      operationId: get_projects_hub_api_projects_hub_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: array
                 items:
-                  $ref: "#/components/schemas/ProjectColumn"
-
+                  $ref: '#/components/schemas/ProjectColumn'
+                type: array
+                title: Response Get Projects Hub Api Projects Hub Get
   /api/projects/{project_id}:
     get:
-      tags: [projects]
-      summary: Детальная карточка проекта
-      operationId: getProjectById
+      tags:
+      - projects
+      summary: Get Project By Id
+      operationId: get_project_by_id_api_projects__project_id__get
       parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Id
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProjectDetails"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
+                $ref: '#/components/schemas/ProjectDetails'
+        '404':
+          description: Проект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/projects/{project_id}/join:
+    post:
+      tags:
+      - projects
+      summary: Post Project Join
+      operationId: post_project_join_api_projects__project_id__join_post
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinRequest'
+              default: {}
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JoinResponse'
+        '404':
+          description: Проект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/library:
     get:
-      tags: [library]
-      summary: Данные библиотеки (витрина, интересы, статьи)
-      operationId: getLibrary
+      tags:
+      - library
+      summary: Get Library
+      operationId: get_library_api_library_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LibraryBundle"
-
+                $ref: '#/components/schemas/LibraryBundle'
   /api/notifications:
     get:
-      tags: [notifications]
-      summary: Список уведомлений
-      operationId: getNotifications
+      tags:
+      - notifications
+      summary: Get Notifications
+      operationId: get_notifications_api_notifications_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: array
                 items:
-                  $ref: "#/components/schemas/NotificationItem"
-
+                  $ref: '#/components/schemas/NotificationItem'
+                type: array
+                title: Response Get Notifications Api Notifications Get
   /api/dashboard/recommendations:
     get:
-      tags: [dashboard]
-      summary: Карточки рекомендаций (свайп на главной)
-      operationId: getDashboardRecommendations
+      tags:
+      - dashboard
+      summary: Get Dashboard Recommendations
+      operationId: get_dashboard_recommendations_api_dashboard_recommendations_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: array
                 items:
-                  $ref: "#/components/schemas/RecommendationCard"
-
+                  $ref: '#/components/schemas/RecommendationCard'
+                type: array
+                title: Response Get Dashboard Recommendations Api Dashboard Recommendations Get
   /api/dashboard/home:
     get:
-      tags: [dashboard]
-      summary: Агрегат для блоков главной (мероприятия, продуктивность, курс)
-      operationId: getDashboardHome
+      tags:
+      - dashboard
+      summary: Get Dashboard Home
+      operationId: get_dashboard_home_api_dashboard_home_get
       responses:
-        "200":
-          description: OK
+        '200':
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DashboardHome"
-
+                $ref: '#/components/schemas/DashboardHome'
+        '404':
+          description: Конфиг главной не задан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
 components:
-  responses:
-    NotFound:
-      description: Ресурс не найден
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorBody"
-    ValidationError:
-      description: Ошибка валидации
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/HTTPValidationError"
-
   schemas:
-    OkResponse:
-      type: object
-      required: [ok]
+    ArticleTag:
       properties:
-        ok:
-          type: boolean
-
-    ErrorBody:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+        tone:
+          type: string
+          title: Tone
       type: object
+      required:
+      - id
+      - label
+      - tone
+      title: ArticleTag
+    DashboardHome:
+      properties:
+        events:
+          $ref: '#/components/schemas/DashboardHomeEvents'
+        productivity:
+          $ref: '#/components/schemas/DashboardHomeProductivity'
+        highlightCourse:
+          $ref: '#/components/schemas/DashboardHomeCourse'
+      type: object
+      required:
+      - events
+      - productivity
+      - highlightCourse
+      title: DashboardHome
+    DashboardHomeCourse:
+      properties:
+        title:
+          type: string
+          title: Title
+        imageUrl:
+          type: string
+          title: Imageurl
+        path:
+          type: string
+          title: Path
+      type: object
+      required:
+      - title
+      - imageUrl
+      - path
+      title: DashboardHomeCourse
+    DashboardHomeEvents:
+      properties:
+        count:
+          type: integer
+          title: Count
+        deltaLabel:
+          type: string
+          title: Deltalabel
+      type: object
+      required:
+      - count
+      - deltaLabel
+      title: DashboardHomeEvents
+    DashboardHomeProductivity:
+      properties:
+        value:
+          type: string
+          title: Value
+        deltaLabel:
+          type: string
+          title: Deltalabel
+      type: object
+      required:
+      - value
+      - deltaLabel
+      title: DashboardHomeProductivity
+    ErrorDetail:
       properties:
         detail:
           type: string
-
-    HTTPValidationError:
+          title: Detail
       type: object
+      required:
+      - detail
+      title: ErrorDetail
+      description: Тело ответа HTTPException (например 404).
+    FeaturedNewsItem:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        subtitle:
+          type: string
+          title: Subtitle
+        description:
+          type: string
+          title: Description
+        imageUrl:
+          type: string
+          title: Imageurl
+        ctaLabel:
+          type: string
+          title: Ctalabel
+        detailsUrl:
+          type: string
+          title: Detailsurl
+      type: object
+      required:
+      - id
+      - title
+      - subtitle
+      - description
+      - imageUrl
+      - ctaLabel
+      - detailsUrl
+      title: FeaturedNewsItem
+    HTTPValidationError:
       properties:
         detail:
-          type: array
           items:
-            type: object
-
-    LikePayload:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
       type: object
-      required: [entity, id, ts]
+      title: HTTPValidationError
+    HubProject:
+      properties:
+        id:
+          type: string
+          title: Id
+        code:
+          type: string
+          title: Code
+        title:
+          type: string
+          title: Title
+        description:
+          type: string
+          title: Description
+        teamName:
+          type: string
+          title: Teamname
+        updatedLabel:
+          type: string
+          title: Updatedlabel
+        teamAvatarUrl:
+          type: string
+          title: Teamavatarurl
+        detailsUrl:
+          type: string
+          title: Detailsurl
+        visibility:
+          anyOf:
+          - type: string
+            enum:
+            - public
+            - private
+          - type: 'null'
+          title: Visibility
+        isHot:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Ishot
+      type: object
+      required:
+      - id
+      - code
+      - title
+      - description
+      - teamName
+      - updatedLabel
+      - teamAvatarUrl
+      - detailsUrl
+      title: HubProject
+    IntegrationItem:
+      properties:
+        id:
+          type: string
+          title: Id
+        brand:
+          type: string
+          title: Brand
+        description:
+          type: string
+          title: Description
+        statusLabel:
+          type: string
+          title: Statuslabel
+        connectedSince:
+          type: string
+          title: Connectedsince
+      type: object
+      required:
+      - id
+      - brand
+      - description
+      - statusLabel
+      - connectedSince
+      title: IntegrationItem
+    InterestOption:
+      properties:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+        selected:
+          type: boolean
+          title: Selected
+      type: object
+      required:
+      - id
+      - label
+      - selected
+      title: InterestOption
+    InterestsPayload:
+      properties:
+        interests:
+          items:
+            type: string
+          type: array
+          title: Interests
+        ts:
+          type: integer
+          title: Ts
+      type: object
+      required:
+      - interests
+      - ts
+      title: InterestsPayload
+    JoinRequest:
+      properties:
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+      type: object
+      title: JoinRequest
+    JoinResponse:
+      properties:
+        ok:
+          type: boolean
+          title: Ok
+          default: true
+        project_id:
+          type: string
+          title: Project Id
+      type: object
+      required:
+      - project_id
+      title: JoinResponse
+    LibraryArticle:
+      properties:
+        id:
+          type: string
+          title: Id
+        tags:
+          items:
+            $ref: '#/components/schemas/ArticleTag'
+          type: array
+          title: Tags
+        title:
+          type: string
+          title: Title
+        description:
+          type: string
+          title: Description
+        authorName:
+          type: string
+          title: Authorname
+        authorAvatarUrl:
+          type: string
+          title: Authoravatarurl
+      type: object
+      required:
+      - id
+      - tags
+      - title
+      - description
+      - authorName
+      - authorAvatarUrl
+      title: LibraryArticle
+    LibraryBundle:
+      properties:
+        showcaseItems:
+          items:
+            $ref: '#/components/schemas/LibraryShowcaseItem'
+          type: array
+          title: Showcaseitems
+        interestOptions:
+          items:
+            $ref: '#/components/schemas/InterestOption'
+          type: array
+          title: Interestoptions
+        articles:
+          items:
+            $ref: '#/components/schemas/LibraryArticle'
+          type: array
+          title: Articles
+      type: object
+      required:
+      - showcaseItems
+      - interestOptions
+      - articles
+      title: LibraryBundle
+    LibraryHero:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        updatedLabel:
+          type: string
+          title: Updatedlabel
+        providerLabel:
+          type: string
+          title: Providerlabel
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - id
+      - title
+      - updatedLabel
+      - providerLabel
+      - description
+      title: LibraryHero
+    LibraryShowcaseItem:
+      properties:
+        id:
+          type: string
+          title: Id
+        brandLabel:
+          type: string
+          title: Brandlabel
+        eyebrow:
+          type: string
+          title: Eyebrow
+        title:
+          type: string
+          title: Title
+        imageUrl:
+          type: string
+          title: Imageurl
+        hero:
+          $ref: '#/components/schemas/LibraryHero'
+      type: object
+      required:
+      - id
+      - brandLabel
+      - eyebrow
+      - title
+      - imageUrl
+      - hero
+      title: LibraryShowcaseItem
+    LikePayload:
       properties:
         entity:
           type: string
-          enum: [recommendation, news]
+          enum:
+          - recommendation
+          - news
+          title: Entity
         id:
           type: string
+          title: Id
         ts:
           type: integer
-          format: int64
-
-    InterestsPayload:
+          title: Ts
       type: object
-      required: [interests, ts]
+      required:
+      - entity
+      - id
+      - ts
+      title: LikePayload
+    NewsMiniItem:
       properties:
-        interests:
-          type: array
-          items:
-            type: string
-        ts:
-          type: integer
-          format: int64
-
-    JoinRequest:
-      type: object
-      properties:
-        message:
+        id:
           type: string
-          nullable: true
-
-    JoinResponse:
+          title: Id
+        title:
+          type: string
+          title: Title
+        imageUrl:
+          type: string
+          title: Imageurl
+        detailsUrl:
+          type: string
+          title: Detailsurl
       type: object
-      required: [ok]
+      required:
+      - id
+      - title
+      - imageUrl
+      - detailsUrl
+      title: NewsMiniItem
+    NotificationItem:
+      properties:
+        id:
+          type: string
+          title: Id
+        type:
+          type: string
+          title: Type
+        title:
+          type: string
+          title: Title
+        dateLabel:
+          type: string
+          title: Datelabel
+        dateCaption:
+          type: string
+          title: Datecaption
+        unread:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Unread
+        authorLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorlabel
+        authorName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorname
+        accentText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accenttext
+        ctaLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ctalabel
+        path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Path
+      type: object
+      required:
+      - id
+      - type
+      - title
+      - dateLabel
+      - dateCaption
+      title: NotificationItem
+    OkResponse:
       properties:
         ok:
           type: boolean
-        project_id:
-          type: string
-
-    NewsMiniItem:
+          title: Ok
+          default: true
       type: object
-      required: [id, title, imageUrl, detailsUrl]
-      properties:
-        id: { type: string }
-        title: { type: string }
-        imageUrl: { type: string }
-        detailsUrl: { type: string }
-
-    FeaturedNewsItem:
-      type: object
-      required: [id, title, subtitle, description, imageUrl, ctaLabel, detailsUrl]
-      properties:
-        id: { type: string }
-        title: { type: string }
-        subtitle: { type: string }
-        description: { type: string }
-        imageUrl: { type: string }
-        ctaLabel: { type: string }
-        detailsUrl: { type: string }
-
-    HubProject:
-      type: object
-      required: [id, code, title, description, teamName, updatedLabel, teamAvatarUrl, detailsUrl]
-      properties:
-        id: { type: string }
-        code: { type: string }
-        title: { type: string }
-        description: { type: string }
-        teamName: { type: string }
-        updatedLabel: { type: string }
-        teamAvatarUrl: { type: string }
-        detailsUrl: { type: string }
-        visibility:
-          type: string
-          nullable: true
-          enum: [public, private]
-        isHot:
-          type: boolean
-          nullable: true
-
-    ProjectColumn:
-      type: object
-      required: [id, title, count, projects]
-      properties:
-        id: { type: string }
-        title: { type: string }
-        count: { type: integer }
-        projects:
-          type: array
-          items:
-            $ref: "#/components/schemas/HubProject"
-
-    PersonPreview:
-      type: object
-      required: [id, name, avatarUrl, avatarVariant]
-      properties:
-        id: { type: string }
-        name: { type: string }
-        avatarUrl: { type: string }
-        avatarVariant: { type: string }
-
+      title: OkResponse
     ParticipantRow:
-      allOf:
-        - $ref: "#/components/schemas/PersonPreview"
-        - type: object
-          properties:
-            comitId: { type: string }
-            timeInProject: { type: string }
-            role: { type: string }
-            status: { type: string }
-            lastTask: { type: string }
-
-    ProductivityBlock:
-      type: object
-      required: [value, delta]
       properties:
-        value: { type: string }
-        delta: { type: string }
-
-    ProgressBlock:
-      type: object
-      required: [value, percent]
-      properties:
-        value: { type: string }
-        percent: { type: integer }
-
-    TodoBlock:
-      type: object
-      required: [task, updatedLabel]
-      properties:
-        task: { type: string }
-        updatedLabel: { type: string }
-
-    IntegrationItem:
-      type: object
-      required: [id, brand, description, statusLabel, connectedSince]
-      properties:
-        id: { type: string }
-        brand: { type: string }
-        description: { type: string }
-        statusLabel: { type: string }
-        connectedSince: { type: string }
-
-    ProjectDetails:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        avatarUrl:
+          type: string
+          title: Avatarurl
+        avatarVariant:
+          type: string
+          title: Avatarvariant
+        comitId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comitid
+        timeInProject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timeinproject
+        role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+        lastTask:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lasttask
       type: object
       required:
-        - id
-        - code
-        - title
-        - ownerName
-        - detailsUrl
-        - joinLabel
-        - teamCaption
-        - productivityCaption
-        - progressCaption
-        - todoCaption
-        - integrationCaption
-        - teamMembersPreview
-        - productivity
-        - progress
-        - todo
-        - integrations
-        - participants
+      - id
+      - name
+      - avatarUrl
+      - avatarVariant
+      title: ParticipantRow
+    PersonPreview:
       properties:
-        id: { type: string }
-        code: { type: string }
-        title: { type: string }
-        ownerName: { type: string }
-        detailsUrl: { type: string }
-        joinLabel: { type: string }
-        teamCaption: { type: string }
-        productivityCaption: { type: string }
-        progressCaption: { type: string }
-        todoCaption: { type: string }
-        integrationCaption: { type: string }
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        avatarUrl:
+          type: string
+          title: Avatarurl
+        avatarVariant:
+          type: string
+          title: Avatarvariant
+      type: object
+      required:
+      - id
+      - name
+      - avatarUrl
+      - avatarVariant
+      title: PersonPreview
+    ProductivityBlock:
+      properties:
+        value:
+          type: string
+          title: Value
+        delta:
+          type: string
+          title: Delta
+      type: object
+      required:
+      - value
+      - delta
+      title: ProductivityBlock
+    ProgressBlock:
+      properties:
+        value:
+          type: string
+          title: Value
+        percent:
+          type: integer
+          title: Percent
+      type: object
+      required:
+      - value
+      - percent
+      title: ProgressBlock
+    ProjectColumn:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        count:
+          type: integer
+          title: Count
+        projects:
+          items:
+            $ref: '#/components/schemas/HubProject'
+          type: array
+          title: Projects
+      type: object
+      required:
+      - id
+      - title
+      - count
+      - projects
+      title: ProjectColumn
+    ProjectDetails:
+      properties:
+        id:
+          type: string
+          title: Id
+        code:
+          type: string
+          title: Code
+        title:
+          type: string
+          title: Title
+        ownerName:
+          type: string
+          title: Ownername
+        detailsUrl:
+          type: string
+          title: Detailsurl
+        joinLabel:
+          type: string
+          title: Joinlabel
+        teamCaption:
+          type: string
+          title: Teamcaption
+        productivityCaption:
+          type: string
+          title: Productivitycaption
+        progressCaption:
+          type: string
+          title: Progresscaption
+        todoCaption:
+          type: string
+          title: Todocaption
+        integrationCaption:
+          type: string
+          title: Integrationcaption
         teamMembersPreview:
-          type: array
           items:
-            $ref: "#/components/schemas/PersonPreview"
+            $ref: '#/components/schemas/PersonPreview'
+          type: array
+          title: Teammemberspreview
         productivity:
-          $ref: "#/components/schemas/ProductivityBlock"
+          $ref: '#/components/schemas/ProductivityBlock'
         progress:
-          $ref: "#/components/schemas/ProgressBlock"
+          $ref: '#/components/schemas/ProgressBlock'
         todo:
-          $ref: "#/components/schemas/TodoBlock"
+          $ref: '#/components/schemas/TodoBlock'
         integrations:
-          type: array
           items:
-            $ref: "#/components/schemas/IntegrationItem"
+            $ref: '#/components/schemas/IntegrationItem'
+          type: array
+          title: Integrations
         participants:
-          type: array
           items:
-            $ref: "#/components/schemas/ParticipantRow"
-
-    LibraryHero:
-      type: object
-      required: [id, title, updatedLabel, providerLabel, description]
-      properties:
-        id: { type: string }
-        title: { type: string }
-        updatedLabel: { type: string }
-        providerLabel: { type: string }
-        description: { type: string }
-
-    LibraryShowcaseItem:
-      type: object
-      required: [id, brandLabel, eyebrow, title, imageUrl, hero]
-      properties:
-        id: { type: string }
-        brandLabel: { type: string }
-        eyebrow: { type: string }
-        title: { type: string }
-        imageUrl: { type: string }
-        hero:
-          $ref: "#/components/schemas/LibraryHero"
-
-    InterestOption:
-      type: object
-      required: [id, label, selected]
-      properties:
-        id: { type: string }
-        label: { type: string }
-        selected: { type: boolean }
-
-    ArticleTag:
-      type: object
-      required: [id, label, tone]
-      properties:
-        id: { type: string }
-        label: { type: string }
-        tone: { type: string }
-
-    LibraryArticle:
-      type: object
-      required: [id, tags, title, description, authorName, authorAvatarUrl]
-      properties:
-        id: { type: string }
-        tags:
+            $ref: '#/components/schemas/ParticipantRow'
           type: array
-          items:
-            $ref: "#/components/schemas/ArticleTag"
-        title: { type: string }
-        description: { type: string }
-        authorName: { type: string }
-        authorAvatarUrl: { type: string }
-
-    LibraryBundle:
+          title: Participants
       type: object
-      required: [showcaseItems, interestOptions, articles]
-      properties:
-        showcaseItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/LibraryShowcaseItem"
-        interestOptions:
-          type: array
-          items:
-            $ref: "#/components/schemas/InterestOption"
-        articles:
-          type: array
-          items:
-            $ref: "#/components/schemas/LibraryArticle"
-
-    NotificationItem:
-      type: object
-      required: [id, type, title, dateLabel, dateCaption]
-      properties:
-        id: { type: string }
-        type: { type: string }
-        title: { type: string }
-        unread:
-          type: boolean
-          nullable: true
-        authorLabel: { type: string, nullable: true }
-        authorName: { type: string, nullable: true }
-        accentText: { type: string, nullable: true }
-        ctaLabel: { type: string, nullable: true }
-        path: { type: string, nullable: true }
-
+      required:
+      - id
+      - code
+      - title
+      - ownerName
+      - detailsUrl
+      - joinLabel
+      - teamCaption
+      - productivityCaption
+      - progressCaption
+      - todoCaption
+      - integrationCaption
+      - teamMembersPreview
+      - productivity
+      - progress
+      - todo
+      - integrations
+      - participants
+      title: ProjectDetails
     RecommendationCard:
-      type: object
-      required: [id, title, subtitle, image, link]
       properties:
-        id: { type: string }
-        title: { type: string }
-        subtitle: { type: string }
-        image: { type: string }
-        link: { type: string }
-
-    DashboardHome:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        subtitle:
+          type: string
+          title: Subtitle
+        image:
+          type: string
+          title: Image
+        link:
+          type: string
+          title: Link
       type: object
-      required: [events, productivity, highlightCourse]
+      required:
+      - id
+      - title
+      - subtitle
+      - image
+      - link
+      title: RecommendationCard
+    TodoBlock:
       properties:
-        events:
-          type: object
-          required: [count, deltaLabel]
-          properties:
-            count: { type: integer }
-            deltaLabel: { type: string }
-        productivity:
-          type: object
-          required: [value, deltaLabel]
-          properties:
-            value: { type: string }
-            deltaLabel: { type: string }
-        highlightCourse:
-          type: object
-          required: [title, imageUrl, path]
-          properties:
-            title: { type: string }
-            imageUrl: { type: string }
-            path: { type: string }
+        task:
+          type: string
+          title: Task
+        updatedLabel:
+          type: string
+          title: Updatedlabel
+      type: object
+      required:
+      - task
+      - updatedLabel
+      title: TodoBlock
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

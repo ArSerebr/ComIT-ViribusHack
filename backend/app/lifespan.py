@@ -6,9 +6,11 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 
 from app.core.db.session import engine
+from app.openapi_export import export_openapi_yaml
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    export_openapi_yaml(app)
     yield
     await engine.dispose()

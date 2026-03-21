@@ -6,16 +6,21 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.modules.projects.deps import get_projects_service
 from app.modules.projects.schemas import JoinRequest, JoinResponse
 from app.modules.projects.service import ProjectsService
+from schemas import ErrorDetail, ProjectColumn, ProjectDetails
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
 
-@router.get("/hub")
+@router.get("/hub", response_model=list[ProjectColumn])
 async def get_projects_hub(service: ProjectsService = Depends(get_projects_service)):
     return await service.get_hub()
 
 
-@router.get("/{project_id}")
+@router.get(
+    "/{project_id}",
+    response_model=ProjectDetails,
+    responses={404: {"description": "Проект не найден", "model": ErrorDetail}},
+)
 async def get_project_by_id(
     project_id: str,
     service: ProjectsService = Depends(get_projects_service),
@@ -26,7 +31,11 @@ async def get_project_by_id(
     return details
 
 
-@router.post("/{project_id}/join", response_model=JoinResponse)
+@router.post(
+    "/{project_id}/join",
+    response_model=JoinResponse,
+    responses={404: {"description": "Проект не найден", "model": ErrorDetail}},
+)
 async def post_project_join(
     project_id: str,
     body: JoinRequest = JoinRequest(),

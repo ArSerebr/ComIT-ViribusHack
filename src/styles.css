@@ -7,6 +7,23 @@
 @import "./styles/library.css" layer(pages);
 @import "./styles/chat.css" layer(pages);
 
+@keyframes ai-agent-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+    filter: blur(58px) saturate(110%);
+  }
+
+  50% {
+    background-position: 100% 50%;
+    filter: blur(72px) saturate(135%);
+  }
+
+  100% {
+    background-position: 0% 50%;
+    filter: blur(58px) saturate(110%);
+  }
+}
+
 @layer tokens {
   /* ==========================================================================
      Design Tokens
@@ -306,6 +323,7 @@
   }
 
   .top-actions {
+    position: relative;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -323,6 +341,11 @@
     cursor: pointer;
     display: grid;
     place-items: center;
+  }
+
+  .glass-icon-button-active {
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.08);
   }
 
   .notify-icon {
@@ -438,6 +461,227 @@
   .news-back-btn img {
     width: 26px;
     height: 26px;
+  }
+
+  /* ==========================================================================
+     Shared Notification Popover
+     ========================================================================== */
+  .notifications-popover {
+    position: absolute;
+    top: calc(100% + 18px);
+    right: 0;
+    z-index: 80;
+    width: min(640px, calc(100vw - 48px));
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 32px;
+    background: rgba(14, 14, 18, 0.94);
+    backdrop-filter: blur(26px);
+    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+  }
+
+  .notify-popover-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .notify-popover-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .notify-popover-brand-icon {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    background: radial-gradient(circle at 50% 30%, rgba(126, 83, 255, 0.34), rgba(50, 31, 92, 0.96));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 38px rgba(53, 28, 94, 0.34);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+
+  .notify-popover-brand-icon img {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+  }
+
+  .notify-popover-title-wrap h2 {
+    margin: 0;
+    font-size: 29px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .notify-popover-close {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+  }
+
+  .notify-popover-close img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .notify-popover-list {
+    margin-top: 22px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .notify-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 26px;
+    padding: 22px 24px;
+    background: linear-gradient(180deg, rgba(64, 64, 66, 0.84), rgba(52, 52, 54, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .notify-card-copy {
+    position: relative;
+    min-width: 0;
+  }
+
+  .notify-card-title {
+    margin: 0;
+    max-width: calc(100% - 48px);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 20px;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+  }
+
+  .notify-card-unread {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ff416d;
+    box-shadow: 0 0 0 6px rgba(255, 65, 109, 0.12);
+  }
+
+  .notify-card-footer {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+  }
+
+  .notify-card-meta {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .notify-card-author {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .notify-card-author span {
+    color: #d29eff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .notify-card-author strong {
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .notify-card-open {
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 50%;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+
+  .notify-card-open-arrow {
+    width: 11px;
+    height: 11px;
+    border-top: 2px solid #ffffff;
+    border-right: 2px solid #ffffff;
+    transform: translateX(-1px) rotate(45deg);
+  }
+
+  .notify-card-datetime {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .notify-card-datetime strong {
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .notify-card-datetime span {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .notify-card-accent {
+    display: block;
+    margin-top: 8px;
+    color: #9cff67;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .notify-card-read-btn {
+    min-width: 186px;
+    height: 52px;
+    border: 0;
+    border-radius: 999px;
+    padding: 0 28px;
+    background: linear-gradient(135deg, #db855d 0%, #cf6f6b 52%, #a15bbe 100%);
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .notify-card-article::after {
+    content: "";
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: -36px;
+    height: 120px;
+    background: radial-gradient(circle at 50% 0%, rgba(112, 96, 255, 0.36), rgba(112, 96, 255, 0));
+    filter: blur(22px);
+    pointer-events: none;
   }
 
   /* ==========================================================================
@@ -598,6 +842,38 @@
   /* ==========================================================================
      Shared AI Chat
      ========================================================================== */
+  .ai-chat-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+  }
+
+  .ai-chat-bottom-blur {
+    position: absolute;
+    left: 50%;
+    bottom: -76px;
+    width: min(1320px, calc(100% + 180px));
+    height: 250px;
+    transform: translateX(-50%);
+    background:
+      radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12) 24%, rgba(255, 255, 255, 0.02) 58%, transparent 78%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+    filter: blur(56px);
+    opacity: 0.88;
+  }
+
+  .ai-chat-bottom-blur-agent {
+    background:
+      radial-gradient(circle at 20% 52%, rgba(255, 177, 105, 0.46), transparent 34%),
+      radial-gradient(circle at 52% 16%, rgba(255, 110, 82, 0.36), transparent 32%),
+      radial-gradient(circle at 82% 54%, rgba(255, 141, 83, 0.38), transparent 34%),
+      linear-gradient(120deg, rgba(255, 142, 72, 0.44), rgba(255, 96, 81, 0.32), rgba(255, 183, 76, 0.38));
+    background-size: 170% 170%;
+    animation: ai-agent-gradient-flow 8s ease-in-out infinite;
+    opacity: 1;
+  }
+
   .ai-chat-shell {
     --ai-chat-max-height: 80vh;
     position: absolute;
@@ -608,9 +884,16 @@
     transform: translateX(calc(-50% - 220px));
     padding: 14px 18px;
     border-radius: 24px;
-    background: var(--glass-soft);
+    pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(180deg, rgba(65, 59, 54, 0.56), rgba(36, 32, 30, 0.78));
     backdrop-filter: blur(30px);
-    box-shadow: 0 0 80px #d122d752;
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .ai-chat-shell-agent {
+    border-color: rgba(255, 190, 120, 0.24);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.46), 0 0 80px rgba(239, 132, 79, 0.24);
   }
 
   .ai-close-btn {
@@ -630,7 +913,7 @@
   }
 
   .ai-suggestions {
-    display: none;
+    display: flex;
     margin-right: 42px;
     flex-wrap: wrap;
     gap: 7px;
@@ -788,6 +1071,127 @@
     rotate: 180deg;
     padding-right: 1px;
   }
+
+  /* ==========================================================================
+     Shared Hover Motion
+     ========================================================================== */
+  .logo-wrap,
+  .menu-item,
+  .glass-icon-button,
+  .account-btn,
+  .news-back-btn,
+  .projects-hub-create-btn,
+  .suggestion-pill,
+  .chat-actions button,
+  .chat-logo-btn,
+  .chat-send-btn,
+  .for-you-card,
+  .stats-card,
+  .for-you-course,
+  .small-arrow-btn,
+  .deck-fab,
+  .action-btn,
+  .news-card,
+  .projects-card,
+  .featured-news-card,
+  .featured-news-cta,
+  .project-hub-card,
+  .project-hub-card-open,
+  .library-showcase-card,
+  .library-provider-pill,
+  .library-showcase-nav,
+  .library-preference-pill,
+  .library-save-btn,
+  .library-article-card,
+  .chat-page-history-item,
+  .chat-page-sidebar-pin,
+  .chat-page-support-link,
+  .chat-page-status-close,
+  .chat-page-composer-close,
+  .chat-page-hero-action,
+  .chat-page-prompt-pill,
+  .notify-popover-close,
+  .notify-card,
+  .notify-card-open,
+  .notify-card-read-btn {
+    transition:
+      transform 0.24s ease,
+      box-shadow 0.24s ease,
+      background-color 0.24s ease,
+      border-color 0.24s ease,
+      color 0.24s ease,
+      opacity 0.24s ease,
+      filter 0.24s ease;
+    will-change: transform;
+  }
+
+  @media (hover: hover) {
+    .logo-wrap:hover,
+    .glass-icon-button:hover,
+    .account-btn:hover,
+    .news-back-btn:hover,
+    .chat-logo-btn:hover,
+    .chat-send-btn:hover,
+    .notify-popover-close:hover,
+    .notify-card-open:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .menu-item:hover,
+    .small-arrow-btn:hover,
+    .suggestion-pill:hover,
+    .chat-actions button:hover,
+    .chat-page-sidebar-pin:hover,
+    .chat-page-status-close:hover,
+    .chat-page-composer-close:hover,
+    .chat-page-prompt-pill:hover,
+    .notify-card-read-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+
+    .for-you-card:hover,
+    .stats-card:hover,
+    .library-showcase-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 26px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .projects-hub-create-btn:hover,
+    .featured-news-cta:hover,
+    .library-provider-pill:hover,
+    .library-save-btn:hover,
+    .chat-page-hero-action:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
+      filter: brightness(1.04);
+    }
+
+    .news-card:hover,
+    .projects-card:hover,
+    .featured-news-card:hover,
+    .project-hub-card:hover,
+    .library-article-card:hover,
+    .notify-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 26px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    .deck-fab:hover,
+    .action-btn:hover,
+    .project-hub-card-open:hover,
+    .library-showcase-nav:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+    }
+
+    .chat-page-history-item:hover,
+    .chat-page-support-link:hover,
+    .news-link-btn:hover {
+      transform: translateX(4px);
+      color: #ffffff;
+    }
+  }
 }
 
 @layer shell {
@@ -848,7 +1252,7 @@
     }
 
     .dashboard-layout-news {
-      margin-top: 200px;
+      margin-top: 0;
       padding-bottom: 0;
     }
   }
@@ -931,6 +1335,11 @@
   }
 
   @media (max-width: 1200px) {
+    .notifications-popover {
+      width: min(540px, calc(100vw - 40px));
+      padding: 18px;
+    }
+
     .projects-hub-create-btn {
       min-width: 0;
       width: 100%;
@@ -943,9 +1352,74 @@
       bottom: 14px;
       transform: translateX(calc(-50% - 110px));
     }
+
+    .ai-chat-bottom-blur {
+      width: calc(100% + 120px);
+      height: 210px;
+    }
   }
 
   @media (max-width: 860px) {
+    .notifications-popover {
+      top: calc(100% + 12px);
+      right: 0;
+      width: min(100vw - 24px, 420px);
+      padding: 16px;
+      border-radius: 26px;
+    }
+
+    .notify-popover-title-wrap {
+      gap: 14px;
+    }
+
+    .notify-popover-brand-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+    }
+
+    .notify-popover-brand-icon img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .notify-popover-title-wrap h2 {
+      font-size: 24px;
+    }
+
+    .notify-popover-close {
+      width: 42px;
+      height: 42px;
+    }
+
+    .notify-card {
+      padding: 18px 16px;
+      border-radius: 22px;
+    }
+
+    .notify-card-title {
+      max-width: calc(100% - 36px);
+      font-size: 17px;
+    }
+
+    .notify-card-accent {
+      font-size: 18px;
+    }
+
+    .notify-card-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .notify-card-meta {
+      justify-content: space-between;
+    }
+
+    .notify-card-read-btn {
+      min-width: 0;
+      width: 100%;
+    }
+
     .news-back-btn {
       width: 48px;
       height: 48px;
@@ -994,8 +1468,15 @@
       transform: translateX(-50%);
     }
 
+    .ai-chat-bottom-blur {
+      bottom: -34px;
+      width: calc(100% + 36px);
+      height: 172px;
+    }
+
     .ai-suggestions {
       margin-right: 28px;
+      gap: 6px;
     }
   }
 }

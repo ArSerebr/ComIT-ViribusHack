@@ -14,13 +14,14 @@
 
 /* Sidebar */
 .chat-page-sidebar {
-  min-height: calc(100vh - 220px);
-  padding: 24px 24px 26px;
+  min-height: calc(100vh - 520px);
+  padding: 20px 24px 26px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 30px;
   background: linear-gradient(180deg, rgba(14, 14, 15, 0.92) 0%, rgba(21, 15, 30, 0.84) 100%);
   display: flex;
   flex-direction: column;
+  
 }
 
 .chat-page-sidebar-head {
@@ -28,13 +29,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  display: none;
 }
 
 .chat-page-sidebar-logo {
   color: #ffffff;
   font-size: 32px;
   font-weight: 600;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.03em;
 }
 
 .chat-page-sidebar-pin {

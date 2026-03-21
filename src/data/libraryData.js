@@ -15,21 +15,42 @@ export const LIBRARY_SHOWCASE_ITEMS = [
     brandLabel: "нетология",
     eyebrow: "Профессия",
     title: "ML-инженер",
-    imageUrl: assets.poster120Image
+    imageUrl: assets.poster120Image,
+    hero: {
+      title: "Курс «ML-инженер»",
+      updatedLabel: "3 дня назад",
+      providerLabel: "Яндекс практикум",
+      description:
+        "За 12 месяцев освоите востребованную профессию и получите реальный опыт: пройдёте полный цикл ML-проекта — от подготовки данных и обучения моделей до внедрения и поддержки"
+    }
   },
   {
     id: "practicum-mlops",
     brandLabel: "Яндекс практикум",
     eyebrow: "Интенсив",
     title: "MLOps и продакшн",
-    imageUrl: assets.posterTechTalk
+    imageUrl: assets.posterTechTalk,
+    hero: {
+      title: "Интенсив «MLOps и продакшн»",
+      updatedLabel: "6 дней назад",
+      providerLabel: "Яндекс практикум",
+      description:
+        "Разберёте жизненный цикл ML-сервисов в продакшне: деплой моделей, мониторинг качества, автоматизацию пайплайнов и работу с инфраструктурой команды"
+    }
   },
   {
     id: "skillbox-data-analyst",
     brandLabel: "Skillbox",
     eyebrow: "Профессия",
     title: "Data Analyst",
-    imageUrl: assets.posterTechConf
+    imageUrl: assets.posterTechConf,
+    hero: {
+      title: "Профессия «Data Analyst»",
+      updatedLabel: "1 день назад",
+      providerLabel: "Skillbox",
+      description:
+        "Поймёте, как собирать и интерпретировать данные, строить отчёты и дашборды, формулировать выводы для продукта и принимать решения на основе аналитики"
+    }
   }
 ];
 

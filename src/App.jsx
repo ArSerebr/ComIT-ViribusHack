@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { assets } from "./assets";
 import { AiChatPanel } from "./components/chat/AiChatPanel";
@@ -24,8 +25,9 @@ import {
   LIBRARY_INTEREST_OPTIONS,
   LIBRARY_SHOWCASE_ITEMS
 } from "./data/libraryData";
-import { PROJECT_DETAILS_BY_ID } from "./data/projectDetailsData";
+import { NOTIFICATION_ITEMS } from "./data/notificationsData";
 import { FEATURED_NEWS_ITEMS, MINI_NEWS_ITEMS } from "./data/newsData";
+import { PROJECT_DETAILS_BY_ID } from "./data/projectDetailsData";
 import { PROJECT_HUB_COLUMNS } from "./data/projectHubData";
 import { nextAssistantMessage } from "./utils/chatAssistant";
 
@@ -37,9 +39,7 @@ function resolvePathFromHash(hashValue) {
   return hashValue.replace(/^#/, "") || "/";
 }
 
-function resolveTabFromHash(hashValue) {
-  const path = resolvePathFromHash(hashValue);
-
+function resolveTabFromPath(path) {
   if (path.startsWith(NAV_LINKS.news)) {
     return "news";
   }
@@ -56,6 +56,10 @@ function resolveTabFromHash(hashValue) {
     return "chat";
   }
   return "home";
+}
+
+function resolveTabFromHash(hashValue) {
+  return resolveTabFromPath(resolvePathFromHash(hashValue));
 }
 
 function resolveProjectSlugFromPath(path) {
@@ -79,8 +83,10 @@ function createInitialNewsLikes() {
 function App() {
   const [activeTab, setActiveTab] = useState(() => resolveTabFromHash(window.location.hash));
   const [currentPath, setCurrentPath] = useState(() => resolvePathFromHash(window.location.hash));
-  const [aiAssistantEnabled, setAiAssistantEnabled] = useState(true);
-  const [aiMode, setAiMode] = useState(true);
+  const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
+  const [aiMode, setAiMode] = useState(false);
+  const [isAiResponding, setIsAiResponding] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isDeckOpen, setIsDeckOpen] = useState(false);
   const [activeLibraryShowcaseIndex, setActiveLibraryShowcaseIndex] = useState(0);
   const [selectedLibraryInterests, setSelectedLibraryInterests] = useState(createInitialLibraryInterestState);
@@ -92,10 +98,12 @@ function App() {
   const [dismissDirection, setDismissDirection] = useState(null);
 
   const chatListRef = useRef(null);
+  const pendingAssistantRepliesRef = useRef(0);
 
   const topCard = deck[0];
   const stackedCards = deck.slice(1, 3);
   const canDismiss = !dismissDirection;
+  const isHomePage = activeTab === "home";
   const isNewsPage = activeTab === "news";
   const isProjectsPage = activeTab === "projects";
   const isLibraryPage = activeTab === "library";
@@ -103,13 +111,30 @@ function App() {
   const currentProjectSlug = resolveProjectSlugFromPath(currentPath);
   const currentProjectDetails = currentProjectSlug ? PROJECT_DETAILS_BY_ID[currentProjectSlug] : null;
   const isProjectDetailPage = Boolean(currentProjectDetails);
-  const usesOverlayHeader = isNewsPage || isProjectsPage || isLibraryPage || isChatPage;
   const homeNewsItem = MINI_NEWS_ITEMS[0];
   const chatPageMessages = messages.some((message) => message.role === "user") ? messages.slice(1) : [];
+  const activeLibraryHero = LIBRARY_SHOWCASE_ITEMS[activeLibraryShowcaseIndex]?.hero || LIBRARY_HERO_RESOURCE;
+  const shouldShowAiPopup = aiMode;
 
   const navigateTo = (path) => {
     setCurrentPath(path);
+    setIsNotificationsOpen(false);
     window.location.hash = path;
+  };
+
+  const openPath = (path) => {
+    setActiveTab(resolveTabFromPath(path));
+    navigateTo(path);
+  };
+
+  const setAssistantPendingDelta = (delta) => {
+    pendingAssistantRepliesRef.current = Math.max(0, pendingAssistantRepliesRef.current + delta);
+    setIsAiResponding(pendingAssistantRepliesRef.current > 0);
+  };
+
+  const resetAssistantPendingState = () => {
+    pendingAssistantRepliesRef.current = 0;
+    setIsAiResponding(false);
   };
 
   const sendLikeSignal = (entity, id) => {
@@ -177,33 +202,27 @@ function App() {
   };
 
   const openNewsList = () => {
-    setActiveTab("news");
-    navigateTo(NAV_LINKS.news);
+    openPath(NAV_LINKS.news);
   };
 
   const openProjectsHub = () => {
-    setActiveTab("projects");
-    navigateTo(NAV_LINKS.projects);
+    openPath(NAV_LINKS.projects);
   };
 
   const openLibraryPage = () => {
-    setActiveTab("library");
-    navigateTo("/library");
+    openPath("/library");
   };
 
   const openMiniNews = (newsItem) => {
-    setActiveTab("news");
-    navigateTo(newsItem?.detailsUrl || NAV_LINKS.news);
+    openPath(newsItem?.detailsUrl || NAV_LINKS.news);
   };
 
   const openProjectDetails = (project) => {
-    setActiveTab("projects");
-    navigateTo(project?.detailsUrl || NAV_LINKS.projects);
+    openPath(project?.detailsUrl || NAV_LINKS.projects);
   };
 
   const openProjectCreate = () => {
-    setActiveTab("projects");
-    navigateTo(`${NAV_LINKS.projects}/create`);
+    openPath(`${NAV_LINKS.projects}/create`);
   };
 
   const joinProject = () => {
@@ -242,17 +261,22 @@ function App() {
   };
 
   const openFeaturedEvent = (eventItem) => {
-    navigateTo(eventItem?.detailsUrl || NAV_LINKS.events);
+    openPath(eventItem?.detailsUrl || NAV_LINKS.events);
   };
 
   const handleAiMenuClick = () => {
-    if (!aiAssistantEnabled) {
-      setAiAssistantEnabled(true);
-      setAiMode(true);
+    setIsNotificationsOpen(false);
+    setAiAssistantEnabled(true);
+    setAiMode(true);
+  };
+
+  const handleOpenNotification = (notificationItem) => {
+    if (notificationItem.path) {
+      openPath(notificationItem.path);
+      return;
     }
 
-    setActiveTab("chat");
-    navigateTo(NAV_LINKS.chat);
+    setIsNotificationsOpen(false);
   };
 
   const handleMenuClick = (itemId) => {
@@ -261,16 +285,15 @@ function App() {
       return;
     }
 
-    setActiveTab(itemId);
     switch (itemId) {
       case "home":
-        navigateTo("/");
+        openPath("/");
         break;
       case "projects":
-        navigateTo(NAV_LINKS.projects);
+        openPath(NAV_LINKS.projects);
         break;
       case "news":
-        navigateTo(NAV_LINKS.news);
+        openPath(NAV_LINKS.news);
         break;
       case "library":
         openLibraryPage();
@@ -292,8 +315,11 @@ function App() {
       content: text
     };
 
+    setAiAssistantEnabled(true);
+    setAiMode(true);
     setMessages((prev) => [...prev, userMessage]);
     setChatInput("");
+    setAssistantPendingDelta(1);
 
     const reply = nextAssistantMessage(text);
     window.setTimeout(() => {
@@ -306,6 +332,7 @@ function App() {
           actions: reply.actions
         }
       ]);
+      setAssistantPendingDelta(-1);
     }, 260);
   };
 
@@ -317,8 +344,10 @@ function App() {
 
   useEffect(() => {
     const syncTabWithHash = () => {
-      setCurrentPath(resolvePathFromHash(window.location.hash));
-      setActiveTab(resolveTabFromHash(window.location.hash));
+      const nextPath = resolvePathFromHash(window.location.hash);
+      setCurrentPath(nextPath);
+      setActiveTab(resolveTabFromPath(nextPath));
+      setIsNotificationsOpen(false);
     };
 
     window.addEventListener("hashchange", syncTabWithHash);
@@ -339,16 +368,19 @@ function App() {
   }, [dismissDirection]);
 
   const handleGoHome = () => {
-    setActiveTab("home");
-    navigateTo("/");
+    openPath("/");
   };
 
-  const handleCloseAi = () => {
+  const handleCloseAiOverlay = () => {
     setAiMode(false);
     setAiAssistantEnabled(false);
+    resetAssistantPendingState();
+  };
+
+  const handleCloseAiPage = () => {
+    handleCloseAiOverlay();
     if (activeTab === "chat") {
-      setActiveTab("home");
-      navigateTo("/");
+      openPath("/");
     }
   };
 
@@ -367,19 +399,25 @@ function App() {
   return (
     <div className="viewport-frame">
       <div className="design-canvas">
-        <div className={`app-shell ${usesOverlayHeader ? "app-shell-news" : ""}`}>
+        <div className="app-shell app-shell-news">
           <img className="bg-shape bg-shape-top" src={assets.backgroundShape} alt="" />
           <img className="bg-shape bg-shape-bottom" src={assets.backgroundShape} alt="" />
 
           <TopBar
             activeTab={activeTab}
             aiAssistantEnabled={aiAssistantEnabled}
+            isAiOpen={aiMode}
+            isNotificationsOpen={isNotificationsOpen}
+            notificationItems={NOTIFICATION_ITEMS}
+            onCloseNotifications={() => setIsNotificationsOpen(false)}
             onGoHome={handleGoHome}
             onMenuClick={handleMenuClick}
-            isNewsView={usesOverlayHeader}
+            onOpenNotification={handleOpenNotification}
+            onToggleNotifications={() => setIsNotificationsOpen((prev) => !prev)}
+            isNewsView
           />
 
-          <main className={`dashboard-layout ${usesOverlayHeader ? "dashboard-layout-news" : ""}`}>
+          <main className="dashboard-layout dashboard-layout-news">
             {isNewsPage ? (
               <NewsPage
                 miniNewsItems={MINI_NEWS_ITEMS}
@@ -405,7 +443,7 @@ function App() {
               />
             ) : isLibraryPage ? (
               <LibraryPage
-                heroItem={LIBRARY_HERO_RESOURCE}
+                heroItem={activeLibraryHero}
                 showcaseItems={LIBRARY_SHOWCASE_ITEMS}
                 activeShowcaseIndex={activeLibraryShowcaseIndex}
                 interestOptions={LIBRARY_INTEREST_OPTIONS}
@@ -426,7 +464,7 @@ function App() {
                 messages={chatPageMessages}
                 chatInput={chatInput}
                 chatListRef={chatListRef}
-                onClose={handleCloseAi}
+                onClose={handleCloseAiPage}
                 onSendMessage={sendMessage}
                 onChangeChatInput={setChatInput}
                 onSubmit={handleChatSubmit}
@@ -450,7 +488,7 @@ function App() {
             )}
           </main>
 
-          {!usesOverlayHeader ? (
+          {isHomePage ? (
             <RecommendationsPanel
               isOpen={isDeckOpen}
               onToggleOpen={() => setIsDeckOpen((prev) => !prev)}
@@ -469,17 +507,22 @@ function App() {
           ) : null}
         </div>
 
-        <AiChatPanel
-          isVisible={aiMode && !isProjectDetailPage && !isLibraryPage && !isChatPage}
-          quickPrompts={QUICK_PROMPTS}
-          messages={messages}
-          chatInput={chatInput}
-          chatListRef={chatListRef}
-          onClose={handleCloseAi}
-          onSendMessage={sendMessage}
-          onChangeChatInput={setChatInput}
-          onSubmit={handleChatSubmit}
-        />
+        <AnimatePresence>
+          {shouldShowAiPopup ? (
+            <AiChatPanel
+              isVisible={shouldShowAiPopup}
+              isAgentActive={isAiResponding}
+              quickPrompts={QUICK_PROMPTS}
+              messages={messages}
+              chatInput={chatInput}
+              chatListRef={chatListRef}
+              onClose={handleCloseAiOverlay}
+              onSendMessage={sendMessage}
+              onChangeChatInput={setChatInput}
+              onSubmit={handleChatSubmit}
+            />
+          ) : null}
+        </AnimatePresence>
       </div>
     </div>
   );

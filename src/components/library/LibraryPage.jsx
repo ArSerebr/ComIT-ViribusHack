@@ -41,6 +41,7 @@ export function LibraryPage({
   onSaveInterests
 }) {
   const activeShowcaseItem = showcaseItems[activeShowcaseIndex] || showcaseItems[0];
+  const activeHeroItem = activeShowcaseItem?.hero || heroItem;
 
   return (
     <section className="library-page">
@@ -58,20 +59,20 @@ export function LibraryPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.04, duration: 0.32 }}
         >
-          <h2 className="library-hero-title">{heroItem.title}</h2>
+          <h2 className="library-hero-title">{activeHeroItem.title}</h2>
 
           <div className="library-hero-updated">
             <TimeIcon />
-            <span>{heroItem.updatedLabel}</span>
+            <span>{activeHeroItem.updatedLabel}</span>
           </div>
 
           <button className="library-provider-pill" type="button">
             <ProviderIcon />
-            <span>{heroItem.providerLabel}</span>
+            <span>{activeHeroItem.providerLabel}</span>
             <img src={assets.arrow16Icon} alt="" className="library-provider-chevron" />
           </button>
 
-          <p className="library-hero-description">{heroItem.description}</p>
+          <p className="library-hero-description">{activeHeroItem.description}</p>
         </motion.section>
 
         <motion.section

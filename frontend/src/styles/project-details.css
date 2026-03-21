@@ -136,109 +136,36 @@
 
 /* Title icons */
 .project-details-title-icon {
-  position: relative;
   width: 25px;
   height: 25px;
   flex: 0 0 auto;
+  background: currentColor;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
 }
 
 .project-details-title-icon-empty {
   display: none;
 }
 
-.project-details-title-icon-team::before,
-.project-details-title-icon-team::after {
-  content: "";
-  position: absolute;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
+.project-details-title-icon-team,
+.project-details-title-icon-members {
+  -webkit-mask-image: url("../../icons/team.svg");
+  mask-image: url("../../icons/team.svg");
 }
 
-.project-details-title-icon-team::before {
-  left: 0;
-  top: 7px;
-  width: 8px;
-  height: 8px;
-  box-shadow: 14px -4px 0 -2px transparent, 16px 0 0 -2px rgba(255, 255, 255, 0.9);
+.project-details-title-icon-productivity {
+  -webkit-mask-image: url("../../icons/chart-line.svg");
+  mask-image: url("../../icons/chart-line.svg");
 }
 
-.project-details-title-icon-team::after {
-  left: 6px;
-  top: 1px;
-  width: 9px;
-  height: 9px;
-}
-
-.project-details-title-icon-productivity::before,
-.project-details-title-icon-productivity::after {
-  content: "";
-  position: absolute;
-}
-
-.project-details-title-icon-productivity::before {
-  inset: 5px 2px 4px;
-  border-left: 2px solid rgba(255, 255, 255, 0.9);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.9);
-}
-
-.project-details-title-icon-productivity::after {
-  left: 4px;
-  top: 13px;
-  width: 16px;
-  height: 7px;
-  border-top: 2px solid rgba(255, 255, 255, 0.9);
-  border-right: 2px solid rgba(255, 255, 255, 0.9);
-  transform: skew(-36deg) rotate(-6deg);
-}
-
-.project-details-title-icon-progress::before,
-.project-details-title-icon-progress::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-}
-
-.project-details-title-icon-progress::before {
-  inset: 2px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-}
-
-.project-details-title-icon-progress::after {
-  left: 11px;
-  top: 4px;
-  width: 2px;
-  height: 9px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 5px 8px 0 0 rgba(255, 255, 255, 0.9);
-  transform: rotate(28deg);
-  border-radius: 999px;
-}
-
-.project-details-title-icon-members::before,
-.project-details-title-icon-members::after {
-  content: "";
-  position: absolute;
-  border: 2px solid rgba(255, 255, 255, 0.88);
-}
-
-.project-details-title-icon-members::before {
-  left: 2px;
-  top: 3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  box-shadow: 8px 0 0 -2px rgba(255, 255, 255, 0.88), 16px 0 0 -2px rgba(255, 255, 255, 0.88);
-}
-
-.project-details-title-icon-members::after {
-  left: 0;
-  top: 14px;
-  width: 22px;
-  height: 7px;
-  border-top: 2px solid rgba(255, 255, 255, 0.88);
-  border-left: 0;
-  border-right: 0;
-  border-bottom: 0;
+.project-details-title-icon-progress {
+  -webkit-mask-image: url("../../icons/progress-upload 2.svg");
+  mask-image: url("../../icons/progress-upload 2.svg");
 }
 
 /* Team block */
@@ -430,36 +357,11 @@
 }
 
 .project-details-integrations-title-icon {
-  position: relative;
   width: 26px;
   height: 26px;
-  border: 2px solid rgba(255, 255, 255, 0.88);
-  border-radius: 50%;
-  transform: rotate(-22deg);
-}
-
-.project-details-integrations-title-icon::before,
-.project-details-integrations-title-icon::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-}
-
-.project-details-integrations-title-icon::before {
-  right: -6px;
-  top: -7px;
-  width: 8px;
-  height: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.88);
-}
-
-.project-details-integrations-title-icon::after {
-  right: -1px;
-  top: -2px;
-  width: 8px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.88);
-  transform: rotate(38deg);
+  background: currentColor;
+  -webkit-mask: url("../../icons/plug-connection.svg") center / contain no-repeat;
+  mask: url("../../icons/plug-connection.svg") center / contain no-repeat;
 }
 
 .project-details-integrations-head p {
@@ -612,11 +514,13 @@
 }
 
 .project-details-integration-open-arrow {
-  width: 15px;
-  height: 15px;
-  border-top: 3px solid currentColor;
-  border-right: 3px solid currentColor;
-  transform: rotate(45deg);
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  transform: translateX(1px);
+  -webkit-mask: url("../../icons/forward btn.svg") center / contain no-repeat;
+  mask: url("../../icons/forward btn.svg") center / contain no-repeat;
 }
 
 /* Members table */
@@ -1093,8 +997,6 @@
   .project-details-integration-open-arrow {
     width: 13px;
     height: 13px;
-    border-top-width: 2px;
-    border-right-width: 2px;
   }
 
   .project-details-members-card {

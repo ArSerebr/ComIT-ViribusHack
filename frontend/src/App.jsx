@@ -1,4 +1,4 @@
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { assets } from "./assets";
 import { AiChatPanel } from "./components/chat/AiChatPanel";
@@ -76,6 +76,70 @@ function resolveProjectSlugFromPath(path) {
   return slug;
 }
 
+const PAGE_ORDER = ["home", "projects", "news", "library", "chat"];
+
+const PAGE_STAGE_VARIANTS = {
+  enter: (direction) => ({
+    opacity: 0,
+    x: direction === 0 ? 0 : direction > 0 ? 56 : -56,
+    y: direction === 0 ? 14 : 0,
+    filter: "blur(10px)"
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    filter: "blur(0px)"
+  },
+  exit: (direction) => ({
+    opacity: 0,
+    x: direction === 0 ? 0 : direction > 0 ? -56 : 56,
+    y: direction === 0 ? -12 : 0,
+    filter: "blur(8px)"
+  })
+};
+
+const PAGE_STAGE_TRANSITION = {
+  type: "spring",
+  stiffness: 320,
+  damping: 30,
+  mass: 0.9
+};
+
+function resolveRouteDepth(path) {
+  return path.split("/").filter(Boolean).length;
+}
+
+function resolveRouteDirection(previousRoute, nextRoute) {
+  if (!previousRoute || previousRoute.path === nextRoute.path) {
+    return 0;
+  }
+
+  if (previousRoute.tab === nextRoute.tab) {
+    const previousDepth = resolveRouteDepth(previousRoute.path);
+    const nextDepth = resolveRouteDepth(nextRoute.path);
+
+    if (previousDepth !== nextDepth) {
+      return nextDepth > previousDepth ? 1 : -1;
+    }
+
+    return nextRoute.path > previousRoute.path ? 1 : -1;
+  }
+
+  const previousIndex = PAGE_ORDER.indexOf(previousRoute.tab);
+  const nextIndex = PAGE_ORDER.indexOf(nextRoute.tab);
+
+  if (previousIndex === -1 || nextIndex === -1) {
+    return 1;
+  }
+
+  return nextIndex > previousIndex ? 1 : -1;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function createInitialNewsLikes() {
   return MINI_NEWS_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: false }), {});
 }
@@ -90,15 +154,18 @@ function App() {
   const [isDeckOpen, setIsDeckOpen] = useState(false);
   const [activeLibraryShowcaseIndex, setActiveLibraryShowcaseIndex] = useState(0);
   const [selectedLibraryInterests, setSelectedLibraryInterests] = useState(createInitialLibraryInterestState);
+  const [libraryShowcaseDirection, setLibraryShowcaseDirection] = useState(1);
   const [likedNews, setLikedNews] = useState(createInitialNewsLikes);
   const [likedRecommendations, setLikedRecommendations] = useState({});
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState(INITIAL_CHAT);
   const [deck, setDeck] = useState(mapRecommendationsWithInstanceId);
   const [dismissDirection, setDismissDirection] = useState(null);
+  const [pageTransitionDirection, setPageTransitionDirection] = useState(0);
 
   const chatListRef = useRef(null);
   const pendingAssistantRepliesRef = useRef(0);
+  const routeStateRef = useRef({ tab: activeTab, path: currentPath });
 
   const topCard = deck[0];
   const stackedCards = deck.slice(1, 3);
@@ -115,15 +182,27 @@ function App() {
   const chatPageMessages = messages.some((message) => message.role === "user") ? messages.slice(1) : [];
   const activeLibraryHero = LIBRARY_SHOWCASE_ITEMS[activeLibraryShowcaseIndex]?.hero || LIBRARY_HERO_RESOURCE;
   const shouldShowAiPopup = aiMode;
+  const mainContentKey = activeTab === "projects" || activeTab === "chat" ? currentPath : activeTab;
+
+  const syncRouteState = (path) => {
+    const nextRoute = {
+      tab: resolveTabFromPath(path),
+      path
+    };
+
+    setPageTransitionDirection(resolveRouteDirection(routeStateRef.current, nextRoute));
+    routeStateRef.current = nextRoute;
+    setCurrentPath(path);
+    setActiveTab(nextRoute.tab);
+  };
 
   const navigateTo = (path) => {
-    setCurrentPath(path);
     setIsNotificationsOpen(false);
+    syncRouteState(path);
     window.location.hash = path;
   };
 
   const openPath = (path) => {
-    setActiveTab(resolveTabFromPath(path));
     navigateTo(path);
   };
 
@@ -159,11 +238,24 @@ function App() {
     });
   };
 
-  const dismissTopCard = (direction) => {
+  const dismissTopCard = (gesture) => {
     if (!canDismiss) {
       return;
     }
-    setDismissDirection(direction);
+
+    if (typeof gesture === "string") {
+      const presets = {
+        left: { x: -220, y: 42 },
+        right: { x: 220, y: 42 },
+        down: { x: 0, y: 240 },
+        up: { x: 0, y: -240 }
+      };
+
+      setDismissDirection(presets[gesture] || { x: 220, y: 42 });
+      return;
+    }
+
+    setDismissDirection(gesture);
   };
 
   const toggleRecommendationLike = (recommendationId) => {
@@ -230,6 +322,7 @@ function App() {
   };
 
   const cycleLibraryShowcase = (direction) => {
+    setLibraryShowcaseDirection(direction === "prev" ? -1 : 1);
     setActiveLibraryShowcaseIndex((prev) => {
       const offset = direction === "prev" ? -1 : 1;
       return (prev + offset + LIBRARY_SHOWCASE_ITEMS.length) % LIBRARY_SHOWCASE_ITEMS.length;
@@ -264,8 +357,24 @@ function App() {
     openPath(eventItem?.detailsUrl || NAV_LINKS.events);
   };
 
+  const closeAiExperience = (navigateHome = false) => {
+    setAiMode(false);
+    setAiAssistantEnabled(false);
+    resetAssistantPendingState();
+
+    if (navigateHome && activeTab === "chat") {
+      openPath("/");
+    }
+  };
+
   const handleAiMenuClick = () => {
     setIsNotificationsOpen(false);
+
+    if (aiMode) {
+      closeAiExperience(activeTab === "chat");
+      return;
+    }
+
     setAiAssistantEnabled(true);
     setAiMode(true);
   };
@@ -345,9 +454,13 @@ function App() {
   useEffect(() => {
     const syncTabWithHash = () => {
       const nextPath = resolvePathFromHash(window.location.hash);
-      setCurrentPath(nextPath);
-      setActiveTab(resolveTabFromPath(nextPath));
+
+      if (nextPath === routeStateRef.current.path) {
+        return;
+      }
+
       setIsNotificationsOpen(false);
+      syncRouteState(nextPath);
     };
 
     window.addEventListener("hashchange", syncTabWithHash);
@@ -355,16 +468,38 @@ function App() {
   }, []);
 
   const topCardExitAnimation = useMemo(() => {
-    if (dismissDirection === "right") {
-      return { x: 760, y: 120, rotate: 22, opacity: 0 };
+    if (!dismissDirection) {
+      return { x: 0, y: 0, rotate: 0, opacity: 1, scale: 1 };
     }
-    if (dismissDirection === "left") {
-      return { x: -760, y: 120, rotate: -22, opacity: 0 };
+
+    if (typeof dismissDirection === "string") {
+      if (dismissDirection === "right") {
+        return { x: 760, y: 120, rotate: 22, opacity: 0, scale: 0.96 };
+      }
+      if (dismissDirection === "left") {
+        return { x: -760, y: 120, rotate: -22, opacity: 0, scale: 0.96 };
+      }
+      if (dismissDirection === "down") {
+        return { x: 0, y: 760, rotate: 12, opacity: 0, scale: 0.96 };
+      }
+      if (dismissDirection === "up") {
+        return { x: 0, y: -760, rotate: -12, opacity: 0, scale: 0.96 };
+      }
     }
-    if (dismissDirection === "down") {
-      return { x: 0, y: 760, rotate: 12, opacity: 0 };
-    }
-    return { x: 0, y: 0, rotate: 0, opacity: 1 };
+
+    const offsetX = dismissDirection.x || 0;
+    const offsetY = dismissDirection.y || 0;
+    const magnitude = Math.max(1, Math.hypot(offsetX, offsetY));
+    const normalizedX = offsetX / magnitude;
+    const normalizedY = offsetY / magnitude;
+
+    return {
+      x: offsetX + normalizedX * 880,
+      y: offsetY + normalizedY * 880,
+      rotate: clamp(offsetX / 16 + offsetY / 28, -26, 26),
+      opacity: 0,
+      scale: 0.96
+    };
   }, [dismissDirection]);
 
   const handleGoHome = () => {
@@ -372,16 +507,11 @@ function App() {
   };
 
   const handleCloseAiOverlay = () => {
-    setAiMode(false);
-    setAiAssistantEnabled(false);
-    resetAssistantPendingState();
+    closeAiExperience(false);
   };
 
   const handleCloseAiPage = () => {
-    handleCloseAiOverlay();
-    if (activeTab === "chat") {
-      openPath("/");
-    }
+    closeAiExperience(true);
   };
 
   const handleChatSubmit = (event) => {
@@ -396,12 +526,94 @@ function App() {
     }
   };
 
+  const mainContent = isNewsPage ? (
+    <NewsPage
+      miniNewsItems={MINI_NEWS_ITEMS}
+      featuredNewsItems={FEATURED_NEWS_ITEMS}
+      likedNews={likedNews}
+      onToggleNewsLike={toggleNewsLike}
+      onOpenMiniNews={openMiniNews}
+      onParticipateInEvent={openFeaturedEvent}
+      onBack={handleGoHome}
+    />
+  ) : isProjectsPage && isProjectDetailPage ? (
+    <ProjectDetailsPage
+      project={currentProjectDetails}
+      onBack={openProjectsHub}
+      onJoinProject={joinProject}
+    />
+  ) : isProjectsPage ? (
+    <ProjectHubPage
+      columns={PROJECT_HUB_COLUMNS}
+      onBack={handleGoHome}
+      onCreateProject={openProjectCreate}
+      onOpenProject={openProjectDetails}
+    />
+  ) : isLibraryPage ? (
+    <LibraryPage
+      heroItem={activeLibraryHero}
+      showcaseItems={LIBRARY_SHOWCASE_ITEMS}
+      activeShowcaseIndex={activeLibraryShowcaseIndex}
+      showcaseDirection={libraryShowcaseDirection}
+      interestOptions={LIBRARY_INTEREST_OPTIONS}
+      selectedInterests={selectedLibraryInterests}
+      articleItems={LIBRARY_ARTICLE_ITEMS}
+      onBack={handleGoHome}
+      onPrevShowcase={() => cycleLibraryShowcase("prev")}
+      onNextShowcase={() => cycleLibraryShowcase("next")}
+      onToggleInterest={toggleLibraryInterest}
+      onSaveInterests={saveLibraryInterests}
+    />
+  ) : isChatPage ? (
+    <ChatPage
+      historyItems={CHAT_PAGE_HISTORY_ITEMS}
+      composerPrompts={CHAT_PAGE_COMPOSER_PROMPTS}
+      heroActions={CHAT_PAGE_HERO_ACTIONS}
+      statusCard={CHAT_PAGE_STATUS_CARD}
+      messages={chatPageMessages}
+      chatInput={chatInput}
+      chatListRef={chatListRef}
+      onClose={handleCloseAiPage}
+      onSendMessage={sendMessage}
+      onChangeChatInput={setChatInput}
+      onSubmit={handleChatSubmit}
+    />
+  ) : (
+    <section className="left-content">
+      <h1 className="page-title">Главная панель</h1>
+      <SummaryCards
+        onOpenCourses={() => navigateTo(NAV_LINKS.courses)}
+        onOpenCourseDetails={() => navigateTo("/courses/data-science-ml")}
+        onOpenEvents={() => navigateTo(NAV_LINKS.events)}
+      />
+      <BottomCards
+        newsItem={homeNewsItem}
+        isNewsLiked={Boolean(likedNews[homeNewsItem.id])}
+        onToggleNewsLike={toggleNewsLike}
+        onOpenNews={openNewsList}
+        onOpenProjects={openProjectsHub}
+      />
+    </section>
+  );
+
   return (
     <div className="viewport-frame">
       <div className="design-canvas">
         <div className="app-shell app-shell-news">
-          <img className="bg-shape bg-shape-top" src={assets.backgroundShape} alt="" />
-          <img className="bg-shape bg-shape-bottom" src={assets.backgroundShape} alt="" />
+          <motion.img
+            className="bg-shape bg-shape-top"
+            src={assets.backgroundShape}
+            alt=""
+            animate={{ x: [0, 28, 0], y: [0, -18, 0], rotate: [4.07, 6.3, 4.07] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.img
+            className="bg-shape bg-shape-bottom"
+            src={assets.backgroundShape}
+            alt=""
+            animate={{ x: [0, -34, 0], y: [0, 24, 0], rotate: [156, 152, 156] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          />
 
           <TopBar
             activeTab={activeTab}
@@ -418,74 +630,20 @@ function App() {
           />
 
           <main className="dashboard-layout dashboard-layout-news">
-            {isNewsPage ? (
-              <NewsPage
-                miniNewsItems={MINI_NEWS_ITEMS}
-                featuredNewsItems={FEATURED_NEWS_ITEMS}
-                likedNews={likedNews}
-                onToggleNewsLike={toggleNewsLike}
-                onOpenMiniNews={openMiniNews}
-                onParticipateInEvent={openFeaturedEvent}
-                onBack={handleGoHome}
-              />
-            ) : isProjectsPage && isProjectDetailPage ? (
-              <ProjectDetailsPage
-                project={currentProjectDetails}
-                onBack={openProjectsHub}
-                onJoinProject={joinProject}
-              />
-            ) : isProjectsPage ? (
-              <ProjectHubPage
-                columns={PROJECT_HUB_COLUMNS}
-                onBack={handleGoHome}
-                onCreateProject={openProjectCreate}
-                onOpenProject={openProjectDetails}
-              />
-            ) : isLibraryPage ? (
-              <LibraryPage
-                heroItem={activeLibraryHero}
-                showcaseItems={LIBRARY_SHOWCASE_ITEMS}
-                activeShowcaseIndex={activeLibraryShowcaseIndex}
-                interestOptions={LIBRARY_INTEREST_OPTIONS}
-                selectedInterests={selectedLibraryInterests}
-                articleItems={LIBRARY_ARTICLE_ITEMS}
-                onBack={handleGoHome}
-                onPrevShowcase={() => cycleLibraryShowcase("prev")}
-                onNextShowcase={() => cycleLibraryShowcase("next")}
-                onToggleInterest={toggleLibraryInterest}
-                onSaveInterests={saveLibraryInterests}
-              />
-            ) : isChatPage ? (
-              <ChatPage
-                historyItems={CHAT_PAGE_HISTORY_ITEMS}
-                composerPrompts={CHAT_PAGE_COMPOSER_PROMPTS}
-                heroActions={CHAT_PAGE_HERO_ACTIONS}
-                statusCard={CHAT_PAGE_STATUS_CARD}
-                messages={chatPageMessages}
-                chatInput={chatInput}
-                chatListRef={chatListRef}
-                onClose={handleCloseAiPage}
-                onSendMessage={sendMessage}
-                onChangeChatInput={setChatInput}
-                onSubmit={handleChatSubmit}
-              />
-            ) : (
-              <section className="left-content">
-                <h1 className="page-title">Главная панель</h1>
-                <SummaryCards
-                  onOpenCourses={() => navigateTo(NAV_LINKS.courses)}
-                  onOpenCourseDetails={() => navigateTo("/courses/data-science-ml")}
-                  onOpenEvents={() => navigateTo(NAV_LINKS.events)}
-                />
-                <BottomCards
-                  newsItem={homeNewsItem}
-                  isNewsLiked={Boolean(likedNews[homeNewsItem.id])}
-                  onToggleNewsLike={toggleNewsLike}
-                  onOpenNews={openNewsList}
-                  onOpenProjects={openProjectsHub}
-                />
-              </section>
-            )}
+            <AnimatePresence mode="wait" initial={false} custom={pageTransitionDirection}>
+              <motion.div
+                key={mainContentKey}
+                className={`page-stage ${isHomePage ? "page-stage-home" : ""}`}
+                custom={pageTransitionDirection}
+                variants={PAGE_STAGE_VARIANTS}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={PAGE_STAGE_TRANSITION}
+              >
+                {mainContent}
+              </motion.div>
+            </AnimatePresence>
           </main>
 
           {isHomePage ? (

@@ -37,7 +37,7 @@
 
     --glass: rgba(255, 255, 255, 0.08);
     --glass-strong: rgba(255, 255, 255, 0.08);
-    --glass-soft: rgba(255, 255, 255, 0.06);
+    --glass-soft: rgba(146, 141, 141, 0.288);
 
     --radius-card: 23px;
     --radius-pill: 100px;
@@ -259,6 +259,8 @@
 
   .menu-item {
     position: relative;
+    isolation: isolate;
+    overflow: hidden;
     width: 52px;
     height: 52px;
     border: 0;
@@ -279,12 +281,38 @@
     min-width: 170px;
     padding: 0 28px;
     justify-content: flex-start;
-    background: #ffffff;
+    background: transparent;
     color: #000000;
   }
 
   .menu-item-ai-active.menu-item-active {
     min-width: 198px;
+  }
+
+  .menu-item-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: #ffffff;
+    box-shadow: 0 18px 42px rgba(255, 255, 255, 0.14);
+    pointer-events: none;
+  }
+
+  .menu-item-content {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  .menu-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
   }
 
   .menu-item .menu-label {
@@ -299,26 +327,17 @@
   }
 
   .menu-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
   }
 
-  .menu-ai-icon {
-    position: relative;
-    width: 20px;
-    height: 20px;
-    display: grid;
-    place-items: center;
-  }
-
-  .menu-ai-icon img {
-    position: absolute;
+  .menu-icon-ai {
     width: 20px;
     height: 20px;
   }
 
-  .menu-item-ai-active .menu-ai-icon {
+  .menu-item-ai-active .menu-icon-ai {
     filter: drop-shadow(0 0 8px rgba(234, 109, 120, 0.8));
   }
 
@@ -401,6 +420,13 @@
     align-items: center;
   }
 
+  .page-stage {
+    width: 100%;
+    min-width: 0;
+    transform-origin: center top;
+    will-change: transform, opacity, filter;
+  }
+
   /* Overlay pages own the scroll container instead of the body */
   .dashboard-layout-news {
     display: block;
@@ -461,6 +487,7 @@
   .news-back-btn img {
     width: 26px;
     height: 26px;
+    transform: rotate(180deg);
   }
 
   /* ==========================================================================
@@ -468,13 +495,13 @@
      ========================================================================== */
   .notifications-popover {
     position: absolute;
-    top: calc(100% + 18px);
+    top: calc(100% + 14px);
     right: 0;
     z-index: 80;
-    width: min(640px, calc(100vw - 48px));
-    padding: 22px;
+    width: min(520px, calc(100vw - 48px));
+    padding: 18px;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 32px;
+    border-radius: 26px;
     background: rgba(14, 14, 18, 0.94);
     backdrop-filter: blur(26px);
     box-shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
@@ -484,22 +511,21 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 20px;
+    gap: 16px;
   }
 
   .notify-popover-title-wrap {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
   }
 
   .notify-popover-brand-icon {
-    position: relative;
-    width: 54px;
-    height: 54px;
-    border-radius: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     background: radial-gradient(circle at 50% 30%, rgba(126, 83, 255, 0.34), rgba(50, 31, 92, 0.96));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 38px rgba(53, 28, 94, 0.34);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 28px rgba(53, 28, 94, 0.3);
     display: grid;
     place-items: center;
     overflow: hidden;
@@ -507,22 +533,21 @@
   }
 
   .notify-popover-brand-icon img {
-    position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 19px;
+    height: 19px;
   }
 
   .notify-popover-title-wrap h2 {
     margin: 0;
-    font-size: 29px;
+    font-size: 24px;
     font-weight: 600;
     line-height: 1;
     letter-spacing: -0.04em;
   }
 
   .notify-popover-close {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border: 0;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
@@ -533,21 +558,22 @@
   }
 
   .notify-popover-close img {
-    width: 30px;
-    height: 30px;
+    width: 16px;
+    height: 16px;
+    transform: rotate(45deg);
   }
 
   .notify-popover-list {
-    margin-top: 22px;
+    margin-top: 18px;
     display: grid;
-    gap: 18px;
+    gap: 14px;
   }
 
   .notify-card {
     position: relative;
     overflow: hidden;
-    border-radius: 26px;
-    padding: 22px 24px;
+    border-radius: 22px;
+    padding: 16px 18px;
     background: linear-gradient(180deg, rgba(64, 64, 66, 0.84), rgba(52, 52, 54, 0.92));
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
@@ -559,9 +585,9 @@
 
   .notify-card-title {
     margin: 0;
-    max-width: calc(100% - 48px);
+    max-width: calc(100% - 40px);
     color: rgba(255, 255, 255, 0.92);
-    font-size: 20px;
+    font-size: 17px;
     line-height: 1.28;
     letter-spacing: -0.02em;
   }
@@ -570,27 +596,27 @@
     position: absolute;
     top: 4px;
     right: 0;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #ff416d;
-    box-shadow: 0 0 0 6px rgba(255, 65, 109, 0.12);
+    box-shadow: 0 0 0 4px rgba(255, 65, 109, 0.12);
   }
 
   .notify-card-footer {
-    margin-top: 22px;
-    padding-top: 20px;
+    margin-top: 18px;
+    padding-top: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 18px;
+    gap: 14px;
   }
 
   .notify-card-meta {
     display: flex;
     align-items: flex-end;
-    gap: 16px;
+    gap: 12px;
   }
 
   .notify-card-author {
@@ -601,19 +627,19 @@
 
   .notify-card-author span {
     color: #d29eff;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .notify-card-author strong {
     color: rgba(255, 255, 255, 0.56);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
   }
 
   .notify-card-open {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border: 1px solid rgba(255, 255, 255, 0.26);
     border-radius: 50%;
     padding: 0;
@@ -624,11 +650,13 @@
   }
 
   .notify-card-open-arrow {
-    width: 11px;
-    height: 11px;
-    border-top: 2px solid #ffffff;
-    border-right: 2px solid #ffffff;
-    transform: translateX(-1px) rotate(45deg);
+    display: block;
+    width: 15px;
+    height: 15px;
+    background: #ffffff;
+    transform: translateX(1px);
+    -webkit-mask: url("../icons/forward btn.svg") center / contain no-repeat;
+    mask: url("../icons/forward btn.svg") center / contain no-repeat;
   }
 
   .notify-card-datetime {
@@ -640,13 +668,13 @@
 
   .notify-card-datetime strong {
     color: rgba(255, 255, 255, 0.94);
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 500;
   }
 
   .notify-card-datetime span {
     color: rgba(255, 255, 255, 0.48);
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
   }
 
@@ -654,20 +682,20 @@
     display: block;
     margin-top: 8px;
     color: #9cff67;
-    font-size: 21px;
+    font-size: 18px;
     font-weight: 500;
     line-height: 1.2;
   }
 
   .notify-card-read-btn {
-    min-width: 186px;
-    height: 52px;
+    min-width: 156px;
+    height: 44px;
     border: 0;
     border-radius: 999px;
-    padding: 0 28px;
+    padding: 0 22px;
     background: linear-gradient(135deg, #db855d 0%, #cf6f6b 52%, #a15bbe 100%);
     color: #ffffff;
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
   }
@@ -718,40 +746,111 @@
     position: absolute;
     right: 20px;
     bottom: 18px;
+    overflow: hidden;
     width: 50px;
     height: 50px;
     border: 0;
     border-radius: 13px;
-    background: #252525;
+    background: rgba(37, 37, 37, 0.94);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px);
     cursor: pointer;
     display: grid;
     place-items: center;
   }
 
+  .news-like-btn-active {
+    background: linear-gradient(135deg, #db855d 0%, #cf6f6b 52%, #a15bbe 100%);
+    box-shadow: 0 12px 30px rgba(161, 91, 190, 0.25);
+  }
+
   .news-like-btn img {
+    position: relative;
+    z-index: 1;
     width: 24px;
     height: 24px;
+  }
+
+  .news-like-icon {
+    opacity: 0.62;
+    transform: scale(0.94);
+  }
+
+  .news-like-icon-active {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.18));
+  }
+
+  .news-like-burst {
+    position: absolute;
+    inset: -26%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(255, 255, 255, 0.88) 0%, rgba(255, 214, 235, 0.7) 24%, rgba(255, 112, 181, 0.26) 52%, rgba(255, 112, 181, 0) 74%),
+      conic-gradient(from 180deg, rgba(255, 183, 212, 0.82), rgba(255, 133, 166, 0.1), rgba(255, 183, 212, 0.82));
+    pointer-events: none;
+    mix-blend-mode: screen;
   }
 
   .news-link-btn {
     position: absolute;
     left: 20px;
     bottom: 18px;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: var(--text-dim);
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 0 10px 0 18px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px rgba(0, 0, 0, 0.16);
+    color: var(--text-main);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-size: 16px;
     font-weight: 550;
+    backdrop-filter: blur(14px);
+    transition:
+      box-shadow 0.28s ease,
+      border-color 0.28s ease,
+      background 0.28s ease,
+      color 0.28s ease;
+  }
+
+  .news-link-btn-shine {
+    position: absolute;
+    inset: -40% auto -40% -24%;
+    width: 58%;
+    background: linear-gradient(115deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+    transform: skewX(-24deg);
+    pointer-events: none;
+  }
+
+  .news-link-label {
+    position: relative;
+    z-index: 1;
+  }
+
+  .news-link-arrow-wrap {
+    position: relative;
+    z-index: 1;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .news-link-btn img {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+    transform: rotate(-45deg);
   }
 
   /* ==========================================================================
@@ -832,11 +931,12 @@
 
   .project-hub-card-open-arrow {
     display: block;
-    width: 11px;
-    height: 11px;
-    border-top: 2px solid #ffffff;
-    border-right: 2px solid #ffffff;
-    transform: translateX(-1px) rotate(45deg);
+    width: 15px;
+    height: 15px;
+    background: #ffffff;
+    transform: translateX(1px);
+    -webkit-mask: url("../icons/forward btn.svg") center / contain no-repeat;
+    mask: url("../icons/forward btn.svg") center / contain no-repeat;
   }
 
   /* ==========================================================================
@@ -908,8 +1008,9 @@
   }
 
   .ai-close-btn img {
-    width: 35px;
-    height: 35px;
+    width: 16px;
+    height: 16px;
+    transform: rotate(45deg);
   }
 
   .ai-suggestions {
@@ -1036,7 +1137,6 @@
   }
 
   .chat-logo-btn img {
-    position: absolute;
     width: 18px;
     height: 18px;
   }
@@ -1066,19 +1166,13 @@
   }
 
   .chat-send-btn img {
-    width: 25px;
-    height: 25px;
-    rotate: 180deg;
-    padding-right: 1px;
+    width: 22px;
+    height: 22px;
   }
 
   /* ==========================================================================
      Shared Hover Motion
      ========================================================================== */
-  .logo-wrap,
-  .menu-item,
-  .glass-icon-button,
-  .account-btn,
   .news-back-btn,
   .projects-hub-create-btn,
   .suggestion-pill,
@@ -1126,9 +1220,6 @@
   }
 
   @media (hover: hover) {
-    .logo-wrap:hover,
-    .glass-icon-button:hover,
-    .account-btn:hover,
     .news-back-btn:hover,
     .chat-logo-btn:hover,
     .chat-send-btn:hover,
@@ -1137,7 +1228,6 @@
       transform: translateY(-2px) scale(1.02);
     }
 
-    .menu-item:hover,
     .small-arrow-btn:hover,
     .suggestion-pill:hover,
     .chat-actions button:hover,
@@ -1186,10 +1276,15 @@
     }
 
     .chat-page-history-item:hover,
-    .chat-page-support-link:hover,
-    .news-link-btn:hover {
+    .chat-page-support-link:hover {
       transform: translateX(4px);
       color: #ffffff;
+    }
+
+    .news-link-btn:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 34px rgba(0, 0, 0, 0.22);
     }
   }
 }
@@ -1336,8 +1431,8 @@
 
   @media (max-width: 1200px) {
     .notifications-popover {
-      width: min(540px, calc(100vw - 40px));
-      padding: 18px;
+      width: min(460px, calc(100vw - 40px));
+      padding: 16px;
     }
 
     .projects-hub-create-btn {
@@ -1363,47 +1458,62 @@
     .notifications-popover {
       top: calc(100% + 12px);
       right: 0;
-      width: min(100vw - 24px, 420px);
-      padding: 16px;
-      border-radius: 26px;
-    }
-
-    .notify-popover-title-wrap {
-      gap: 14px;
-    }
-
-    .notify-popover-brand-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-    }
-
-    .notify-popover-brand-icon img {
-      width: 20px;
-      height: 20px;
-    }
-
-    .notify-popover-title-wrap h2 {
-      font-size: 24px;
-    }
-
-    .notify-popover-close {
-      width: 42px;
-      height: 42px;
-    }
-
-    .notify-card {
-      padding: 18px 16px;
+      width: min(100vw - 24px, 360px);
+      padding: 14px;
       border-radius: 22px;
     }
 
+    .notify-popover-title-wrap {
+      gap: 12px;
+    }
+
+    .notify-popover-brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+    }
+
+    .notify-popover-brand-icon img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .notify-popover-title-wrap h2 {
+      font-size: 20px;
+    }
+
+    .notify-popover-close {
+      width: 34px;
+      height: 34px;
+    }
+
+    .notify-popover-close img {
+      width: 14px;
+      height: 14px;
+    }
+
+    .notify-card {
+      padding: 14px;
+      border-radius: 18px;
+    }
+
     .notify-card-title {
-      max-width: calc(100% - 36px);
-      font-size: 17px;
+      max-width: calc(100% - 30px);
+      font-size: 15px;
     }
 
     .notify-card-accent {
-      font-size: 18px;
+      font-size: 16px;
+    }
+
+    .notify-card-open {
+      width: 34px;
+      height: 34px;
+    }
+
+    .notify-card-open-arrow {
+      width: 13px;
+      height: 13px;
     }
 
     .notify-card-footer {
@@ -1418,6 +1528,8 @@
     .notify-card-read-btn {
       min-width: 0;
       width: 100%;
+      height: 40px;
+      font-size: 14px;
     }
 
     .news-back-btn {

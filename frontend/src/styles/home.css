@@ -258,7 +258,7 @@
 
 .project-link img {
   width: 14px;
-  height: 1px;
+  height: 14px;
 }
 
 .progress-track {
@@ -355,9 +355,8 @@
 }
 
 .deck-fab img {
-  width: 30px;
-  height: 30px;
-  margin-left: 4px;
+  width: 26px;
+  height: 26px;
 }
 
 .recommendations-popover {
@@ -389,8 +388,9 @@
 }
 
 .deck-close-btn img {
-  width: 42px;
-  height: 42px;
+  width: 18px;
+  height: 18px;
+  transform: rotate(45deg);
 }
 
 .deck-wrap {
@@ -398,73 +398,135 @@
   width: 100%;
   height: 100%;
   perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 .recommendation-card {
   position: absolute;
   inset: 0;
+  isolation: isolate;
   overflow: hidden;
   border-radius: 20px;
   background: var(--glass-strong);
   box-shadow: 0 0 23.5px rgba(0, 0, 0, 0.4);
   user-select: none;
+  transform-style: preserve-3d;
 }
 
 .recommendation-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  will-change: transform;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+.recommendation-image-hero {
+  transform: scale(1.01);
 }
 
 .stacked-card {
+  --stack-scale: 1;
+  --stack-shift-y: 0px;
   pointer-events: none;
+  filter: saturate(0.58) brightness(0.74);
 }
 
 .stacked-1 {
   z-index: 1;
-  transform: rotate(-12.5deg) translate(-72px, 56px);
+  transform: rotate(-7deg) translate(-44px, calc(36px + var(--stack-shift-y))) scale(var(--stack-scale));
 }
 
 .stacked-2 {
   z-index: 2;
-  transform: rotate(11.6deg) translate(66px, 46px);
+  transform: rotate(6.5deg) translate(40px, calc(28px + var(--stack-shift-y))) scale(var(--stack-scale));
 }
 
 .top-card {
   z-index: 3;
   cursor: grab;
+  touch-action: none;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.46);
 }
 
 .top-card:active {
   cursor: grabbing;
 }
 
+.recommendation-drag-glow {
+  position: absolute;
+  inset: -12%;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
 .recommendation-actions {
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 24px;
-  transform: translateX(-50%);
+  z-index: 2;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 20px;
+  padding: 0 24px;
 }
 
 .action-btn {
+  position: relative;
   width: 62px;
   height: 62px;
   border: 0;
   border-radius: 14px;
-  background: #252525;
+  overflow: hidden;
+  background: rgba(37, 37, 37, 0.94);
   cursor: pointer;
   box-shadow: 0 0 20px #00000081;
   display: grid;
   place-items: center;
+  backdrop-filter: blur(18px);
 }
 
 .action-btn img {
+  position: relative;
+  z-index: 1;
   width: 28px;
   height: 28px;
   object-fit: contain;
+}
+
+.action-btn:not(.action-btn-active):not(.action-btn-open):not(.action-btn-share) img {
+  opacity: 0.62;
+  transform: scale(0.94);
+}
+
+.action-btn-active {
+  background: linear-gradient(135deg, #db855d 0%, #cf6f6b 52%, #a15bbe 100%);
+  box-shadow: 0 14px 32px rgba(161, 91, 190, 0.28);
+}
+
+.action-btn-icon-active {
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.18));
+}
+
+.action-btn-share img {
+  transform: rotate(-45deg);
+}
+
+.action-btn-burst {
+  position: absolute;
+  inset: -26%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.88) 0%, rgba(255, 214, 235, 0.7) 24%, rgba(255, 112, 181, 0.26) 52%, rgba(255, 112, 181, 0) 74%),
+    conic-gradient(from 180deg, rgba(255, 183, 212, 0.82), rgba(255, 133, 166, 0.1), rgba(255, 183, 212, 0.82));
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 /* ==========================================================================

@@ -1,7 +1,6 @@
 /* ==========================================================================
    Project Hub Page
    ========================================================================== */
-
 /* Page header */
 .projects-hub-page {
   width: 100%;
@@ -139,33 +138,13 @@
 }
 
 .project-hub-lock-icon {
-  position: relative;
   width: 18px;
   height: 18px;
+  display: block;
   flex: 0 0 auto;
-}
-
-.project-hub-lock-icon::before {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 7px;
-  width: 14px;
-  height: 11px;
-  border: 2px solid rgba(255, 255, 255, 0.82);
-  border-radius: 4px;
-}
-
-.project-hub-lock-icon::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 8px;
-  height: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.82);
-  border-bottom: 0;
-  border-radius: 999px 999px 0 0;
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-mask: url("../../icons/projects-inactive.svg") center / contain no-repeat;
+  mask: url("../../icons/projects-inactive.svg") center / contain no-repeat;
 }
 
 .project-hub-card-title {
@@ -242,26 +221,13 @@
 }
 
 .project-hub-update-icon {
-  position: relative;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.76);
-  border-right-color: transparent;
-  border-radius: 50%;
-  transform: rotate(-34deg);
+  display: block;
   flex: 0 0 auto;
-}
-
-.project-hub-update-icon::after {
-  content: "";
-  position: absolute;
-  top: -1px;
-  right: -2px;
-  width: 6px;
-  height: 6px;
-  border-top: 2px solid rgba(255, 255, 255, 0.76);
-  border-right: 2px solid rgba(255, 255, 255, 0.76);
-  transform: rotate(16deg);
+  background: rgba(255, 255, 255, 0.76);
+  -webkit-mask: url("../../icons/progress-upload 2.svg") center / contain no-repeat;
+  mask: url("../../icons/progress-upload 2.svg") center / contain no-repeat;
 }
 
 /* ==========================================================================
@@ -452,20 +418,6 @@
   .project-hub-lock-icon {
     width: 16px;
     height: 16px;
-  }
-
-  .project-hub-lock-icon::before {
-    left: 2px;
-    top: 7px;
-    width: 12px;
-    height: 8px;
-  }
-
-  .project-hub-lock-icon::after {
-    left: 4px;
-    top: 1px;
-    width: 7px;
-    height: 6px;
   }
 
   .project-hub-card-title {

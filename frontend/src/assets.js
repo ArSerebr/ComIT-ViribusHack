@@ -6,72 +6,92 @@ import posterWeb3 from "../img/poster-web3.jpg";
 import posterTechConf from "../img/poster-tech-conf.jpg";
 import avatarPhoto from "../img/avatar-photo.jpg";
 import courseImage from "../img/course-image.png";
-import sparkIcon from "../img/spark-icon.png";
 import cloudIcon from "../img/cloud-icon.png";
 import nodeJsIcon from "../img/node-js-icon.png";
 import heartIllustration from "../img/heart-illustration.png";
 import newsPhoto from "../img/news-photo.jpg";
-import barsSortIcon from "../img/bars-sort.svg";
-import sparklesIconA from "../img/sparkles-4-1.svg";
-import sparklesIconB from "../img/sparkles-4-2.svg";
-import folderOpenIcon from "../img/folder-open.svg";
-import newspaperOpenIcon from "../img/newspaper-open.svg";
-import diaryBookmarkIcon from "../img/diary-bookmark.svg";
-import bellIcon from "../img/bell-icon.svg";
-import group124Icon from "../img/group-124.svg";
 import gigachatLogo from "../img/gigachat-logo.svg";
 import grokLogo from "../img/grok-logo.svg";
-import plusSmallIcon from "../img/plus-small.svg";
-import heartOutlineIcon from "../img/heart-outline.svg";
-import heartFilledIcon from "../img/heart-filled.svg";
-import shareIcon from "../img/share.svg";
-import linkAltIcon from "../img/link-alt.svg";
-import arrow15Icon from "../img/arrow-15.svg";
-import arrow16Icon from "../img/arrow-16.svg";
-import arrowSmallLeftIcon from "../img/arrow-small-left.svg";
-import alignCenterIcon from "../img/align-center.svg";
-import sparklesMiniA from "../img/sparkles-2-1.svg";
-import sparklesMiniB from "../img/sparkles-2-2.svg";
-import group12021Icon from "../img/group-12021.svg";
 import ellipse194 from "../img/ellipse-194.svg";
 import poster120Image from "../img/poster-120-1.jpg";
+import aiActiveIcon from "../icons/AI-active.svg";
+import aiGenerateIcon from "../icons/AI-generate.svg";
+import aiInactiveIcon from "../icons/AI-inactive.svg";
+import arrowIcon from "../icons/arrow.svg";
+import bellSolidIcon from "../icons/bell.svg";
+import chartLineIcon from "../icons/chart-line.svg";
+import crossIcon from "../icons/cross.svg";
+import forwardButtonIcon from "../icons/forward btn.svg";
+import libraryActiveIcon from "../icons/library-active.svg";
+import libraryInactiveIcon from "../icons/library-inactive.svg";
+import likeIcon from "../icons/like.svg";
+import mainActiveIcon from "../icons/main-active.svg";
+import mainInactiveIcon from "../icons/main-inactive.svg";
+import newsActiveIcon from "../icons/news-active.svg";
+import newsInactiveIcon from "../icons/news-inactive.svg";
+import plugConnectionIcon from "../icons/plug-connection.svg";
+import progressUploadIcon from "../icons/progress-upload 2.svg";
+import projectsActiveIcon from "../icons/projects-active.svg";
+import projectsInactiveIcon from "../icons/projects-inactive.svg";
+import recommendationCardsIcon from "../icons/recomendation cards.svg";
+import searchIcon from "../icons/search.svg";
+import teamIcon from "../icons/team.svg";
 
 export const assets = {
-  alignCenterIcon,
-  arrow15Icon,
-  arrow16Icon,
-  arrowSmallLeftIcon,
+  aiActiveIcon,
+  aiGenerateIcon,
+  aiInactiveIcon,
+  alignCenterIcon: arrowIcon,
+  arrow15Icon: arrowIcon,
+  arrow16Icon: arrowIcon,
+  arrowIcon,
+  arrowSmallLeftIcon: arrowIcon,
   avatarPhoto,
   backgroundShape,
-  barsSortIcon,
-  bellIcon,
+  bellIcon: bellSolidIcon,
+  chartLineIcon,
   cloudIcon,
   courseImage,
-  diaryBookmarkIcon,
+  crossIcon,
+  diaryBookmarkIcon: libraryInactiveIcon,
   ellipse194,
-  folderOpenIcon,
+  folderOpenIcon: recommendationCardsIcon,
+  forwardButtonIcon,
   gigachatLogo,
-  group12021Icon,
-  group124Icon,
+  group12021Icon: crossIcon,
+  group124Icon: arrowIcon,
   grokLogo,
-  heartFilledIcon,
+  heartFilledIcon: likeIcon,
   heartIllustration,
-  heartOutlineIcon,
-  linkAltIcon,
-  newspaperOpenIcon,
+  heartOutlineIcon: likeIcon,
+  libraryActiveIcon,
+  libraryInactiveIcon,
+  likeIcon,
+  linkAltIcon: forwardButtonIcon,
+  mainActiveIcon,
+  mainInactiveIcon,
+  newsActiveIcon,
+  newsInactiveIcon,
   newsPhoto,
+  newspaperOpenIcon: newsInactiveIcon,
   nodeJsIcon,
+  plugConnectionIcon,
+  plusSmallIcon: crossIcon,
   poster120Image,
   posterHackathon,
   posterTechConf,
   posterTechTalk,
   posterWeb3,
-  plusSmallIcon,
-  shareIcon,
-  sparkIcon,
-  sparklesIconA,
-  sparklesIconB,
-  sparklesMiniA,
-  sparklesMiniB,
+  progressUploadIcon,
+  projectsActiveIcon,
+  projectsInactiveIcon,
+  recommendationCardsIcon,
+  searchIcon,
+  shareIcon: arrowIcon,
+  sparklesIconA: aiActiveIcon,
+  sparklesIconB: aiInactiveIcon,
+  sparklesMiniA: aiGenerateIcon,
+  sparklesMiniB: aiGenerateIcon,
+  teamIcon,
   untitledLogo
 };

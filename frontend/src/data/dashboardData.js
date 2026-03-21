@@ -1,11 +1,31 @@
 import { assets } from "../assets";
 
 export const MENU_ITEMS = [
-  { id: "home", label: "Главная", icon: assets.barsSortIcon },
-  { id: "ai", label: "Чат с ИИ", icon: [assets.sparklesIconA, assets.sparklesIconB] },
-  { id: "projects", label: "Проекты", icon: assets.folderOpenIcon },
-  { id: "news", label: "Ивенты", icon: assets.newspaperOpenIcon },
-  { id: "library", label: "Библиотека", icon: assets.diaryBookmarkIcon }
+  {
+    id: "home",
+    label: "Главная",
+    icons: { active: assets.mainActiveIcon, inactive: assets.mainInactiveIcon }
+  },
+  {
+    id: "ai",
+    label: "Чат с ИИ",
+    icons: { active: assets.aiActiveIcon, inactive: assets.aiInactiveIcon }
+  },
+  {
+    id: "projects",
+    label: "Проекты",
+    icons: { active: assets.projectsActiveIcon, inactive: assets.projectsInactiveIcon }
+  },
+  {
+    id: "news",
+    label: "Ивенты",
+    icons: { active: assets.newsActiveIcon, inactive: assets.newsInactiveIcon }
+  },
+  {
+    id: "library",
+    label: "Библиотека",
+    icons: { active: assets.libraryActiveIcon, inactive: assets.libraryInactiveIcon }
+  }
 ];
 
 export const RECOMMENDATIONS = [

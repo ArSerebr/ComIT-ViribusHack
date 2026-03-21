@@ -66,8 +66,7 @@ export function AiChatPanel({
 
         <form className="chat-input-wrap" onSubmit={onSubmit}>
           <button className="chat-logo-btn" type="button" onClick={() => onSendMessage("Помоги начать обучение")}>
-            <img src={assets.sparklesMiniA} alt="" />
-            <img src={assets.sparklesMiniB} alt="" />
+            <img src={assets.aiGenerateIcon} alt="" />
           </button>
           <input
             value={chatInput}

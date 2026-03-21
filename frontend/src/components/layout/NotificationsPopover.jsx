@@ -4,8 +4,7 @@ import { assets } from "../../assets";
 function NotificationsBrandIcon() {
   return (
     <span className="notify-popover-brand-icon" aria-hidden="true">
-      <img src={assets.sparklesIconA} alt="" />
-      <img src={assets.sparklesIconB} alt="" />
+      <img src={assets.bellIcon} alt="" />
     </span>
   );
 }

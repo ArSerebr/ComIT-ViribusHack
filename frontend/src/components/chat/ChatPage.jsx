@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { assets } from "../../assets";
 
 function SearchIcon() {
-  return <span className="chat-page-search-icon" aria-hidden="true" />;
+  return <img src={assets.searchIcon} alt="" className="chat-page-search-icon" />;
 }
 
 function PinIcon() {
@@ -180,8 +180,7 @@ export function ChatPage({
 
             <form className="chat-input-wrap chat-page-input-wrap" onSubmit={onSubmit}>
               <button className="chat-logo-btn" type="button" onClick={() => onSendMessage("Расскажи мне про ML")}>
-                <img src={assets.sparklesMiniA} alt="" />
-                <img src={assets.sparklesMiniB} alt="" />
+                <img src={assets.aiGenerateIcon} alt="" />
               </button>
 
               <input

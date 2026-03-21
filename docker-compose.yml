@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-viribus}
+      POSTGRES_DB: ${POSTGRES_DB:-comit}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -16,7 +16,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-viribus}",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-comit}",
         ]
       interval: 5s
       timeout: 5s
@@ -38,12 +38,12 @@ services:
 
   backend:
     # Стабильные имена для Drone cleanup и прод-деплоя (не default project_service).
-    image: viribus-backend:latest
+    image: comit-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-viribus}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
       # Не из .env: там часто localhost для uvicorn на хосте; в сети compose хост Redis — имя сервиса `redis`.
       REDIS_URL: redis://redis:6379/0
       SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-false}
@@ -65,10 +65,12 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: viribus-frontend:latest
+    image: comit-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     environment:
       BACKEND_HOST: ${BACKEND_HOST:-backend}
       BACKEND_PORT: ${BACKEND_UPSTREAM_PORT:-8000}

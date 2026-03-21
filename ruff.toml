@@ -1,16 +1,11 @@
 target-version = "py312"
-line-length = 100
+line-length = 120
 
 [lint]
-select = ["E", "F", "I", "UP", "B", "C4"]
+select = ["E", "F"]
 ignore = [
-    "E501",   # line too long — контролируется formatter
-    "B008",   # do not perform function calls in argument defaults
-    "C901",   # too complex
+    "E501",   # длина строки
+    "F401",   # неиспользуемые импорты (часто ложные в __init__ / реэкспортах)
+    "F403",   # import *
+    "F405",   # star import + __all__
 ]
-
-[lint.per-file-ignores]
-"backend/tests/*" = ["S101"]  # assert в тестах — ок
-
-[format]
-quote-style = "double"

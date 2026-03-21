@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.env
+*.log
+logs/
+agents/*.log
+.idea/
+.DS_Store
+.claude/

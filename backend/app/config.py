@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     database_url: str
     sqlalchemy_echo: bool = False
 
+    # Redis (сессии Bearer через RedisStrategy в fastapi-users; в Docker — хост `redis`).
+    redis_url: str = "redis://localhost:6379/0"
+
     # JWT и токены сброса/верификации пароля (fastapi-users).
     jwt_secret: str = Field(
         ...,

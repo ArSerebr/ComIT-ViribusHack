@@ -7,4 +7,5 @@ sqlalchemy[asyncio]>=2.0,<3
 asyncpg>=0.29,<1
 alembic>=1.13,<2
 greenlet>=3.0,<4
-fastapi-users[sqlalchemy]>=14.0,<15
+fastapi-users[sqlalchemy,redis]>=14.0,<15
+redis>=5.0,<6

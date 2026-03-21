@@ -8,4 +8,13 @@ os.environ.setdefault(
     "DATABASE_URL",
     "postgresql+asyncpg://postgres:postgres@localhost:5432/viribus",
 )
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-pytest")
+
+# Сессии Bearer (RedisStrategy): подмена на fakeredis, чтобы pytest не требовал живой Redis
+# и реально выполнял команды GET/SET/DEL как в проде.
+from fakeredis import FakeAsyncRedis
+
+import app.core.redis_client as _redis_client_module
+
+_redis_client_module.redis_client = FakeAsyncRedis(decode_responses=True)

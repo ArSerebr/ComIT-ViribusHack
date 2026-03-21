@@ -78,6 +78,12 @@ export const NAV_LINKS = {
   courses: "/courses",
   events: "/events",
   projects: "/projects",
+  projectsCreate: "/projects/create",
+  projectsView: "/projects/view",
   news: "/news",
-  chat: "/chat"
+  chat: "/chat",
+  profile: "/profile",
+  auth: "/auth",
+  articles: "/articles",
+  articleCreate: "/articles/create"
 };

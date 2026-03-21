@@ -224,15 +224,22 @@ class ProfileInterest(BaseModel):
     label: str
 
 
+class ProfileUniversityOut(BaseModel):
+    id: str
+    name: str
+
+
 class ProfileMe(BaseModel):
     displayName: str | None = None
     bio: str | None = None
+    university: ProfileUniversityOut | None = None
     interests: list[ProfileInterest] = Field(default_factory=list)
 
 
 class ProfileMePatch(BaseModel):
     displayName: str | None = None
     bio: str | None = None
+    universityId: str | None = None
     interestIds: list[str] | None = None
 
 

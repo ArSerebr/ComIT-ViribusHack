@@ -20,6 +20,8 @@ def test_create_app_exposes_openapi():
     assert "/api/projects" in body["paths"]
     assert "/api/profile/me" in body["paths"]
     assert "/api/profile/me/interests" in body["paths"]
+    assert "/api/profile/universities" in body["paths"]
+    assert "/api/admin/profile/universities" in body["paths"]
     assert "/api/library/articles" in body["paths"]
     assert "/api/admin/projects/columns" in body["paths"]
     lib_article = body["components"]["schemas"]["LibraryArticle"]

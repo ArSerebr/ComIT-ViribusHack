@@ -17,6 +17,7 @@ from app.modules.library.admin_router import router as library_admin_router
 from app.modules.news import router as news_router
 from app.modules.notifications import router as notifications_router
 from app.modules.profile import router as profile_router
+from app.modules.profile.admin_router import router as profile_admin_router
 from app.modules.projects import router as projects_router
 from app.modules.projects.admin_router import router as projects_admin_router
 from fastapi import FastAPI
@@ -33,6 +34,7 @@ _MODULE_ROUTERS = [
     library_router,
     library_admin_router,
     profile_router,
+    profile_admin_router,
     notifications_router,
     dashboard_router,
 ]

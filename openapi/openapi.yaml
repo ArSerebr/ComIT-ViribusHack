@@ -657,12 +657,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDetail'
-        '409':
-          description: Проект с таким id уже есть
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDetail'
         '422':
           description: Validation Error
           content:
@@ -1334,6 +1328,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/profile/universities:
+    get:
+      tags:
+      - profile
+      summary: List Universities
+      description: Список университетов для выбора при редактировании профиля.
+      operationId: list_universities_api_profile_universities_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProfileUniversityOut'
+                type: array
+                title: Response List Universities Api Profile Universities Get
+      security:
+      - OAuth2PasswordBearer: []
   /api/profile/me:
     get:
       tags:
@@ -1403,6 +1416,114 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
+  /api/admin/profile/universities:
+    get:
+      tags:
+      - profile-admin
+      summary: Admin List Universities
+      description: Список университетов для админки.
+      operationId: admin_list_universities_api_admin_profile_universities_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProfileUniversityOut'
+                type: array
+                title: Response Admin List Universities Api Admin Profile Universities Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - profile-admin
+      summary: Admin Create University
+      operationId: admin_create_university_api_admin_profile_universities_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UniversityCreateBody'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileUniversityOut'
+        '409':
+          description: Уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/profile/universities/{university_id}:
+    patch:
+      tags:
+      - profile-admin
+      summary: Admin Update University
+      operationId: admin_update_university_api_admin_profile_universities__university_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UniversityUpdateBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileUniversityOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - profile-admin
+      summary: Admin Delete University
+      operationId: admin_delete_university_api_admin_profile_universities__university_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: university_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: University Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/notifications:
     get:
       tags:
@@ -1832,6 +1953,11 @@ components:
         authorAvatarUrl:
           type: string
           title: Authoravatarurl
+        interestIds:
+          items:
+            type: string
+          type: array
+          title: Interestids
       type: object
       required:
       - id
@@ -2348,6 +2474,10 @@ components:
           - type: string
           - type: 'null'
           title: Bio
+        university:
+          anyOf:
+          - $ref: '#/components/schemas/ProfileUniversityOut'
+          - type: 'null'
         interests:
           items:
             $ref: '#/components/schemas/ProfileInterest'
@@ -2367,6 +2497,11 @@ components:
           - type: string
           - type: 'null'
           title: Bio
+        universityId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Universityid
         interestIds:
           anyOf:
           - items:
@@ -2376,6 +2511,19 @@ components:
           title: Interestids
       type: object
       title: ProfileMePatch
+    ProfileUniversityOut:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+      type: object
+      required:
+      - id
+      - name
+      title: ProfileUniversityOut
     ProgressBlock:
       properties:
         value:
@@ -2848,6 +2996,38 @@ components:
       - task
       - updatedLabel
       title: TodoBlock
+    UniversityCreateBody:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      required:
+      - id
+      - name
+      title: UniversityCreateBody
+    UniversityUpdateBody:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sortorder
+      type: object
+      title: UniversityUpdateBody
     UserCreate:
       properties:
         email:

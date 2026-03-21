@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import uuid
 
-from app.modules.profile.models import UserProfile, UserProfileInterest
-from sqlalchemy import delete, select
+from app.modules.profile.models import ProfileUniversity, UserProfile, UserProfileInterest
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -52,3 +52,62 @@ class ProfileRepository:
             if iid not in existing:
                 self._session.add(UserProfileInterest(user_id=user_id, interest_id=iid))
         await self._session.flush()
+
+    # --- University ---
+
+    async def get_university(self, university_id: str) -> ProfileUniversity | None:
+        stmt = select(ProfileUniversity).where(ProfileUniversity.id == university_id)
+        return (await self._session.execute(stmt)).scalar_one_or_none()
+
+    async def list_universities_ordered(self) -> list[ProfileUniversity]:
+        stmt = select(ProfileUniversity).order_by(
+            ProfileUniversity.sort_order,
+            ProfileUniversity.id,
+        )
+        return list((await self._session.execute(stmt)).scalars().all())
+
+    async def university_ids_exist(self, ids: list[str]) -> bool:
+        unique = frozenset(ids)
+        if not unique:
+            return True
+        stmt = (
+            select(func.count())
+            .select_from(ProfileUniversity)
+            .where(ProfileUniversity.id.in_(unique))
+        )
+        n = (await self._session.execute(stmt)).scalar_one()
+        return int(n) == len(unique)
+
+    async def create_university(self, row: ProfileUniversity) -> ProfileUniversity:
+        self._session.add(row)
+        await self._session.flush()
+        return row
+
+    async def update_university(
+        self, university_id: str, name: str | None = None, sort_order: int | None = None
+    ) -> ProfileUniversity | None:
+        row = await self.get_university(university_id)
+        if row is None:
+            return None
+        if name is not None:
+            row.name = name
+        if sort_order is not None:
+            row.sort_order = sort_order
+        await self._session.flush()
+        return row
+
+    async def delete_university(self, university_id: str) -> bool:
+        row = await self.get_university(university_id)
+        if row is None:
+            return False
+        await self._session.delete(row)
+        await self._session.flush()
+        return True
+
+    async def count_profiles_with_university(self, university_id: str) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(UserProfile)
+            .where(UserProfile.university_id == university_id)
+        )
+        return int((await self._session.execute(stmt)).scalar_one())

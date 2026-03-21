@@ -4,6 +4,38 @@ info:
   description: REST API для SPA (без эндпоинтов ИИ-чата)
   version: 1.0.0
 paths:
+  /health:
+    get:
+      tags:
+      - health
+      summary: Liveness
+      operationId: liveness_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Liveness Health Get
+  /ready:
+    get:
+      tags:
+      - health
+      summary: Readiness
+      operationId: readiness_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Readiness Ready Get
   /api/auth/jwt/login:
     post:
       tags:
@@ -773,6 +805,8 @@ paths:
       - projects
       summary: Post Project Join
       operationId: post_project_join_api_projects__project_id__join_post
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: project_id
         in: path
@@ -1341,6 +1375,34 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
+  /api/profile/me/interests:
+    post:
+      tags:
+      - profile
+      summary: Post My Profile Interests
+      description: Добавить интересы к профилю (уже выбранные и дубликаты в теле запроса игнорируются).
+      operationId: post_my_profile_interests_api_profile_me_interests_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileInterestsAdd'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMe'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/notifications:
     get:
       tags:
@@ -1357,6 +1419,8 @@ paths:
                   $ref: '#/components/schemas/NotificationItem'
                 type: array
                 title: Response Get Notifications Api Notifications Get
+      security:
+      - OAuth2PasswordBearer: []
   /api/dashboard/recommendations:
     get:
       tags:
@@ -2259,6 +2323,19 @@ components:
       - id
       - label
       title: ProfileInterest
+    ProfileInterestsAdd:
+      properties:
+        interestIds:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Interestids
+      type: object
+      required:
+      - interestIds
+      title: ProfileInterestsAdd
+      description: Добавить интересы к текущему набору (без удаления уже выбранных).
     ProfileMe:
       properties:
         displayName:

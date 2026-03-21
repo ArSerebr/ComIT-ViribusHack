@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from routes import tasks, status, tokens, history
 from routes import Comit_chat
 
 app = FastAPI()
+
+
+@app.get("/")
+def ui():
+    return FileResponse("static/index.html")
 
 app.add_middleware(
     CORSMiddleware,

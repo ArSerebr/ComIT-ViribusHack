@@ -5,10 +5,10 @@ prompts = {
     "comit_request_classifier": """Классифицируй запрос студента учебной платформы ComIT.
 
 Типы:
-- question — вопрос об учёбе, курсах, заданиях, преподавателях, платформе
-- task — что-то что требует от агента действий на платформе (записаться на курс, сдать задание, обновить данные)
-- search — поиск контента (найти курс, материал, задание, преподавателя)
-- other — оффтоп, некорректный запрос, не связанный с платформой
+- question — вопрос об учёбе, курсах, заданиях, статьях, хакатонах, платформе и тд
+- task — что-то что требует от агента действий на платформе (записаться на курс, сдать задание, написать преподавателю и т.д.)
+- search — поиск контента по платформе(найти курс, материал, проект, статью, исследование и тд)
+- other — оффтоп, некорректный запрос, не связанный с платформой, запрещенный контент
 
 Верни ТОЛЬКО JSON:
 {{"message_type": "question" | "task" | "search" | "other"}}
@@ -46,8 +46,9 @@ prompts = {
 По описанию задачи сформируй список конкретных запросов к backend и UI-действий для frontend.
 
 Форматы:
-- backend: API-вызовы (enroll_course, submit_assignment, update_profile, get_course_info и т.д.)
-- frontend: UI-действия (open_course_page, show_confirmation_modal, navigate_to_dashboard и т.д.)
+- backend: API-вызовы 
+(create_course_enrollment, submit_assignment, send_message, send_form)
+- frontend: UI-действия (open_course_page, show_confirmation_modal, scroll_to_element, tap_button, submit_form и т.д.)
 
 Верни ТОЛЬКО JSON:
 {{

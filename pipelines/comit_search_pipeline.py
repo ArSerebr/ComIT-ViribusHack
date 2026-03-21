@@ -37,10 +37,13 @@ class ComitSearchPipeline(Pipeline):
             self.on_step_start("SearchAgent", 50)
 
         search_query = memory.get("search_query") or memory.get("message", "")
-        found_items = rag_retrieve(search_query)
+        rag_result = rag_retrieve(search_query)
 
-        if found_items:
-            memory["found_items"] = "\n---\n".join(found_items)
+        chunks = rag_result.get("chunks", [])
+        memory["found_sources"] = rag_result.get("sources", [])
+
+        if chunks:
+            memory["found_items"] = "\n---\n".join(chunks)
         else:
             memory["found_items"] = "Материалы по данному запросу не найдены."
 

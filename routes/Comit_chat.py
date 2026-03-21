@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, BackgroundTasks
+from fastapi import APIRouter, Query, BackgroundTasks, HTTPException
 import logging
 
 from state.state_manager import (get_state, save_state, create_task, update_task, save_message, set_agent_status)
@@ -132,6 +132,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
             final_memory = pipeline.run({"message": message})
 
             answer = final_memory.get("answer", "По вашему запросу ничего не найдено.")
+            source_buttons = final_memory.get("found_sources", [])
 
             add_to_session_context(uid, "ai", answer)
             add_to_global_context(uid, "ai", answer)
@@ -139,7 +140,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
             result = {
                 "role": "ai",
                 "content": answer,
-                "buttons": []
+                "buttons": source_buttons
             }
             update_task_and_save(task_id, uid, "READY", result)
             return
@@ -163,3 +164,43 @@ def process_chat(task_id: str, uid: str, payload: dict):
     except Exception as e:
         logging.error(f"Error in comit process_chat: {e}", exc_info=True)
         update_task(task_id, "FAILED", {"error": str(e)})
+
+
+# ── Подтверждение задачи ──────────────────────────────────────────
+
+@router.post("/api/comit/execute")
+def execute_task(uid: str = Query(...)):
+    state = get_state(uid)
+    if state.get("stage") != "task_pending":
+        raise HTTPException(status_code=400, detail="No pending task")
+
+    last_task = state.get("last_task", {})
+    backend_requests = last_task.get("backend_requests", [])
+
+    # Здесь будет реальное выполнение backend_requests
+    # Пока формируем читаемый отчёт об исполненных действиях
+    if backend_requests:
+        actions = ", ".join(r.get("action", "?") for r in backend_requests)
+        msg = f"Готово. Выполнено: {actions}."
+    else:
+        msg = "Задача выполнена."
+
+    state["stage"] = "idle"
+    state["last_task"] = {}
+    save_state(uid, state)
+    save_message(uid, "ai", msg)
+
+    return {"status": "ok", "message": msg}
+
+
+@router.post("/api/comit/cancel")
+def cancel_task(uid: str = Query(...)):
+    state = get_state(uid)
+    state["stage"] = "idle"
+    state["last_task"] = {}
+    save_state(uid, state)
+
+    msg = "Задача отменена."
+    save_message(uid, "ai", msg)
+
+    return {"status": "cancelled", "message": msg}

@@ -1,0 +1,567 @@
+openapi: 3.0.3
+info:
+  title: ComIT Viribus API
+  description: REST API для SPA (без эндпоинтов ИИ-чата)
+  version: 1.0.0
+
+servers:
+  - url: /
+    description: Относительно хоста приложения
+
+tags:
+  - name: analytics
+    description: События и предпочтения
+  - name: news
+    description: Новости и ивенты
+  - name: projects
+    description: Проектный хаб и карточки
+  - name: library
+    description: Библиотека материалов
+  - name: notifications
+    description: Уведомления
+  - name: dashboard
+    description: Главная панель
+
+paths:
+  /api/recommendations/like:
+    post:
+      tags: [analytics]
+      summary: Зафиксировать лайк (рекомендация или новость)
+      operationId: postRecommendationLike
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LikePayload"
+      responses:
+        "200":
+          description: Событие принято
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/library/interests:
+    post:
+      tags: [analytics]
+      summary: Сохранить выбранные интересы библиотеки
+      operationId: postLibraryInterests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterestsPayload"
+      responses:
+        "200":
+          description: Сохранено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/projects/{project_id}/join:
+    post:
+      tags: [projects]
+      summary: Запрос на вступление в проект (заглушка)
+      operationId: postProjectJoin
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinRequest"
+      responses:
+        "200":
+          description: Заявка принята (заглушка)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/news/mini:
+    get:
+      tags: [news]
+      summary: Короткая лента новостей
+      operationId: getNewsMini
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewsMiniItem"
+
+  /api/news/featured:
+    get:
+      tags: [news]
+      summary: Избранные ивенты
+      operationId: getNewsFeatured
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeaturedNewsItem"
+
+  /api/projects/hub:
+    get:
+      tags: [projects]
+      summary: Канбан колонок проектов
+      operationId: getProjectsHub
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectColumn"
+
+  /api/projects/{project_id}:
+    get:
+      tags: [projects]
+      summary: Детальная карточка проекта
+      operationId: getProjectById
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectDetails"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/library:
+    get:
+      tags: [library]
+      summary: Данные библиотеки (витрина, интересы, статьи)
+      operationId: getLibrary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LibraryBundle"
+
+  /api/notifications:
+    get:
+      tags: [notifications]
+      summary: Список уведомлений
+      operationId: getNotifications
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationItem"
+
+  /api/dashboard/recommendations:
+    get:
+      tags: [dashboard]
+      summary: Карточки рекомендаций (свайп на главной)
+      operationId: getDashboardRecommendations
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecommendationCard"
+
+  /api/dashboard/home:
+    get:
+      tags: [dashboard]
+      summary: Агрегат для блоков главной (мероприятия, продуктивность, курс)
+      operationId: getDashboardHome
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardHome"
+
+components:
+  responses:
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    ValidationError:
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/HTTPValidationError"
+
+  schemas:
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
+    ErrorBody:
+      type: object
+      properties:
+        detail:
+          type: string
+
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+
+    LikePayload:
+      type: object
+      required: [entity, id, ts]
+      properties:
+        entity:
+          type: string
+          enum: [recommendation, news]
+        id:
+          type: string
+        ts:
+          type: integer
+          format: int64
+
+    InterestsPayload:
+      type: object
+      required: [interests, ts]
+      properties:
+        interests:
+          type: array
+          items:
+            type: string
+        ts:
+          type: integer
+          format: int64
+
+    JoinRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          nullable: true
+
+    JoinResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+        project_id:
+          type: string
+
+    NewsMiniItem:
+      type: object
+      required: [id, title, imageUrl, detailsUrl]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        imageUrl: { type: string }
+        detailsUrl: { type: string }
+
+    FeaturedNewsItem:
+      type: object
+      required: [id, title, subtitle, description, imageUrl, ctaLabel, detailsUrl]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        description: { type: string }
+        imageUrl: { type: string }
+        ctaLabel: { type: string }
+        detailsUrl: { type: string }
+
+    HubProject:
+      type: object
+      required: [id, code, title, description, teamName, updatedLabel, teamAvatarUrl, detailsUrl]
+      properties:
+        id: { type: string }
+        code: { type: string }
+        title: { type: string }
+        description: { type: string }
+        teamName: { type: string }
+        updatedLabel: { type: string }
+        teamAvatarUrl: { type: string }
+        detailsUrl: { type: string }
+        visibility:
+          type: string
+          nullable: true
+          enum: [public, private]
+        isHot:
+          type: boolean
+          nullable: true
+
+    ProjectColumn:
+      type: object
+      required: [id, title, count, projects]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        count: { type: integer }
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/HubProject"
+
+    PersonPreview:
+      type: object
+      required: [id, name, avatarUrl, avatarVariant]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        avatarUrl: { type: string }
+        avatarVariant: { type: string }
+
+    ParticipantRow:
+      allOf:
+        - $ref: "#/components/schemas/PersonPreview"
+        - type: object
+          properties:
+            comitId: { type: string }
+            timeInProject: { type: string }
+            role: { type: string }
+            status: { type: string }
+            lastTask: { type: string }
+
+    ProductivityBlock:
+      type: object
+      required: [value, delta]
+      properties:
+        value: { type: string }
+        delta: { type: string }
+
+    ProgressBlock:
+      type: object
+      required: [value, percent]
+      properties:
+        value: { type: string }
+        percent: { type: integer }
+
+    TodoBlock:
+      type: object
+      required: [task, updatedLabel]
+      properties:
+        task: { type: string }
+        updatedLabel: { type: string }
+
+    IntegrationItem:
+      type: object
+      required: [id, brand, description, statusLabel, connectedSince]
+      properties:
+        id: { type: string }
+        brand: { type: string }
+        description: { type: string }
+        statusLabel: { type: string }
+        connectedSince: { type: string }
+
+    ProjectDetails:
+      type: object
+      required:
+        - id
+        - code
+        - title
+        - ownerName
+        - detailsUrl
+        - joinLabel
+        - teamCaption
+        - productivityCaption
+        - progressCaption
+        - todoCaption
+        - integrationCaption
+        - teamMembersPreview
+        - productivity
+        - progress
+        - todo
+        - integrations
+        - participants
+      properties:
+        id: { type: string }
+        code: { type: string }
+        title: { type: string }
+        ownerName: { type: string }
+        detailsUrl: { type: string }
+        joinLabel: { type: string }
+        teamCaption: { type: string }
+        productivityCaption: { type: string }
+        progressCaption: { type: string }
+        todoCaption: { type: string }
+        integrationCaption: { type: string }
+        teamMembersPreview:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonPreview"
+        productivity:
+          $ref: "#/components/schemas/ProductivityBlock"
+        progress:
+          $ref: "#/components/schemas/ProgressBlock"
+        todo:
+          $ref: "#/components/schemas/TodoBlock"
+        integrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/IntegrationItem"
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParticipantRow"
+
+    LibraryHero:
+      type: object
+      required: [id, title, updatedLabel, providerLabel, description]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        updatedLabel: { type: string }
+        providerLabel: { type: string }
+        description: { type: string }
+
+    LibraryShowcaseItem:
+      type: object
+      required: [id, brandLabel, eyebrow, title, imageUrl, hero]
+      properties:
+        id: { type: string }
+        brandLabel: { type: string }
+        eyebrow: { type: string }
+        title: { type: string }
+        imageUrl: { type: string }
+        hero:
+          $ref: "#/components/schemas/LibraryHero"
+
+    InterestOption:
+      type: object
+      required: [id, label, selected]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        selected: { type: boolean }
+
+    ArticleTag:
+      type: object
+      required: [id, label, tone]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        tone: { type: string }
+
+    LibraryArticle:
+      type: object
+      required: [id, tags, title, description, authorName, authorAvatarUrl]
+      properties:
+        id: { type: string }
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArticleTag"
+        title: { type: string }
+        description: { type: string }
+        authorName: { type: string }
+        authorAvatarUrl: { type: string }
+
+    LibraryBundle:
+      type: object
+      required: [showcaseItems, interestOptions, articles]
+      properties:
+        showcaseItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/LibraryShowcaseItem"
+        interestOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterestOption"
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/LibraryArticle"
+
+    NotificationItem:
+      type: object
+      required: [id, type, title, dateLabel, dateCaption]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        title: { type: string }
+        unread:
+          type: boolean
+          nullable: true
+        authorLabel: { type: string, nullable: true }
+        authorName: { type: string, nullable: true }
+        accentText: { type: string, nullable: true }
+        ctaLabel: { type: string, nullable: true }
+        path: { type: string, nullable: true }
+
+    RecommendationCard:
+      type: object
+      required: [id, title, subtitle, image, link]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        image: { type: string }
+        link: { type: string }
+
+    DashboardHome:
+      type: object
+      required: [events, productivity, highlightCourse]
+      properties:
+        events:
+          type: object
+          required: [count, deltaLabel]
+          properties:
+            count: { type: integer }
+            deltaLabel: { type: string }
+        productivity:
+          type: object
+          required: [value, deltaLabel]
+          properties:
+            value: { type: string }
+            deltaLabel: { type: string }
+        highlightCourse:
+          type: object
+          required: [title, imageUrl, path]
+          properties:
+            title: { type: string }
+            imageUrl: { type: string }
+            path: { type: string }

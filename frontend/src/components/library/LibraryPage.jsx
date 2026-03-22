@@ -340,7 +340,7 @@ export function LibraryPage({
             aria-label="Открыть фильтры"
             onClick={() => setIsMobilePreferencesOpen(true)}
           >
-            <span className="library-filter-icon" aria-hidden="true" />
+            <img src={assets.settingsSlidersIcon} alt="" className="library-filter-icon" />
           </button>
         </div>
 
@@ -392,7 +392,7 @@ export function LibraryPage({
           aria-label="Открыть фильтры"
           onClick={() => setIsMobilePreferencesOpen(true)}
         >
-          <span className="library-filter-icon" aria-hidden="true" />
+          <img src={assets.settingsSlidersIcon} alt="" className="library-filter-icon" />
         </button>
       </div>
 

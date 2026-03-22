@@ -1,6 +1,71 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { assets } from "../../assets";
+
+const VISIBILITY_OPTIONS = [
+  { value: "private", label: "Приватный" },
+  { value: "public",  label: "Публичный" },
+];
+
+function CustomSelect({ value, onChange, options }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener("pointerdown", handleClick);
+    return () => document.removeEventListener("pointerdown", handleClick);
+  }, [open]);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="custom-select" ref={ref}>
+      <button
+        type="button"
+        className={`custom-select-trigger ${open ? "custom-select-trigger-open" : ""}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{selected?.label}</span>
+        <svg className="custom-select-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.ul
+            className="custom-select-menu"
+            role="listbox"
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {options.map((opt) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={opt.value === value}
+                className={`custom-select-option ${opt.value === value ? "custom-select-option-active" : ""}`}
+                onPointerDown={() => { onChange(opt.value); setOpen(false); }}
+              >
+                {opt.label}
+                {opt.value === value && (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7l3.5 3.5 5.5-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export function ProjectCreatePage({
   onBack,
@@ -130,10 +195,11 @@ export function ProjectCreatePage({
 
           <label>
             Видимость
-            <select value={visibility} onChange={(event) => setVisibility(event.target.value)}>
-              <option value="private">Приватный</option>
-              <option value="public">Публичный</option>
-            </select>
+            <CustomSelect
+              value={visibility}
+              onChange={setVisibility}
+              options={VISIBILITY_OPTIONS}
+            />
           </label>
 
           {statusMessage ? <p className="project-create-status">{statusMessage}</p> : null}

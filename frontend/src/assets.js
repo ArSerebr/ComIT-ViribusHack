@@ -35,6 +35,7 @@ import projectsActiveIcon from "../icons/projects-active.svg";
 import projectsInactiveIcon from "../icons/projects-inactive.svg";
 import recommendationCardsIcon from "../icons/recomendation cards.svg";
 import searchIcon from "../icons/search.svg";
+import settingsSlidersIcon from "../icons/settings-sliders.svg";
 import teamIcon from "../icons/team.svg";
 
 export const assets = {
@@ -87,6 +88,7 @@ export const assets = {
   projectsInactiveIcon,
   recommendationCardsIcon,
   searchIcon,
+  settingsSlidersIcon,
   shareIcon: arrowIcon,
   sparklesIconA: aiActiveIcon,
   sparklesIconB: aiInactiveIcon,

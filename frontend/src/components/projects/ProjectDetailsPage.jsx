@@ -158,29 +158,10 @@ export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToke
               Интеграции с другими сервисами
               <span className="project-details-integrations-title-icon" aria-hidden="true" />
             </h2>
-            <p>{project.integrationCaption}</p>
           </div>
 
-          <div className="project-details-integrations-list">
-            {project.integrations.map((integration) => (
-              <div key={integration.id} className="project-details-integration-row">
-                <IntegrationBrand brand={integration.brand} />
-
-                <p className="project-details-integration-description">{integration.description}</p>
-
-                <div className="project-details-integration-status">
-                  <strong>
-                    <span className="project-details-integration-status-dot" aria-hidden="true" />
-                    {integration.statusLabel}
-                  </strong>
-                  <span>{integration.connectedSince}</span>
-                </div>
-
-                <button className="project-details-integration-open" type="button" aria-label={`Открыть интеграцию ${integration.brand}`}>
-                  <span className="project-details-integration-open-arrow" aria-hidden="true" />
-                </button>
-              </div>
-            ))}
+          <div className="project-details-integrations-soon">
+            Скоро
           </div>
         </DetailCard>
       </div>
@@ -236,6 +217,37 @@ export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToke
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="project-details-members-cards">
+          {project.participants.map((member) => (
+            <div key={member.id} className="project-details-member-card">
+              <div className="project-details-member-card-top">
+                <strong className="project-details-member-card-name">{member.name}</strong>
+                <span className="project-details-status-pill">
+                  <span className="project-details-status-dot" aria-hidden="true" />
+                  {member.status}
+                </span>
+              </div>
+              <div className="project-details-member-card-meta">
+                <span className="project-details-member-card-role">{member.role}</span>
+                <span className="project-details-member-card-time">
+                  <span className="project-details-member-card-clock" aria-hidden="true" />
+                  {member.timeInProject}
+                </span>
+              </div>
+              {member.lastTask ? (
+                <span className="project-details-member-card-task">
+                  <span className="project-details-member-card-task-dot" aria-hidden="true" />
+                  {member.lastTask}
+                </span>
+              ) : null}
+              <button className="project-details-member-card-link" type="button">
+                Перейти к разработчику
+                <span className="project-details-member-card-link-arrow" aria-hidden="true" />
+              </button>
+            </div>
+          ))}
         </div>
       </motion.section>
 

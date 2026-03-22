@@ -95,7 +95,7 @@ steps:
         set -e
         cp /configs/.env .env || true
         export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-comit}"
-        docker compose build backend frontend admin-panel
+        docker compose build
     when:
       branch:
         include:
@@ -118,11 +118,12 @@ steps:
         set -e
         cp /configs/.env .env || true
         export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-comit}"
-        docker compose up -d
-        sleep 10
-        docker compose ps
-        docker compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=5).read(200)" || echo "Backend health check failed, see logs"
-        docker compose exec -T admin-panel python manage.py check || echo "Admin panel check failed, see logs"
+        docker compose —profile core up —build
+        # docker compose up -d
+        # sleep 10
+        # docker compose ps
+        # docker compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=5).read(200)" || echo "Backend health check failed, see logs"
+        # docker compose exec -T admin-panel python manage.py check || echo "Admin panel check failed, see logs"
     when:
       branch:
         include:
@@ -139,7 +140,7 @@ steps:
         path: /var/run/docker.sock
     commands:
       - |
-        docker images | grep -E "comit-(backend|frontend)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
+        docker images | grep -E "comit-(backend|frontend|hackathon-parser)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
     when:
       branch:
         include:

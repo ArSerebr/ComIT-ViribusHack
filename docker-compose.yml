@@ -171,6 +171,22 @@ services:
       - backend
     restart: unless-stopped
 
+  hackathon-parser:
+    profiles: ["core"]
+    image: comit-hackathon-parser:latest
+    build:
+      context: ./hackathon-parser
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
+      PARSE_INTERVAL_HOURS: ${PARSE_INTERVAL_HOURS:-1}
+    ports:
+      - "${HACKATHON_PARSER_PORT:-8012}:8012"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
   pulse-core:
     profiles: ["core"]
     image: comit-pulse-core:latest

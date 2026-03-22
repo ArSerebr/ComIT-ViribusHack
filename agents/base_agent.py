@@ -68,7 +68,15 @@ class Agent:
 
             result = {}
             if len(self.output_fields) == 1:
-                result[self.output_fields[0]] = response_text
+                # Try to parse JSON even for single-field agents
+                try:
+                    parsed = json.loads(response_text)
+                    if isinstance(parsed, dict) and self.output_fields[0] in parsed:
+                        result[self.output_fields[0]] = parsed[self.output_fields[0]]
+                    else:
+                        result[self.output_fields[0]] = response_text
+                except (json.JSONDecodeError, ValueError):
+                    result[self.output_fields[0]] = response_text
             else:
                 try:
                     parsed_json = json.loads(response_text)

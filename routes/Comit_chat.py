@@ -20,71 +20,70 @@ def chat(payload: dict, background_tasks: BackgroundTasks, uid: str = Query(...)
     return {"task_id": task_id}
 
 
-def update_task_and_save(task_id: str, uid: str, status: str, result: dict):
+def update_task_and_save(task_id: str, uid: str, status: str, result: dict, debug: list = None):
+    if debug is not None:
+        result = {**result, "_debug": debug}
     update_task(task_id, status, result)
     if status == "READY" and result:
         save_message(uid, result.get("role", "ai"), result.get("content", ""), result.get("buttons", []))
+        set_agent_status(uid, "READY", 100)
+
+
+def _run_agent(agent, inputs: dict, debug: list) -> dict:
+    result = agent.run(inputs)
+    debug.append({
+        "agent": agent.name,
+        "model": agent.model,
+        "input": inputs,
+        "output": result,
+    })
+    return result
 
 
 def process_chat(task_id: str, uid: str, payload: dict):
-    print("PROCESS_CHAT START", task_id)
+    debug = []
     try:
         message = payload.get("message", "")
         save_message(uid, "user", message)
 
-        # Загружаем контексты
         session_ctx = get_session_context(uid)
         global_ctx = get_global_context(uid)
         state = get_state(uid)
 
-        # Добавляем сообщение пользователя в контексты
         add_to_session_context(uid, "user", message)
         add_to_global_context(uid, "user", message)
 
         # ── 1. Классификация ──────────────────────────────────────
         set_agent_status(uid, "RequestClassifier", 10)
-        classification = comit_request_classifier.run({"message": message})
+        classification = _run_agent(comit_request_classifier, {"message": message}, debug)
         msg_type = classification.get("message_type", "other")
-        print(classification)
 
         # ── 2. Оффтоп / непонятный запрос ────────────────────────
         if msg_type == "other":
             set_agent_status(uid, "ConversationAgent", 40)
-            res = comit_conversation_agent.run({
+            res = _run_agent(comit_conversation_agent, {
                 "message": message,
                 "session_context": session_ctx,
                 "global_context": global_ctx
-            })
+            }, debug)
             answer = res.get("answer", "Я не совсем понимаю ваш запрос. Попробуйте переформулировать.")
             add_to_session_context(uid, "ai", answer)
             add_to_global_context(uid, "ai", answer)
-            result = {
-                "role": "ai",
-                "content": answer,
-                "buttons": []
-            }
-            update_task_and_save(task_id, uid, "READY", result)
-            set_agent_status(uid, "READY", 100)
+            update_task_and_save(task_id, uid, "READY", {"role": "ai", "content": answer, "buttons": []}, debug)
             return
 
         # ── 3. Вопрос ────────────────────────────────────────────
         if msg_type == "question":
             set_agent_status(uid, "ConversationAgent", 40)
-            res = comit_conversation_agent.run({
+            res = _run_agent(comit_conversation_agent, {
                 "message": message,
                 "session_context": session_ctx,
                 "global_context": global_ctx
-            })
+            }, debug)
             answer = res.get("answer", "Произошла ошибка при обработке вопроса. Попробуйте ещё раз.")
             add_to_session_context(uid, "ai", answer)
             add_to_global_context(uid, "ai", answer)
-            result = {
-                "role": "ai",
-                "content": answer,
-                "buttons": []
-            }
-            update_task_and_save(task_id, uid, "READY", result)
-            set_agent_status(uid, "READY", 100)
+            update_task_and_save(task_id, uid, "READY", {"role": "ai", "content": answer, "buttons": []}, debug)
             return
 
         # ── 4. Задача (агентский режим) ───────────────────────────
@@ -95,12 +94,12 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 on_step_start=lambda name, p: set_agent_status(uid, name, p)
             )
             final_memory = pipeline.run({"message": message})
-            set_agent_status(uid, "UserAgent", 60)
+            debug.append({"agent": "ComitAgentPipeline", "model": "pipeline", "input": {"message": message}, "output": final_memory})
+
             explain = final_memory.get("pipeline_explanation", "Выполняю задачу...")
             front_requests = final_memory.get("frontend_requests", [])
             back_requests = final_memory.get("backend_requests", [])
 
-            # Сохраняем результат в стейт
             state["last_task"] = {
                 "message": message,
                 "frontend_requests": front_requests,
@@ -112,17 +111,11 @@ def process_chat(task_id: str, uid: str, payload: dict):
             add_to_session_context(uid, "ai", explain)
             add_to_global_context(uid, "ai", explain)
 
-            content = {
-                "explanation": explain,
-                "to_show": front_requests
-            }
-            result = {
+            update_task_and_save(task_id, uid, "READY", {
                 "role": "ai",
-                "content": content,
+                "content": {"explanation": explain, "to_show": front_requests},
                 "buttons": ["Запустить агента", "Отмена"]
-            }
-            update_task_and_save(task_id, uid, "READY", result)
-            set_agent_status(uid, "READY", 100)
+            }, debug)
             return
 
         # ── 5. Поиск (RAG) ────────────────────────────────────────
@@ -132,42 +125,32 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 mode="linear",
                 on_step_start=lambda name, p: set_agent_status(uid, name, p)
             )
-            set_agent_status(uid, "SearchAgent", 60)
             final_memory = pipeline.run({"message": message})
+            debug.append({"agent": "ComitSearchPipeline", "model": "pipeline", "input": {"message": message}, "output": final_memory})
 
             answer = final_memory.get("answer", "По вашему запросу ничего не найдено.")
             source_buttons = final_memory.get("found_sources", [])
 
             add_to_session_context(uid, "ai", answer)
             add_to_global_context(uid, "ai", answer)
-
-            result = {
-                "role": "ai",
-                "content": answer,
-                "buttons": source_buttons
-            }
-            update_task_and_save(task_id, uid, "READY", result)
+            update_task_and_save(task_id, uid, "READY", {"role": "ai", "content": answer, "buttons": source_buttons}, debug)
             return
 
-        # ── Fallback ──────────────────────────────────────────────
-        res = comit_conversation_agent.run({
+        # ── Fallback (неизвестный msg_type) ───────────────────────
+        debug.append({"agent": "FALLBACK", "model": "-", "input": {"msg_type": msg_type}, "output": {}})
+        res = _run_agent(comit_conversation_agent, {
             "message": message,
             "session_context": session_ctx,
             "global_context": global_ctx
-        })
+        }, debug)
         answer = res.get("answer", "Готов помочь! Задайте вопрос или опишите что нужно сделать.")
         add_to_session_context(uid, "ai", answer)
         add_to_global_context(uid, "ai", answer)
-        result = {
-            "role": "ai",
-            "content": answer,
-            "buttons": []
-        }
-        update_task_and_save(task_id, uid, "READY", result)
+        update_task_and_save(task_id, uid, "READY", {"role": "ai", "content": answer, "buttons": []}, debug)
 
     except Exception as e:
         logging.error(f"Error in comit process_chat: {e}", exc_info=True)
-        update_task(task_id, "FAILED", {"error": str(e)})
+        update_task(task_id, "FAILED", {"error": str(e), "_debug": debug})
 
 
 # ── Подтверждение задачи ──────────────────────────────────────────

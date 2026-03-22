@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import secrets
+import uuid
 from collections import defaultdict
 from typing import Any, Literal, cast
 
@@ -10,6 +11,8 @@ from app.modules.groupchat import public_api as groupchat_public_api
 from app.core.permissions import can_edit_content
 from app.core.slug import project_details_path, slugify_project_identifier
 from app.modules.auth.models import User
+from app.modules.library.public_api import create_interest_catalog_port
+from app.modules.profile.repository import ProfileRepository
 from app.modules.projects.models import ProjectsColumn, ProjectsProject, ProjectsProjectDetail
 from app.modules.projects.repository import ProjectsRepository
 from app.modules.projects.schemas import (
@@ -18,6 +21,8 @@ from app.modules.projects.schemas import (
     ProjectsColumnUpdate,
     ProjectUpdateBody,
 )
+from app.modules.projects.task_assignment.task_assigner import TaskAssignmentModel
+from app.modules.pulse.client import PulseCoreClient
 from schemas import (
     HubProject,
     IntegrationItem,
@@ -29,6 +34,18 @@ from schemas import (
     ProjectDetails,
     TodoBlock,
 )
+
+
+def _can_manage_work_plan(
+    user: User, project: ProjectsProject, participants: list[ParticipantRow]
+) -> bool:
+    if can_edit_content(user, project.owner_user_id):
+        return True
+    uid_s = str(user.id)
+    for p in participants:
+        if p.userId and str(p.userId) == uid_s:
+            return True
+    return False
 
 
 def _hub_project_from_orm(p: ProjectsProject) -> HubProject:
@@ -92,9 +109,106 @@ def _project_details_from_orm(
 
 
 class ProjectsService:
-    def __init__(self, repo: ProjectsRepository, join_sink: JoinRequestSink) -> None:
+    def __init__(
+        self,
+        repo: ProjectsRepository,
+        join_sink: JoinRequestSink,
+        pulse_client: PulseCoreClient | None = None,
+    ) -> None:
         self._repo = repo
         self._join_sink = join_sink
+        self._pulse = pulse_client
+
+    async def _interest_labels_for_user(self, user_id: uuid.UUID) -> list[str]:
+        repo = ProfileRepository(self._repo.session)
+        ids = await repo.list_interest_ids(user_id)
+        if not ids:
+            return []
+        catalog = create_interest_catalog_port(self._repo.session)
+        label_map = await catalog.labels_for_interest_ids(ids)
+        return [label_map.get(i, i) for i in ids]
+
+    async def _build_team_for_assignment(self, participants: list[ParticipantRow]) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
+        for p in participants:
+            row: dict[str, Any] = {
+                "id": p.id,
+                "name": p.name,
+                "role": p.role or "",
+                "bio": (p.lastTask or "") if p.lastTask else "",
+                "skills": list(p.skills),
+                "secondary_skills": list(p.secondarySkills),
+            }
+            if p.userId:
+                try:
+                    uid = uuid.UUID(str(p.userId))
+                except ValueError:
+                    uid = None
+                if uid is not None:
+                    labels = await self._interest_labels_for_user(uid)
+                    if labels:
+                        row["interest_labels"] = labels
+            out.append(row)
+        return out
+
+    async def start_work_plan_generate(
+        self,
+        user: User,
+        project_id: str,
+        project_deadline: str | None,
+    ) -> tuple[Literal["not_found", "forbidden", "misconfigured", "ok"], str | None]:
+        if self._pulse is None:
+            return ("misconfigured", None)
+        project = await self._repo.get_project_only(project_id)
+        if project is None:
+            return ("not_found", None)
+        details = await self.get_project_details(project_id)
+        if details is None:
+            return ("not_found", None)
+        if not _can_manage_work_plan(user, project, details.participants):
+            return ("forbidden", None)
+        dl = (project_deadline or "").strip() or "2099-12-31"
+        task_id = await self._pulse.submit_work_plan(
+            str(user.id),
+            project_title=details.title,
+            project_description=project.description,
+            project_deadline=dl,
+            project_id_hint=project_id,
+        )
+        return ("ok", task_id)
+
+    async def assign_work_plan(
+        self,
+        user: User,
+        project_id: str,
+        tasks: list[dict[str, Any]],
+    ) -> tuple[Literal["not_found", "forbidden", "bad_request", "ok"], dict[str, Any] | None]:
+        project = await self._repo.get_project_only(project_id)
+        if project is None:
+            return ("not_found", None)
+        details = await self.get_project_details(project_id)
+        if details is None:
+            return ("not_found", None)
+        if not _can_manage_work_plan(user, project, details.participants):
+            return ("forbidden", None)
+        if not tasks:
+            return ("bad_request", None)
+        team = await self._build_team_for_assignment(details.participants)
+        if not team:
+            return ("bad_request", None)
+        model = TaskAssignmentModel()
+        project_payload = {
+            "id": project.id,
+            "title": project.title,
+            "description": project.description,
+            "domain": "general",
+            "tasks": tasks,
+        }
+        try:
+            result = model.assign_project_data(project_payload, team)
+        except ValueError:
+            return ("bad_request", None)
+        return ("ok", result)
 
     async def get_hub(self) -> list[ProjectColumn]:
         columns = await self._repo.list_columns_ordered()

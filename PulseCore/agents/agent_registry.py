@@ -72,6 +72,33 @@ comit_search_results = Agent(
     system_prompt_key="comit_search_results"
 )
 
+comit_work_plan_concept = Agent(
+    name="ConceptSynthesizer",
+    model="gpt_nano",
+    use_context=False,
+    input_fields=["project_title", "project_description", "project_deadline"],
+    output_fields=["normalized_concept"],
+    system_prompt_key="comit_work_plan_concept",
+)
+
+comit_work_plan_tasks = Agent(
+    name="DiscreteTaskPlanner",
+    model="gemini",
+    use_context=False,
+    input_fields=["normalized_concept", "project_deadline"],
+    output_fields=["tasks_draft"],
+    system_prompt_key="comit_work_plan_tasks",
+)
+
+comit_work_plan_validate = Agent(
+    name="WorkPlanValidator",
+    model="gpt_nano",
+    use_context=False,
+    input_fields=["normalized_concept", "tasks_draft"],
+    output_fields=["work_plan_tasks", "plan_summary"],
+    system_prompt_key="comit_work_plan_validate",
+)
+
 AGENTS_METADATA = {
     "RequestClassifier": {
         "color": "#2444B6",
@@ -100,6 +127,18 @@ AGENTS_METADATA = {
     "SearchResultsAgent": {
         "color": "#C5520F",
         "text": "Обрабатываю результаты"
+    },
+    "ConceptSynthesizer": {
+        "color": "#1565c0",
+        "text": "Формирую концепцию проекта"
+    },
+    "DiscreteTaskPlanner": {
+        "color": "#6a1b9a",
+        "text": "Декомпозирую задачи"
+    },
+    "WorkPlanValidator": {
+        "color": "#2e7d32",
+        "text": "Проверяю план"
     },
     "PulsAR": {
         "color": "#4caf50",

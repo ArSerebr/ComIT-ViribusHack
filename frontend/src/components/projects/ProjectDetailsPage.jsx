@@ -52,7 +52,7 @@ function IntegrationBrand({ brand }) {
   );
 }
 
-export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToken }) {
+export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToken, onOpenTasks }) {
   return (
     <section className="project-details-page">
       <div className="project-details-head">
@@ -122,24 +122,46 @@ export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToke
           </DetailCard>
 
           <DetailCard className="project-details-todo-card" delay={0.24}>
-            <SectionTitle
-              title="To-Do"
-              caption={project.todoCaption}
-              iconClass="project-details-title-icon-empty"
-              decoration={<img src={assets.sparklesIconA} alt="" className="project-details-todo-spark" />}
-            />
+            <div
+              className={
+                onOpenTasks
+                  ? "project-details-todo-hitbox"
+                  : undefined
+              }
+              role={onOpenTasks ? "button" : undefined}
+              tabIndex={onOpenTasks ? 0 : undefined}
+              aria-label={onOpenTasks ? "Открыть страницу задач и AI-план проекта" : undefined}
+              onClick={onOpenTasks ? () => onOpenTasks() : undefined}
+              onKeyDown={
+                onOpenTasks
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onOpenTasks();
+                      }
+                    }
+                  : undefined
+              }
+            >
+              <SectionTitle
+                title="To-Do"
+                caption={project.todoCaption}
+                iconClass="project-details-title-icon-empty"
+                decoration={<img src={assets.sparklesIconA} alt="" className="project-details-todo-spark" />}
+              />
 
-            <div className="project-details-todo-item">
-              <span className="project-details-todo-dot" aria-hidden="true" />
-              <div className="project-details-todo-copy">
-                <strong>{project.todo.task}</strong>
-                <p>{project.todo.updatedLabel}</p>
+              <div className="project-details-todo-item">
+                <span className="project-details-todo-dot" aria-hidden="true" />
+                <div className="project-details-todo-copy">
+                  <strong>{project.todo.task}</strong>
+                  <p>{project.todo.updatedLabel}</p>
+                </div>
               </div>
-            </div>
 
-            <button className="project-hub-card-open project-details-todo-open" type="button" aria-label="Открыть задачи">
-              <span className="project-hub-card-open-arrow" aria-hidden="true" />
-            </button>
+              <span className="project-hub-card-open project-details-todo-open" aria-hidden="true">
+                <span className="project-hub-card-open-arrow" />
+              </span>
+            </div>
 
             <img src={assets.heartIllustration} alt="" className="project-details-fluff project-details-fluff-todo" />
           </DetailCard>

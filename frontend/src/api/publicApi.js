@@ -117,6 +117,22 @@ export async function fetchProjectsHub() {
   return data ?? [];
 }
 
+/** GET `/api/hackathons` — список хакатонов (публично, без JWT). */
+export async function fetchHackathons(limit = 12) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    upcoming_only: "true"
+  });
+  const res = await fetch(resolveApiUrl(`/api/hackathons?${params}`), {
+    headers: { Accept: "application/json" }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function fetchProjectById(projectId) {
   const { data, error } = await apiClient.GET("/api/projects/{project_id}", {
     params: { path: { project_id: projectId } },
@@ -133,6 +149,56 @@ export async function createProject(token, body) {
   });
   if (error) throw error;
   return data;
+}
+
+/** POST `/api/projects/{project_id}/join` — заявка в команду проекта (требуется JWT). */
+export async function postProjectJoin(token, projectId, message = null) {
+  const { data, error } = await apiClient.POST("/api/projects/{project_id}/join", {
+    params: { path: { project_id: projectId } },
+    headers: authHeaders(token),
+    body: { message }
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** POST `/api/projects/{id}/work-plan/generate` — PulseCore, возвращает task_id для poll `/api/pulse/task/...`. */
+export async function postWorkPlanGenerate(token, projectId, projectDeadline) {
+  const res = await fetch(
+    resolveApiUrl(`/api/projects/${encodeURIComponent(projectId)}/work-plan/generate`),
+    {
+      method: "POST",
+      headers: {
+        ...authHeaders(token),
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({ projectDeadline: projectDeadline || null })
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** POST `/api/projects/{id}/work-plan/assign` — распределение задач по участникам проекта. */
+export async function postWorkPlanAssign(token, projectId, tasks) {
+  const res = await fetch(resolveApiUrl(`/api/projects/${encodeURIComponent(projectId)}/work-plan/assign`), {
+    method: "POST",
+    headers: {
+      ...authHeaders(token),
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({ tasks })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
 /** Analytics: POST `LikePayload` (openapi). */

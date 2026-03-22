@@ -76,6 +76,8 @@ services:
       QMSG_CORE_BASE_URL: http://qmsg-core:8090
       PULSE_CORE_BASE_URL: http://pulse-core:8091
       ML_SERVICE_URL: http://ml:9000
+      GIGACHAT_AUTH_KEY: ${GIGACHAT_AUTH_KEY:-}
+      GIGACHAT_ACCESS_TOKEN: ${GIGACHAT_ACCESS_TOKEN:-}
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     healthcheck:
@@ -180,6 +182,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
       PARSE_INTERVAL_HOURS: ${PARSE_INTERVAL_HOURS:-1}
+      NEWS_PARSE_INTERVAL_HOURS: ${NEWS_PARSE_INTERVAL_HOURS:-2}
     ports:
       - "${HACKATHON_PARSER_PORT:-8012}:8012"
     depends_on:

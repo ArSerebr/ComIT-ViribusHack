@@ -24,7 +24,13 @@ def llm(prompt: str, model: str) -> str:
         logging.info(f"model=DeepSeek prompt={prompt[:80]} answer={str(ans)[:80]}")
         return ans
     elif model == "gemini":
-        ans = Gemini(prompt)
+        try:
+            ans = Gemini(prompt)
+            if not isinstance(ans, str) or not ans.strip():
+                raise RuntimeError("Gemini returned empty response")
+        except Exception as e:
+            agent_logger.warning("Gemini failed (%s), falling back to GPT_nano", e)
+            ans = GPT_nano(prompt)
         logging.info(f"model=Gemini prompt={prompt[:80]} answer={str(ans)[:80]}")
         return ans
     elif model == "gpt_nano":

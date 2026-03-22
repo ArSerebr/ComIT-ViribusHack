@@ -26,6 +26,32 @@ class PulseCoreClient:
             data = resp.json()
             return str(data["task_id"])
 
+    async def submit_work_plan(
+        self,
+        uid: str,
+        *,
+        project_title: str,
+        project_description: str,
+        project_deadline: str,
+        project_id_hint: str = "",
+    ) -> str:
+        """POST /api/comit/work-plan. Returns task_id."""
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                f"{self._base}/api/comit/work-plan",
+                params={"uid": uid},
+                json={
+                    "project_title": project_title,
+                    "project_description": project_description,
+                    "project_deadline": project_deadline,
+                    "project_id_hint": project_id_hint,
+                },
+                headers={"Content-Type": "application/json"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return str(data["task_id"])
+
     async def poll_task(self, task_id: str) -> dict:
         """GET /api/task/{task_id}. Returns {status, result?}."""
         async with httpx.AsyncClient(timeout=30.0) as client:

@@ -19,6 +19,7 @@ trigger:
   event:
     - push
     - pull_request
+    - custom
 
 volumes:
   - name: docker-sock

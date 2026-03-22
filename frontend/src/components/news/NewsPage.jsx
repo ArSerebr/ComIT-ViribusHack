@@ -1,5 +1,6 @@
 import { assets } from "../../assets";
 import { FeaturedNewsCard } from "./FeaturedNewsCard";
+import { NewsHackathonsSection } from "./NewsHackathonsSection";
 import { NewsMiniCard } from "./NewsMiniCard";
 
 function buildNewsRows(miniNewsItems, featuredNewsItems) {
@@ -23,7 +24,10 @@ export function NewsPage({
   onParticipateInEvent,
   onBack,
   isLoading = false,
-  showOfflineFallbackNotice = false
+  showOfflineFallbackNotice = false,
+  hackathonsItems = [],
+  hackathonsLoading = false,
+  hackathonsError = false
 }) {
   const { rows, remainingMiniItems } = buildNewsRows(miniNewsItems, featuredNewsItems);
 
@@ -91,6 +95,12 @@ export function NewsPage({
           </div>
         ) : null}
       </div>
+
+      <NewsHackathonsSection
+        items={hackathonsItems}
+        isLoading={hackathonsLoading}
+        isError={hackathonsError}
+      />
     </section>
   );
 }

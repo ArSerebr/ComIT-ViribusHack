@@ -127,7 +127,7 @@ export function AiChatPanel({
             type="button"
             onClick={() => !needsAuth && onSendMessage("Помоги начать обучение")}
           >
-            <img src={assets.aiGenerateIcon} alt="" />
+            <img src={assets.aiActiveIcon} alt="" />
           </button>
           <input
             value={chatInput}

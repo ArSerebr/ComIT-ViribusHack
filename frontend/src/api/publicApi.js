@@ -117,6 +117,22 @@ export async function fetchProjectsHub() {
   return data ?? [];
 }
 
+/** GET `/api/hackathons` — список хакатонов (публично, без JWT). */
+export async function fetchHackathons(limit = 12) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    upcoming_only: "true"
+  });
+  const res = await fetch(resolveApiUrl(`/api/hackathons?${params}`), {
+    headers: { Accept: "application/json" }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function fetchProjectById(projectId) {
   const { data, error } = await apiClient.GET("/api/projects/{project_id}", {
     params: { path: { project_id: projectId } },
@@ -301,5 +317,15 @@ export async function logoutCurrentUser(token) {
     headers: authHeaders(token)
   });
   if (error) throw error;
+}
+
+/** POST `/api/profile/me/interests` — сохранить интересы профиля (требуется JWT). */
+export async function postProfileMeInterests(token, interestIds) {
+  const { data, error } = await apiClient.POST("/api/profile/me/interests", {
+    headers: authHeaders(token),
+    body: { interestIds }
+  });
+  if (error) throw error;
+  return data;
 }
 

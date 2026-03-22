@@ -6,6 +6,7 @@ import {
   fetchDashboardHome,
   fetchDashboardRecommendations,
   fetchCurrentUserProfile,
+  fetchHackathons,
   fetchLibraryBundle,
   fetchNewsFeatured,
   fetchNewsMini,
@@ -23,6 +24,7 @@ import {
   patchProfileMe,
   postFeaturedParticipate,
   postLibraryInterests,
+  postProfileMeInterests,
   postProjectJoin,
   postRecommendationFeedback,
   postRecommendationLike,
@@ -46,6 +48,8 @@ import { ProjectCreatePage } from "./components/projects/ProjectCreatePage";
 import { ProjectHubPage } from "./components/projects/ProjectHubPage";
 import { ProjectTasksPage } from "./components/projects/ProjectTasksPage";
 import { RecommendationsPanel } from "./components/recommendations/RecommendationsPanel";
+import { OnboardingPage } from "./components/onboarding/OnboardingPage";
+import { ToastStack } from "./components/ui/Toast";
 import { ARTICLE_DETAILS_BY_SLUG, ARTICLE_SIDE_RECOMMENDATIONS, COURSE_DETAILS_BY_SLUG } from "./data/contentStudioData";
 import { NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
 import {
@@ -228,6 +232,7 @@ function normalizeNotificationItem(item) {
 }
 
 const AUTH_TOKEN_STORAGE_KEY = "comit.auth.token";
+const ONBOARDING_DONE_STORAGE_KEY = "comit.onboarding.done";
 const ARTICLE_DRAFTS_STORAGE_KEY = "comit.article.drafts";
 const PROJECT_DRAFTS_STORAGE_KEY = "comit.project.drafts";
 const ARTICLE_TAG_TONES = ["green", "cyan", "coral", "yellow", "pink", "blue"];
@@ -473,6 +478,9 @@ function App() {
   const [isAuthBusy, setIsAuthBusy] = useState(false);
   const [authErrorMessage, setAuthErrorMessage] = useState("");
   const [authSuccessMessage, setAuthSuccessMessage] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isOnboardingBusy, setIsOnboardingBusy] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [articleDrafts, setArticleDrafts] = useState(() => {
     const value = readFromLocalStorage(ARTICLE_DRAFTS_STORAGE_KEY, []);
@@ -544,6 +552,13 @@ function App() {
     queryKey: ["news", "featured", sessionToken],
     queryFn: () => fetchNewsFeatured(sessionToken?.trim() || undefined),
     staleTime: 60_000,
+  });
+
+  const newsHackathonsQuery = useQuery({
+    queryKey: ["hackathons", "news-page"],
+    queryFn: () => fetchHackathons(12),
+    enabled: isNewsPage,
+    staleTime: 300_000,
   });
 
   const notificationsQuery = useQuery({
@@ -676,6 +691,11 @@ function App() {
   const showNewsOfflineNotice =
     STATIC_FALLBACK && (newsMiniQuery.isError || newsFeaturedQuery.isError);
 
+  const newsHackathonsItems = newsHackathonsQuery.data ?? [];
+  const newsHackathonsLoading =
+    isNewsPage && newsHackathonsQuery.isPending && newsHackathonsQuery.data === undefined;
+  const newsHackathonsError = isNewsPage && newsHackathonsQuery.isError;
+
   const recommendationsDeckLoading =
     recommendationsQuery.isPending &&
     recommendationsQuery.data === undefined &&
@@ -780,13 +800,14 @@ function App() {
     ? COURSE_DETAILS_BY_SLUG[currentCourseSlug] || COURSE_DETAILS_BY_SLUG["machine-learning-from-zero"]
     : null;
   const isArticleReaderPage = Boolean(currentArticleSlug || currentCourseSlug);
-  const shouldHideTopBar = isAuthPage;
-  const mainContentKey =
-    activeTab === "projects" ||
-    activeTab === "chat" ||
-    activeTab === "library" ||
-    activeTab === "profile" ||
-    activeTab === "auth"
+  const shouldHideTopBar = isAuthPage || showOnboarding;
+  const mainContentKey = showOnboarding
+    ? "onboarding"
+    : activeTab === "projects" ||
+      activeTab === "chat" ||
+      activeTab === "library" ||
+      activeTab === "profile" ||
+      activeTab === "auth"
       ? currentPath
       : activeTab;
 
@@ -895,6 +916,18 @@ function App() {
       isDisposed = true;
     };
   }, [authToken]);
+
+  const showToast = (message, type = "error") => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 5000);
+  };
+
+  const dismissToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   const syncRouteState = (path) => {
     const nextRoute = {
@@ -1077,14 +1110,18 @@ function App() {
     if (!projectId) {
       return;
     }
+
     if (!authToken) {
       window.alert("Войдите в аккаунт, чтобы отправить заявку в команду.");
       return;
     }
+
     try {
       await postProjectJoin(authToken, projectId, null);
+      showToast("Заявка отправлена. Ждите подтверждения от команды.");
     } catch (error) {
-      window.alert(formatOpenApiError(error) || "Не удалось отправить заявку. Попробуйте позже.");
+      const msg = formatOpenApiError(error) || "Не удалось отправить заявку. Попробуйте позже.";
+      window.alert(msg);
     }
   };
 
@@ -1145,7 +1182,7 @@ function App() {
         setParticipatedFeaturedIds((prev) => new Set([...prev, eventItem.id]));
         queryClient.invalidateQueries({ queryKey: ["news", "featured"] });
       } catch (error) {
-        alert(formatOpenApiError(error));
+        showToast(formatOpenApiError(error));
         return;
       }
     }
@@ -1212,7 +1249,8 @@ function App() {
     setIsAuthBusy(true);
 
     try {
-      if (mode === "register") {
+      const isRegister = mode === "register";
+      if (isRegister) {
         await registerWithEmail({ email, password });
         setAuthSuccessMessage("Аккаунт создан. Выполняем вход...");
       }
@@ -1224,7 +1262,18 @@ function App() {
 
       setAuthToken(loginData.access_token);
       setAuthSuccessMessage("Вход выполнен.");
-      openProfilePage();
+
+      const onboardingDone =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem(ONBOARDING_DONE_STORAGE_KEY) === "true"
+          : true;
+
+      if (isRegister && !onboardingDone) {
+        setShowOnboarding(true);
+        openPath("/");
+      } else {
+        openProfilePage();
+      }
     } catch (error) {
       const detailMessage =
         typeof error?.detail === "string"
@@ -1237,6 +1286,47 @@ function App() {
       setAuthErrorMessage(message);
     } finally {
       setIsAuthBusy(false);
+    }
+  };
+
+  const handleOnboardingComplete = async (answers) => {
+    setIsOnboardingBusy(true);
+    try {
+      const interestIds = [
+        ...(answers.interests || []),
+        ...(answers.skills || []),
+      ];
+
+      const goalLabels = {
+        learn: "Освоить новые навыки",
+        team: "Найти команду",
+        project: "Создать свой проект",
+      };
+      const levelLabels = {
+        beginner: "Новичок",
+        "product-team": "Работал в продуктовых командах",
+        "some-projects": "Делал пару проектов",
+      };
+
+      const goalLabel = answers.goal ? goalLabels[answers.goal] ?? "" : "";
+      const levelLabel = answers.level ? levelLabels[answers.level] ?? "" : "";
+      const bio = [goalLabel, levelLabel].filter(Boolean).join(" · ");
+
+      if (authToken) {
+        await Promise.allSettled([
+          patchProfileMe(authToken, { interestIds, bio: bio || undefined }),
+          postProfileMeInterests(authToken, interestIds),
+        ]);
+      }
+    } catch {
+      // non-blocking — onboarding completes regardless
+    } finally {
+      setIsOnboardingBusy(false);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(ONBOARDING_DONE_STORAGE_KEY, "true");
+      }
+      setShowOnboarding(false);
+      openPath("/");
     }
   };
 
@@ -1454,7 +1544,12 @@ function App() {
     }
   };
 
-  const mainContent = isAuthPage ? (
+  const mainContent = showOnboarding ? (
+    <OnboardingPage
+      isSubmitting={isOnboardingBusy}
+      onComplete={handleOnboardingComplete}
+    />
+  ) : isAuthPage ? (
     <AuthPage
       mode={authMode === "register" ? "register" : "login"}
       isSubmitting={isAuthBusy}
@@ -1530,6 +1625,9 @@ function App() {
       onBack={handleGoHome}
       isLoading={newsPageLoading}
       showOfflineFallbackNotice={showNewsOfflineNotice}
+      hackathonsItems={newsHackathonsItems}
+      hackathonsLoading={newsHackathonsLoading}
+      hackathonsError={newsHackathonsError}
     />
   ) : isProjectsPage && isProjectCreatePage ? (
     <ProjectCreatePage
@@ -1771,6 +1869,8 @@ function App() {
           ) : null}
         </AnimatePresence>
       </div>
+
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

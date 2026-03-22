@@ -253,3 +253,13 @@ export async function logoutCurrentUser(token) {
   if (error) throw error;
 }
 
+/** POST `/api/profile/me/interests` — сохранить интересы профиля (требуется JWT). */
+export async function postProfileMeInterests(token, interestIds) {
+  const { data, error } = await apiClient.POST("/api/profile/me/interests", {
+    headers: authHeaders(token),
+    body: { interestIds }
+  });
+  if (error) throw error;
+  return data;
+}
+

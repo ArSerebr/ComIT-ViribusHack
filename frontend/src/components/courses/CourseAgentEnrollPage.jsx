@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { assets } from "../../assets";
 
 /**
- * Демо-страница записи на курс (сценарий агента). Поля с data-agent-target для плеера.
+ * Страница записи на курс (сценарий агента). Поля с data-agent-target для плеера.
  */
 export function CourseAgentEnrollPage({ onBack, userEmail = "" }) {
   return (
@@ -21,7 +21,7 @@ export function CourseAgentEnrollPage({ onBack, userEmail = "" }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        <p className="course-agent-enroll-eyebrow">Демо · нетология</p>
+        <p className="course-agent-enroll-eyebrow">Запись на курс · нетология</p>
         <h2 className="course-agent-enroll-title">Курс «ML-инженер»</h2>
         <p className="course-agent-enroll-lead">
           12 месяцев: от данных и обучения моделей до внедрения и сопровождения. Заполните форму — мы подтвердим участие на

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   AnimatePresence,
   animate,
@@ -31,6 +31,201 @@ function stopCardDrag(event) {
   event.stopPropagation();
 }
 
+/** Each card has its own MotionValues — avoids drag state bleeding between cards. */
+function DraggableCard({
+  card,
+  canDismiss,
+  dismissDirection,
+  topCardExitAnimation,
+  onDismissTopCard,
+  onTopCardExitComplete,
+  isLiked,
+  onToggleLike,
+  onOpen,
+  onShare
+}) {
+  const dragX = useMotionValue(0);
+  const dragY = useMotionValue(0);
+  const cardOpacity = useMotionValue(1);
+  const cardScale = useMotionValue(1);
+  const hasExitedRef = useRef(false);
+
+  const dragProgress = useTransform([dragX, dragY], ([latestX, latestY]) =>
+    Math.min(1, Math.hypot(latestX, latestY) / 260)
+  );
+  const cardRotate = useTransform([dragX, dragY], ([latestX, latestY]) =>
+    Math.max(-24, Math.min(24, latestX / 18 + latestY / 36))
+  );
+
+  const imageScale = useTransform(dragProgress, [0, 1], [1, 1.06]);
+  const imageX = useTransform(dragX, [-240, 0, 240], [-14, 0, 14]);
+  const imageY = useTransform(dragY, [-240, 0, 240], [-12, 0, 12]);
+  const actionsY = useTransform(dragProgress, [0, 1], [0, -10]);
+  const actionsScale = useTransform(dragProgress, [0, 1], [1, 1.035]);
+
+  const glowOpacity = useTransform(dragProgress, [0, 0.18, 1], [0, 0.14, 1]);
+  const glowX = useTransform(dragX, [-260, 0, 260], ["18%", "50%", "82%"]);
+  const glowY = useTransform(dragY, [-260, 0, 260], ["18%", "50%", "82%"]);
+  const glowBackground = useMotionTemplate`radial-gradient(circle at ${glowX} ${glowY}, rgba(255, 255, 255, 0.24) 0%, rgba(162, 106, 255, 0.22) 18%, rgba(255, 92, 176, 0.14) 34%, rgba(8, 8, 12, 0) 62%)`;
+
+  useEffect(() => {
+    if (!dismissDirection) {
+      if (hasExitedRef.current) return undefined;
+      dragX.set(0);
+      dragY.set(0);
+      cardOpacity.set(0);
+      cardScale.set(0.96);
+      const c1 = animate(cardOpacity, 1, { duration: 0.24, ease: [0.22, 1, 0.36, 1] });
+      const c2 = animate(cardScale, 1, RETURN_SPRING);
+      return () => {
+        c1.stop();
+        c2.stop();
+      };
+    }
+    return undefined;
+  }, [cardOpacity, cardScale, dismissDirection, dragX, dragY]);
+
+  useEffect(() => {
+    if (!dismissDirection) return undefined;
+
+    hasExitedRef.current = true;
+    const c1 = animate(dragX, topCardExitAnimation.x, EXIT_SPRING);
+    const c2 = animate(dragY, topCardExitAnimation.y, EXIT_SPRING);
+    const c3 = animate(cardScale, topCardExitAnimation.scale ?? 0.96, {
+      duration: 0.26,
+      ease: [0.22, 1, 0.36, 1]
+    });
+    const c4 = animate(cardOpacity, topCardExitAnimation.opacity ?? 0, {
+      duration: 0.24,
+      ease: [0.4, 0, 1, 1]
+    });
+
+    const timeoutId = window.setTimeout(onTopCardExitComplete, EXIT_COMPLETE_DELAY);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      c1.stop();
+      c2.stop();
+      c3.stop();
+      c4.stop();
+    };
+  }, [
+    cardOpacity,
+    cardScale,
+    dismissDirection,
+    dragX,
+    dragY,
+    onTopCardExitComplete,
+    topCardExitAnimation
+  ]);
+
+  const resetDraggedCard = () => {
+    animate(dragX, 0, RETURN_SPRING);
+    animate(dragY, 0, RETURN_SPRING);
+    animate(cardOpacity, 1, { duration: 0.18, ease: [0.22, 1, 0.36, 1] });
+    animate(cardScale, 1, RETURN_SPRING);
+  };
+
+  return (
+    <motion.article
+      className="recommendation-card top-card"
+      drag={canDismiss}
+      dragElastic={0.08}
+      dragMomentum={false}
+      style={{
+        x: dragX,
+        y: dragY,
+        rotate: cardRotate,
+        opacity: cardOpacity,
+        scale: cardScale,
+        touchAction: "none"
+      }}
+      onDragStart={() => {
+        if (canDismiss) animate(cardScale, 1.02, { duration: 0.14, ease: [0.22, 1, 0.36, 1] });
+      }}
+      onDragEnd={(_, info) => {
+        if (!canDismiss) return;
+        const projectedX = info.offset.x + info.velocity.x * 0.18;
+        const projectedY = info.offset.y + info.velocity.y * 0.18;
+        const projectedDistance = Math.hypot(projectedX, projectedY);
+        const velocity = Math.hypot(info.velocity.x, info.velocity.y);
+        if (projectedDistance > DISMISS_DISTANCE || velocity > DISMISS_VELOCITY) {
+          onDismissTopCard({ x: projectedX, y: projectedY });
+        } else {
+          resetDraggedCard();
+        }
+      }}
+    >
+      <motion.div
+        className="recommendation-drag-glow"
+        style={{ opacity: glowOpacity, background: glowBackground }}
+      />
+      <motion.img
+        className="recommendation-image recommendation-image-hero"
+        src={card.image}
+        alt={card.title}
+        draggable="false"
+        style={{ x: imageX, y: imageY, scale: imageScale }}
+      />
+      <motion.div className="recommendation-actions" style={{ y: actionsY, scale: actionsScale }}>
+        <motion.button
+          className={`action-btn ${isLiked ? "action-btn-active" : ""}`}
+          type="button"
+          aria-label="Лайкнуть"
+          onPointerDown={stopCardDrag}
+          onClick={() => onToggleLike(card.id)}
+          whileHover={{ y: -3, scale: 1.04 }}
+          whileTap={{ scale: 0.92 }}
+          animate={isLiked ? { y: [0, -2, 0], scale: [1, 1.08, 1] } : { y: 0, scale: 1 }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <AnimatePresence initial={false}>
+            {isLiked ? (
+              <motion.span
+                key="like-burst"
+                className="action-btn-burst"
+                initial={{ opacity: 0, scale: 0.55 }}
+                animate={{ opacity: [0, 0.85, 0], scale: [0.55, 1.18, 1.38] }}
+                exit={{ opacity: 0, scale: 1.42 }}
+                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              />
+            ) : null}
+          </AnimatePresence>
+          <motion.img
+            src={isLiked ? assets.heartFilledIcon : assets.heartOutlineIcon}
+            alt=""
+            className={isLiked ? "action-btn-icon-active" : ""}
+            animate={isLiked ? { scale: [1, 1.18, 1], rotate: [0, -10, 0] } : { scale: 0.94, rotate: 0 }}
+            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </motion.button>
+        <motion.button
+          className="action-btn action-btn-open"
+          type="button"
+          aria-label="Открыть ссылку"
+          onPointerDown={stopCardDrag}
+          onClick={() => (onOpen ? onOpen(card) : window.open(card.link, "_blank", "noopener,noreferrer"))}
+          whileHover={{ y: -3, scale: 1.04 }}
+          whileTap={{ scale: 0.94 }}
+        >
+          <img src={assets.linkAltIcon} alt="" />
+        </motion.button>
+        <motion.button
+          className="action-btn action-btn-share"
+          type="button"
+          aria-label="Поделиться"
+          onPointerDown={stopCardDrag}
+          onClick={() => onShare(card)}
+          whileHover={{ y: -3, scale: 1.04 }}
+          whileTap={{ scale: 0.94 }}
+        >
+          <img src={assets.shareIcon} alt="" />
+        </motion.button>
+      </motion.div>
+    </motion.article>
+  );
+}
+
 export function RecommendationsPanel({
   isOpen,
   onToggleOpen,
@@ -44,87 +239,16 @@ export function RecommendationsPanel({
   onTopCardExitComplete,
   likedRecommendations,
   onToggleRecommendationLike,
+  onOpenRecommendation,
   onShareRecommendation,
   isLoading = false
 }) {
-  const dragX = useMotionValue(0);
-  const dragY = useMotionValue(0);
-  const cardOpacity = useMotionValue(1);
-  const cardScale = useMotionValue(1);
-
-  const dragProgress = useTransform([dragX, dragY], ([latestX, latestY]) => Math.min(1, Math.hypot(latestX, latestY) / 260));
-  const cardRotate = useTransform([dragX, dragY], ([latestX, latestY]) =>
-    Math.max(-24, Math.min(24, latestX / 18 + latestY / 36))
-  );
-
-  const imageScale = useTransform(dragProgress, [0, 1], [1, 1.06]);
-  const imageX = useTransform(dragX, [-240, 0, 240], [-14, 0, 14]);
-  const imageY = useTransform(dragY, [-240, 0, 240], [-12, 0, 12]);
-  const actionsY = useTransform(dragProgress, [0, 1], [0, -10]);
-  const actionsScale = useTransform(dragProgress, [0, 1], [1, 1.035]);
-
-  const stackedOneScale = useTransform(dragProgress, [0, 1], [1, 1.035]);
-  const stackedOneShiftY = useTransform(dragProgress, [0, 1], ["0px", "-14px"]);
-  const stackedOneOpacity = useTransform(dragProgress, [0, 1], [0.6, 0.78]);
-  const stackedTwoScale = useTransform(dragProgress, [0, 1], [1, 1.07]);
-  const stackedTwoShiftY = useTransform(dragProgress, [0, 1], ["0px", "-24px"]);
-  const stackedTwoOpacity = useTransform(dragProgress, [0, 1], [0.38, 0.56]);
-
-  const glowOpacity = useTransform(dragProgress, [0, 0.18, 1], [0, 0.14, 1]);
-  const glowX = useTransform(dragX, [-260, 0, 260], ["18%", "50%", "82%"]);
-  const glowY = useTransform(dragY, [-260, 0, 260], ["18%", "50%", "82%"]);
-  const glowBackground = useMotionTemplate`radial-gradient(circle at ${glowX} ${glowY}, rgba(255, 255, 255, 0.24) 0%, rgba(162, 106, 255, 0.22) 18%, rgba(255, 92, 176, 0.14) 34%, rgba(8, 8, 12, 0) 62%)`;
-
-  const isTopCardLiked = topCard ? Boolean(likedRecommendations[topCard.id]) : false;
-
-  useEffect(() => {
-    if (!topCard || dismissDirection) {
-      return undefined;
-    }
-
-    dragX.set(0);
-    dragY.set(0);
-    cardOpacity.set(0);
-    cardScale.set(0.96);
-
-    const controls = [
-      animate(cardOpacity, 1, { duration: 0.24, ease: [0.22, 1, 0.36, 1] }),
-      animate(cardScale, 1, RETURN_SPRING)
-    ];
-
-    return () => {
-      controls.forEach((control) => control.stop());
-    };
-  }, [cardOpacity, cardScale, dismissDirection, dragX, dragY, topCard]);
-
-  useEffect(() => {
-    if (!topCard || !dismissDirection) {
-      return undefined;
-    }
-
-    const controls = [
-      animate(dragX, topCardExitAnimation.x, EXIT_SPRING),
-      animate(dragY, topCardExitAnimation.y, EXIT_SPRING),
-      animate(cardScale, topCardExitAnimation.scale ?? 0.96, { duration: 0.26, ease: [0.22, 1, 0.36, 1] }),
-      animate(cardOpacity, topCardExitAnimation.opacity ?? 0, { duration: 0.24, ease: [0.4, 0, 1, 1] })
-    ];
-
-    const timeoutId = window.setTimeout(() => {
-      onTopCardExitComplete();
-    }, EXIT_COMPLETE_DELAY);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      controls.forEach((control) => control.stop());
-    };
-  }, [cardOpacity, cardScale, dismissDirection, dragX, dragY, onTopCardExitComplete, topCard, topCardExitAnimation]);
-
-  const resetDraggedCard = () => {
-    animate(dragX, 0, RETURN_SPRING);
-    animate(dragY, 0, RETURN_SPRING);
-    animate(cardOpacity, 1, { duration: 0.18, ease: [0.22, 1, 0.36, 1] });
-    animate(cardScale, 1, RETURN_SPRING);
-  };
+  const stackedOneScale = useMotionValue(1);
+  const stackedOneShiftY = useMotionValue("0px");
+  const stackedOneOpacity = useMotionValue(0.7);
+  const stackedTwoScale = useMotionValue(1);
+  const stackedTwoShiftY = useMotionValue("0px");
+  const stackedTwoOpacity = useMotionValue(0.45);
 
   return (
     <>
@@ -179,104 +303,19 @@ export function RecommendationsPanel({
 
               <AnimatePresence mode="wait">
                 {topCard ? (
-                  <motion.article
+                  <DraggableCard
                     key={topCard.instanceId}
-                    className="recommendation-card top-card"
-                    drag={canDismiss}
-                    dragElastic={0.08}
-                    dragMomentum={false}
-                    style={{ x: dragX, y: dragY, rotate: cardRotate, opacity: cardOpacity, scale: cardScale }}
-                    onDragStart={() => {
-                      if (!canDismiss) {
-                        return;
-                      }
-
-                      animate(cardScale, 1.02, { duration: 0.14, ease: [0.22, 1, 0.36, 1] });
-                    }}
-                    onDragEnd={(_, info) => {
-                      if (!canDismiss) {
-                        return;
-                      }
-
-                      const projectedX = info.offset.x + info.velocity.x * 0.18;
-                      const projectedY = info.offset.y + info.velocity.y * 0.18;
-                      const projectedDistance = Math.hypot(projectedX, projectedY);
-                      const velocity = Math.hypot(info.velocity.x, info.velocity.y);
-
-                      if (projectedDistance > DISMISS_DISTANCE || velocity > DISMISS_VELOCITY) {
-                        onDismissTopCard({ x: projectedX, y: projectedY });
-                        return;
-                      }
-
-                      resetDraggedCard();
-                    }}
-                  >
-                    <motion.div className="recommendation-drag-glow" style={{ opacity: glowOpacity, background: glowBackground }} />
-
-                    <motion.img
-                      className="recommendation-image recommendation-image-hero"
-                      src={topCard.image}
-                      alt={topCard.title}
-                      draggable="false"
-                      style={{ x: imageX, y: imageY, scale: imageScale }}
-                    />
-
-                    <motion.div className="recommendation-actions" style={{ y: actionsY, scale: actionsScale }}>
-                      <motion.button
-                        className={`action-btn ${isTopCardLiked ? "action-btn-active" : ""}`}
-                        type="button"
-                        aria-label="Лайкнуть"
-                        onPointerDown={stopCardDrag}
-                        onClick={() => onToggleRecommendationLike(topCard.id)}
-                        whileHover={{ y: -3, scale: 1.04 }}
-                        whileTap={{ scale: 0.92 }}
-                        animate={isTopCardLiked ? { y: [0, -2, 0], scale: [1, 1.08, 1] } : { y: 0, scale: 1 }}
-                        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                      >
-                        <AnimatePresence initial={false}>
-                          {isTopCardLiked ? (
-                            <motion.span
-                              key="like-burst"
-                              className="action-btn-burst"
-                              initial={{ opacity: 0, scale: 0.55 }}
-                              animate={{ opacity: [0, 0.85, 0], scale: [0.55, 1.18, 1.38] }}
-                              exit={{ opacity: 0, scale: 1.42 }}
-                              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                            />
-                          ) : null}
-                        </AnimatePresence>
-                        <motion.img
-                          src={isTopCardLiked ? assets.heartFilledIcon : assets.heartOutlineIcon}
-                          alt=""
-                          className={isTopCardLiked ? "action-btn-icon-active" : ""}
-                          animate={isTopCardLiked ? { scale: [1, 1.18, 1], rotate: [0, -10, 0] } : { scale: 0.94, rotate: 0 }}
-                          transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-                        />
-                      </motion.button>
-                      <motion.button
-                        className="action-btn action-btn-open"
-                        type="button"
-                        aria-label="Открыть ссылку"
-                        onPointerDown={stopCardDrag}
-                        onClick={() => window.open(topCard.link, "_blank", "noopener,noreferrer")}
-                        whileHover={{ y: -3, scale: 1.04 }}
-                        whileTap={{ scale: 0.94 }}
-                      >
-                        <img src={assets.linkAltIcon} alt="" />
-                      </motion.button>
-                      <motion.button
-                        className="action-btn action-btn-share"
-                        type="button"
-                        aria-label="Поделиться"
-                        onPointerDown={stopCardDrag}
-                        onClick={() => onShareRecommendation(topCard)}
-                        whileHover={{ y: -3, scale: 1.04 }}
-                        whileTap={{ scale: 0.94 }}
-                      >
-                        <img src={assets.shareIcon} alt="" />
-                      </motion.button>
-                    </motion.div>
-                  </motion.article>
+                    card={topCard}
+                    canDismiss={canDismiss}
+                    dismissDirection={dismissDirection}
+                    topCardExitAnimation={topCardExitAnimation}
+                    onDismissTopCard={onDismissTopCard}
+                    onTopCardExitComplete={onTopCardExitComplete}
+                    isLiked={Boolean(likedRecommendations[topCard.id])}
+                    onToggleLike={onToggleRecommendationLike}
+                    onOpen={onOpenRecommendation}
+                    onShare={onShareRecommendation}
+                  />
                 ) : null}
               </AnimatePresence>
             </div>

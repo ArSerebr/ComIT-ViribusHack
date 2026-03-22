@@ -25,6 +25,12 @@ class NewsRepository:
         stmt = select(NewsMini).where(NewsMini.id == news_id)
         return (await self._session.execute(stmt)).scalar_one_or_none()
 
+    async def get_mini_by_ids(self, ids: Sequence[str]) -> list[NewsMini]:
+        if not ids:
+            return []
+        stmt = select(NewsMini).where(NewsMini.id.in_(ids))
+        return list((await self._session.execute(stmt)).scalars().unique().all())
+
     async def add_mini(self, row: NewsMini) -> None:
         self._session.add(row)
 
@@ -43,6 +49,12 @@ class NewsRepository:
     async def get_featured(self, news_id: str) -> NewsFeatured | None:
         stmt = select(NewsFeatured).where(NewsFeatured.id == news_id)
         return (await self._session.execute(stmt)).scalar_one_or_none()
+
+    async def get_featured_by_ids(self, ids: Sequence[str]) -> list[NewsFeatured]:
+        if not ids:
+            return []
+        stmt = select(NewsFeatured).where(NewsFeatured.id.in_(ids))
+        return list((await self._session.execute(stmt)).scalars().unique().all())
 
     async def add_featured(self, row: NewsFeatured) -> None:
         self._session.add(row)

@@ -23,6 +23,7 @@ class HackathonItem(BaseModel):
     organizer: str | None = None
     tags: list[str] | None = None
     status: str = "upcoming"
+    source_urls: list[dict] | None = None  # [{"source": "hacklist", "url": "..."}]
 
     model_config = {"from_attributes": True}
 

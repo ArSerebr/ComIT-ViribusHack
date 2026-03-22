@@ -75,6 +75,7 @@ services:
       # В Docker backend и qmsg-core в одной сети; localhost не работает.
       QMSG_CORE_BASE_URL: http://qmsg-core:8090
       PULSE_CORE_BASE_URL: http://pulse-core:8091
+      ML_SERVICE_URL: http://ml:9000
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     healthcheck:
@@ -94,6 +95,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ml:
+        condition: service_started
     restart: unless-stopped
 
   admin-panel:

@@ -474,6 +474,7 @@
   justify-content: center;
   gap: 20px;
   padding: 0 24px;
+  pointer-events: none;
 }
 
 .action-btn {
@@ -489,6 +490,7 @@
   display: grid;
   place-items: center;
   backdrop-filter: blur(18px);
+  pointer-events: auto;
 }
 
 .action-btn img {

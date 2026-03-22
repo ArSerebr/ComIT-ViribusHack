@@ -8,6 +8,8 @@
 @import "./styles/library.css" layer(pages);
 @import "./styles/chat.css" layer(pages);
 @import "./styles/studio-pages.css" layer(pages);
+@import "./styles/onboarding.css" layer(pages);
+@import "./styles/toast.css" layer(shared);
 
 @keyframes ai-agent-gradient-flow {
   0% {

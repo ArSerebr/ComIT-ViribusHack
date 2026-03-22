@@ -106,7 +106,7 @@ export function ProjectDetailsPage({
               </div>
 
               <button className="project-details-team-action" type="button">
-                Посмотреть всех
+                Чат
               </button>
             </div>
           </DetailCard>

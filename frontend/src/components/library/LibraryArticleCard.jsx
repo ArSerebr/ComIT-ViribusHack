@@ -11,8 +11,11 @@ export function LibraryArticleCard({ item, delay = 0, onOpen }) {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.32 }}
+      onClick={handleOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && handleOpen()}
     >
-      <button type="button" className="library-article-hit" aria-label={`Открыть статью ${item.title}`} onClick={handleOpen} />
       <div className="library-article-tags">
         {item.tags.map((tag) => (
           <span key={tag.id} className={`library-article-tag library-article-tag-${tag.tone}`}>

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 
     database_url: str
     parse_interval_hours: int = 1
+    news_parse_interval_hours: int = 2
 
 
 @lru_cache

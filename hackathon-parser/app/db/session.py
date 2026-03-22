@@ -6,7 +6,7 @@ from app.config import get_settings
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db.base import Base
-from app.db.models import Hackathon  # noqa: F401 — register model
+from app.db.models import Hackathon, ItNewsItem  # noqa: F401 — register models
 
 _settings = get_settings()
 

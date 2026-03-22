@@ -1,5 +1,4 @@
 import { LayoutGroup, motion } from "framer-motion";
-import { assets } from "../../assets";
 import { MENU_ITEMS } from "../../data/dashboardData";
 
 const MOBILE_MENU_ITEMS = MENU_ITEMS;
@@ -19,19 +18,6 @@ const ACTIVE_TAB_SPRING = {
 export function MobileShell({ activeTab, aiAssistantEnabled, isAiOpen, onMenuClick }) {
   return (
     <div className="mobile-shell" aria-hidden={false}>
-      <motion.div
-        className="mobile-url-bar"
-        initial={{ opacity: 0, y: -12, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <img src={assets.searchIcon} alt="" className="mobile-url-icon" />
-        <span className="mobile-url-text">https://comitvuz.ru</span>
-        <button className="mobile-url-refresh" type="button" aria-label="Refresh">
-          <img src={assets.progressUploadIcon} alt="" />
-        </button>
-      </motion.div>
-
       <LayoutGroup id="mobile-tab-dock">
         <motion.nav
           className="mobile-tab-dock"
@@ -57,7 +43,11 @@ export function MobileShell({ activeTab, aiAssistantEnabled, isAiOpen, onMenuCli
                 whileTap={{ scale: 0.94 }}
               >
                 {isActive ? (
-                  <motion.span className="mobile-tab-item-backdrop" layoutId="mobile-tab-active-pill" transition={ACTIVE_TAB_SPRING} />
+                  <motion.span
+                    className="mobile-tab-item-backdrop"
+                    layoutId={isAiItem ? "mobile-tab-ai-pill" : "mobile-tab-active-pill"}
+                    transition={ACTIVE_TAB_SPRING}
+                  />
                 ) : null}
 
                 <span className="mobile-tab-item-icon-wrap">

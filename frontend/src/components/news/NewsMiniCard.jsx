@@ -95,63 +95,65 @@ export function NewsMiniCard({
         <img src={item.imageUrl} alt={item.title} draggable="false" />
       </div>
       <p className="news-text">{item.title}</p>
-      {showLike ? (
+      <div className="news-card-actions">
         <motion.button
-          className={`news-like-btn ${isLiked ? "news-like-btn-active" : ""}`}
+          className="news-link-btn"
           type="button"
-          aria-label="Лайк новости"
+          initial="rest"
+          animate="rest"
+          whileHover="hover"
+          whileTap="tap"
+          variants={NEWS_LINK_BUTTON_VARIANTS}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           onClick={(event) => {
             event.stopPropagation();
-            onToggleLike(item.id);
+            handleOpen();
           }}
-          whileHover={{ y: -3, scale: 1.04 }}
-          whileTap={{ scale: 0.92 }}
-          animate={isLiked ? { y: [0, -2, 0], scale: [1, 1.08, 1] } : { y: 0, scale: 1 }}
-          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         >
-          <AnimatePresence initial={false}>
-            {isLiked ? (
-              <motion.span
-                key="news-like-burst"
-                className="news-like-burst"
-                initial={{ opacity: 0, scale: 0.55 }}
-                animate={{ opacity: [0, 0.85, 0], scale: [0.55, 1.18, 1.38] }}
-                exit={{ opacity: 0, scale: 1.42 }}
-                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-              />
-            ) : null}
-          </AnimatePresence>
-          <motion.img
-            src={isLiked ? assets.heartFilledIcon : assets.heartOutlineIcon}
-            alt=""
-            className={`news-like-icon ${isLiked ? "news-like-icon-active" : ""}`}
-            animate={isLiked ? { scale: [1, 1.18, 1], rotate: [0, -10, 0] } : { scale: 0.94, rotate: 0 }}
-            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-          />
+          <motion.span className="news-link-btn-shine" variants={NEWS_LINK_SHINE_VARIANTS} transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }} />
+          <motion.span className="news-link-label" variants={NEWS_LINK_LABEL_VARIANTS} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
+            Подробнее
+          </motion.span>
+          <motion.span className="news-link-arrow-wrap" variants={NEWS_LINK_ARROW_VARIANTS} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
+            <img src={assets.arrow16Icon} alt="" />
+          </motion.span>
         </motion.button>
-      ) : null}
-      <motion.button
-        className="news-link-btn"
-        type="button"
-        initial="rest"
-        animate="rest"
-        whileHover="hover"
-        whileTap="tap"
-        variants={NEWS_LINK_BUTTON_VARIANTS}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        onClick={(event) => {
-          event.stopPropagation();
-          handleOpen();
-        }}
-      >
-        <motion.span className="news-link-btn-shine" variants={NEWS_LINK_SHINE_VARIANTS} transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }} />
-        <motion.span className="news-link-label" variants={NEWS_LINK_LABEL_VARIANTS} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
-          Подробнее
-        </motion.span>
-        <motion.span className="news-link-arrow-wrap" variants={NEWS_LINK_ARROW_VARIANTS} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
-          <img src={assets.arrow16Icon} alt="" />
-        </motion.span>
-      </motion.button>
+        {showLike ? (
+          <motion.button
+            className={`news-like-btn ${isLiked ? "news-like-btn-active" : ""}`}
+            type="button"
+            aria-label="Лайк новости"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleLike(item.id);
+            }}
+            whileHover={{ y: -3, scale: 1.04 }}
+            whileTap={{ scale: 0.92 }}
+            animate={isLiked ? { y: [0, -2, 0], scale: [1, 1.08, 1] } : { y: 0, scale: 1 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <AnimatePresence initial={false}>
+              {isLiked ? (
+                <motion.span
+                  key="news-like-burst"
+                  className="news-like-burst"
+                  initial={{ opacity: 0, scale: 0.55 }}
+                  animate={{ opacity: [0, 0.85, 0], scale: [0.55, 1.18, 1.38] }}
+                  exit={{ opacity: 0, scale: 1.42 }}
+                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                />
+              ) : null}
+            </AnimatePresence>
+            <motion.img
+              src={isLiked ? assets.heartFilledIcon : assets.heartOutlineIcon}
+              alt=""
+              className={`news-like-icon ${isLiked ? "news-like-icon-active" : ""}`}
+              animate={isLiked ? { scale: [1, 1.18, 1], rotate: [0, -10, 0] } : { scale: 0.94, rotate: 0 }}
+              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+            />
+          </motion.button>
+        ) : null}
+      </div>
     </motion.article>
   );
 }

@@ -30,6 +30,7 @@ def _to_item(h: Hackathon) -> HackathonItem:
         organizer=h.organizer,
         tags=h.tags,
         status=h.status,
+        source_urls=h.source_urls,
     )
 
 
@@ -52,6 +53,7 @@ def _to_detail(h: Hackathon) -> HackathonDetail:
         organizer=h.organizer,
         tags=h.tags,
         status=h.status,
+        source_urls=h.source_urls,
     )
 
 

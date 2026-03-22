@@ -35,6 +35,8 @@ class Hackathon(Base):
     image_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     organizer: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    dedup_key: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    source_urls: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="upcoming")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

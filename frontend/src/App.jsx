@@ -544,8 +544,8 @@ function App() {
   });
 
   const recommendationsQuery = useQuery({
-    queryKey: ["dashboard", "recommendations"],
-    queryFn: fetchDashboardRecommendations,
+    queryKey: ["dashboard", "recommendations", sessionToken],
+    queryFn: () => fetchDashboardRecommendations(sessionToken?.trim() || undefined),
     staleTime: 60_000,
   });
 

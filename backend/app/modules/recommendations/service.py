@@ -7,6 +7,7 @@ import uuid
 
 from app.modules.dashboard import public_api as dashboard_public_api
 from app.modules.news import public_api as news_public_api
+from app.modules.recommendations import public_api as reco_catalog_public_api
 from app.modules.recommendations.ml_client import MLRecommendationClient
 from schemas import RecommendationCard
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,8 +76,13 @@ class RecommendationsService:
         dashboard = await dashboard_public_api.get_recommendation_cards_by_ids(
             self._session, card_ids
         )
+        catalog = await reco_catalog_public_api.get_catalog_cards_by_ids(
+            self._session, card_ids
+        )
         result: dict[str, RecommendationCard] = {}
         for c in featured + mini + dashboard:
+            result[c.id] = c
+        for c in catalog:
             result[c.id] = c
         return result
 

@@ -97,8 +97,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ml:
-        condition: service_started
     restart: unless-stopped
 
   admin-panel:
@@ -247,8 +245,14 @@ services:
       dockerfile: Dockerfile
     environment:
       GIGACHAT_AUTH_KEY: ${GIGACHAT_AUTH_KEY:-}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
     volumes:
       - ml_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

@@ -62,10 +62,14 @@ async def test_list_recommendations_authenticated_calls_ml_and_resolves(session,
         patch(
             "app.modules.recommendations.service.dashboard_public_api"
         ) as dash_api,
+        patch(
+            "app.modules.recommendations.service.reco_catalog_public_api"
+        ) as cat_api,
     ):
         news_api.get_featured_cards_by_ids = AsyncMock(return_value=[])
         news_api.get_mini_cards_by_ids = AsyncMock(return_value=[resolved])
         dash_api.get_recommendation_cards_by_ids = AsyncMock(return_value=[])
+        cat_api.get_catalog_cards_by_ids = AsyncMock(return_value=[])
 
         svc = RecommendationsService(session, ml_client=mock_ml)
         out = await svc.list_recommendations(user_id=user_id)
@@ -142,3 +146,46 @@ async def test_record_feedback_continues_when_ml_fails(session, mock_ml):
     record_like_event.assert_awaited_once_with(
         session, entity="recommendation", entity_id="card-456", ts=999
     )
+
+
+@pytest.mark.asyncio
+async def test_resolve_cards_includes_catalog(session, mock_ml):
+    """_resolve_cards merges recommendation_catalog over other sources."""
+    cat = RecommendationCard(
+        id="proj_TF00001",
+        title="Catalog project",
+        subtitle="sub",
+        image="/img/x.jpg",
+        link="/#/projects",
+    )
+    with (
+        patch(
+            "app.modules.recommendations.service.news_public_api"
+        ) as news_api,
+        patch(
+            "app.modules.recommendations.service.dashboard_public_api"
+        ) as dash_api,
+        patch(
+            "app.modules.recommendations.service.reco_catalog_public_api"
+        ) as cat_api,
+    ):
+        news_api.get_featured_cards_by_ids = AsyncMock(return_value=[])
+        news_api.get_mini_cards_by_ids = AsyncMock(return_value=[])
+        dash_api.get_recommendation_cards_by_ids = AsyncMock(
+            return_value=[
+                RecommendationCard(
+                    id="proj_TF00001",
+                    title="Old",
+                    subtitle="",
+                    image="",
+                    link="",
+                )
+            ]
+        )
+        cat_api.get_catalog_cards_by_ids = AsyncMock(return_value=[cat])
+
+        svc = RecommendationsService(session, ml_client=mock_ml)
+        out = await svc._resolve_cards(["proj_TF00001"])
+
+    assert out["proj_TF00001"].title == "Catalog project"
+    cat_api.get_catalog_cards_by_ids.assert_awaited_once()

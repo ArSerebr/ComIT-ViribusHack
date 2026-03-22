@@ -102,6 +102,95 @@ def fetch_news_from_db(database_url: str) -> tuple[list[dict], list[dict]]:
     return mini_rows, featured_rows
 
 
+def fetch_recommendation_catalog(database_url: str) -> list[dict]:
+    """Fetch recommendation_catalog rows for ML card pool."""
+    try:
+        import psycopg2
+    except ImportError as e:
+        raise SystemExit(
+            "psycopg2 required. Install: pip install psycopg2-binary"
+        ) from e
+
+    conn_url = _db_url_for_psycopg2(database_url)
+    conn = psycopg2.connect(conn_url)
+    conn.autocommit = True
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            SELECT id, kind, title, subtitle, topics, skills
+            FROM recommendation_catalog
+            WHERE is_active = true
+            ORDER BY sort_order, id
+            """
+        )
+        raw = cur.fetchall()
+    except Exception as exc:
+        cur.close()
+        conn.close()
+        if getattr(exc, "pgcode", None) == "42P01":
+            return []
+        raise
+    rows = []
+    for row in raw:
+        rows.append({
+            "id": row[0],
+            "kind": row[1],
+            "title": row[2],
+            "subtitle": row[3] or "",
+            "topics": row[4] or "",
+            "skills": row[5] or "",
+        })
+    cur.close()
+    conn.close()
+    return rows
+
+
+def catalog_row_to_news_csv(r: dict) -> dict:
+    """Map recommendation_catalog row to news.csv schema; card_type = kind."""
+    card_type = str(r["kind"])
+    text_for_embed = f"{r['title']} {r.get('subtitle', '')}"
+    embed = _deterministic_embedding(text_for_embed)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")
+    topics = (r.get("topics") or "").strip() or DEFAULT_TOPICS
+    skills_req = (r.get("skills") or "").strip() or DEFAULT_SKILLS
+    subtitle = (r.get("subtitle") or r["title"])[:500]
+
+    return {
+        "card_id": str(r["id"]),
+        "card_type": card_type,
+        "title": r["title"],
+        "short_description": subtitle[:300],
+        "full_description": subtitle,
+        "topics": topics,
+        "skills_required": skills_req,
+        "skills_gained": "",
+        "news_category": "student_opportunity",
+        "format": "online",
+        "language": "ru",
+        "location": "EU",
+        "published_at": now,
+        "updated_at": now,
+        "freshness_timestamp": now,
+        "source_name": "ComIT",
+        "source_type": "catalog",
+        "author_name": "ComIT",
+        "estimated_read_time_minutes": "5",
+        "quality_score": "0.82",
+        "popularity_score": "0.65",
+        "editorial_priority": "0.72",
+        "source_authority": "0.8",
+        "topic_urgency": "0.55",
+        "actionability_relevance": "0.75",
+        "recency_score": "0.88",
+        "breaking_score": "0.25",
+        "novelty_score": "0.72",
+        "integrity_score": "0.95",
+        "status": "active",
+        "embedding_vector": embed,
+    }
+
+
 def row_to_news_csv(r: dict, card_type: str) -> dict:
     """Convert DB row to news.csv schema. card_id = DB id for backend mapping."""
     text_for_embed = f"{r['title']}"
@@ -168,6 +257,7 @@ def main() -> int:
         parser.error("DATABASE_URL or --database-url required")
 
     mini_rows, featured_rows = fetch_news_from_db(args.database_url)
+    catalog_rows = fetch_recommendation_catalog(args.database_url)
 
     # Build CSV rows
     csv_rows = []
@@ -179,6 +269,11 @@ def main() -> int:
             csv_rows.append(row)
     for r in featured_rows:
         row = row_to_news_csv(r, "event")
+        if row["card_id"] not in seen_ids:
+            seen_ids.add(row["card_id"])
+            csv_rows.append(row)
+    for r in catalog_rows:
+        row = catalog_row_to_news_csv(r)
         if row["card_id"] not in seen_ids:
             seen_ids.add(row["card_id"])
             csv_rows.append(row)

@@ -1,0 +1,63 @@
+random_seed: 42
+
+embeddings:
+  provider: gigachat
+  model: Embeddings
+  auth_url: https://ngw.devices.sberbank.ru:9443/api/v2/oauth
+  api_url: https://gigachat.devices.sberbank.ru/api/v1/embeddings
+  scope: GIGACHAT_API_PERS
+  auth_key_env: GIGACHAT_AUTH_KEY
+  timeout_seconds: 60
+  batch_size: 16
+  verify_ssl: false
+  local_dimension: 12
+
+data:
+  users: 300
+  cards_per_pool: 120
+  interaction_history_per_user: 45
+  session_history_per_user: 12
+
+retrieval:
+  top_k_per_source: 12
+  min_trending_quality: 0.72
+  exploration_fraction: 0.2
+  recent_window: 8
+
+ranking:
+  targets:
+    - open
+    - like
+    - share
+    - long_view
+    - skip_fast
+    - disengage
+  final_score_weights:
+    open: 1.5
+    like: 2.2
+    share: 2.8
+    long_view: 1.0
+    skip_fast: 1.6
+    disengage: 2.0
+    freshness_boost: 0.4
+    diversity_boost: 0.5
+    quality_boost: 0.6
+  max_cards_per_pool_in_feed: 4
+  organizer_repeat_penalty: 0.25
+  topic_repeat_penalty: 0.2
+  feed_size: 20
+
+personalization:
+  interest_feature_weight: 1.0
+  skill_feature_weight: 1.35
+  min_profile_weight: 0.2
+  max_profile_weight: 3.0
+  cold_start_interest_weight: 0.45
+  cold_start_skill_weight: 0.55
+  reaction_weight_updates:
+    open: 0.05
+    like: 0.12
+    share: 0.18
+    long_view: 0.09
+    skip_fast: -0.1
+    disengage: -0.18

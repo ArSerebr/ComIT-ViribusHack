@@ -1147,7 +1147,7 @@ function App() {
       await postProjectJoin(token, projectId, null);
     },
     onSuccess: (_data, variables) => {
-      window.alert("Заявка в команду отправлена.");
+      showToast("Заявка отправлена. Ждите подтверждения от команды.");
       void queryClient.invalidateQueries({ queryKey: ["projects", "detail", variables.projectId] });
       void queryClient.invalidateQueries({ queryKey: ["projects", "hub"] });
     },
@@ -1170,13 +1170,6 @@ function App() {
       return;
     }
 
-    try {
-      await postProjectJoin(authToken, projectId, null);
-      showToast("Заявка отправлена. Ждите подтверждения от команды.");
-    } catch (error) {
-      const msg = formatOpenApiError(error) || "Не удалось отправить заявку. Попробуйте позже.";
-      window.alert(msg);
-    }
     joinProjectMutation.mutate({ projectId, token: authToken.trim() });
   };
 

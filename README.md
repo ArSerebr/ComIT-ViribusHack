@@ -377,7 +377,7 @@ python -m pytest ML/tests/test_api_smoke.py -v
 - PulseCore API-гайд: `PulseCore/docs.md`
 - OpenAPI spec: `openapi/openapi.yaml`
 
-## 12. Частые проблемы
+## 12. Частые проблемы (исправлено)
 
 ### Backend не стартует с ошибкой БД
 

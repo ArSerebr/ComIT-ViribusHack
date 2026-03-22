@@ -10,8 +10,10 @@ prompts = {
 - search — поиск контента по платформе(найти курс, материал, проект, статью, исследование и тд)
 - other — оффтоп, некорректный запрос, не связанный с платформой, запрещенный контент
 Для ответов на впоросы использу Rag базу данных
+Примеры task: «запиши меня на курс», «регистрация на курс ML», «оформи запись на демо-курс ML-инженер», «хочу записаться на обучение».
+
 Верни ТОЛЬКО JSON:
-{{"message_type": "question" | "task" | "other"}}
+{{"message_type": "question" | "task" | "search" | "other"}}
 
 Сообщение: {message}
 """,
@@ -42,30 +44,55 @@ prompts = {
 Запрос: {message}
 """,
 
-    "comit_user_agent": """Ты агент выполнения задач на платформе ComIT.
-По описанию задачи сформируй список конкретных запросов к backend и UI-действий для frontend.
+    "comit_user_agent": """Ты агент выполнения задач на платформе ComIT (MVP: запись на демо-курс).
+По описанию задачи сформируй ровно один сценарий для страницы записи на курс `agent-demo-enroll`.
 
-Форматы:
-- backend: API-вызовы 
-(create_course_enrollment, submit_assignment, send_message, send_form)
-- frontend: UI-действия (open_course_page, show_confirmation_modal, scroll_to_element, tap_button, submit_form и т.д.)
+backend_requests — массив из ОДНОГО элемента:
+{{"action": "enroll_course", "params": {{"course_slug": "agent-demo-enroll", "showcase_item_id": "netology-ml-engineer"}}}}
+
+frontend_requests — упорядоченный массив шагов. Каждый шаг — объект:
+- action: одно из navigate | scroll_to | focus | type | click | wait | highlight
+- target: строка — значение атрибута data-agent-target на странице (без CSS-селекторов)
+- value: строка — только для type (текст ввода)
+- delay_after_ms: целое число миллисекунд паузы ПОСЛЕ шага (для демо используй 700–2000)
+
+Обязательный сценарий UI (порядок сохрани, значения для type можешь слегка варьировать осмысленно):
+1) navigate — открыть форму: target пусто или не используется, params должен содержать path: "#/courses/agent-demo-enroll"
+   (если navigate без target, укажи path в params: {{"path": "#/courses/agent-demo-enroll"}})
+2) wait — задержка, target можно опустить
+3) scroll_to — target "enroll-form-root"
+4) focus — "enroll-email"
+5) type — "enroll-email", value: реалистичный email
+6) focus — "enroll-phone"
+7) type — "enroll-phone", value: формат +7XXXXXXXXXX
+8) focus — "enroll-comment"
+9) type — "enroll-comment", короткий комментарий
+10) scroll_to — "enroll-consent"
+11) click — "enroll-consent"
+12) scroll_to — "enroll-submit"
+13) click — "enroll-submit"
+
+Для navigate используй либо {{"action":"navigate","params":{{"path":"#/courses/agent-demo-enroll"}},"delay_after_ms":1200}},
+либо согласованный с фронтом вариант с target "navigate-enroll" — предпочтительно params.path как выше.
 
 Верни ТОЛЬКО JSON:
 {{
-  "backend_requests": [{{"action": "...", "params": {{}}}}],
-  "frontend_requests": [{{"action": "...", "params": {{}}}}]
+  "backend_requests": [{{"action": "enroll_course", "params": {{...}}}}],
+  "frontend_requests": [{{"action": "...", "target": "...", "value": "...", "delay_after_ms": 1000, "params": {{}}}}]
 }}
 
 Задача: {task_description}
 """,
 
-    "comit_planner_agent": """Объясни студенту простыми словами что сейчас произойдёт на платформе.
-Кратко по пунктам списком
+    "comit_planner_agent": """Объясни студенту простыми словами, что сейчас произойдёт на платформе после подтверждения.
+Кратко, по пунктам (маркированный список в тексте).
+
+Учитывай задачу и план UI-шагов из поля frontend_requests (оно передаётся отдельно ниже).
 
 Верни ТОЛЬКО JSON:
 {{"pipeline_explanation": "..."}}
 
-Запланированное действие: {frontend_request}
+Задача: {task_description}
 """,
 
     "comit_search": """Переформулируй запрос пользователя в чёткий поисковый запрос для базы знаний ComIT.

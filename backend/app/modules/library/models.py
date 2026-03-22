@@ -83,6 +83,32 @@ class LibraryArticleTag(Base):
     )
 
 
+class LibraryCourse(Base):
+    """Каталог курсов (импорт из CSV и т.п.); отдельно от витрины library_showcase_item."""
+
+    __tablename__ = "library_course"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    code: Mapped[str] = mapped_column(String(32), nullable=False)
+    visibility: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    sphere: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    course_format: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    short_description: Mapped[str] = mapped_column(Text, nullable=False)
+    learning_outcomes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    difficulty_level: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    duration_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    modules_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    lessons_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    practice_format: Mapped[str | None] = mapped_column(Text, nullable=True)
+    mentor_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    primary_skill: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    related_skills: Mapped[str | None] = mapped_column(Text, nullable=True)
+    course_status: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    certificate: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    last_activity_days_ago: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
 class LibraryInterestTag(Base):
     """Maps catalog interests to tags; article interestIds are derived via article tags."""
 

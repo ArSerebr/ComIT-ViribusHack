@@ -5,6 +5,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from app.modules.agent_demo.deps import get_agent_demo_service
+from app.modules.agent_demo.service import AgentDemoService
 from app.modules.auth.deps import current_active_user
 from app.modules.auth.models import User
 from app.modules.pulse.deps import get_pulse_service
@@ -64,9 +66,10 @@ async def get_history(
 async def post_execute(
     user: User = Depends(current_active_user),
     service: PulseService = Depends(get_pulse_service),
+    demo: AgentDemoService = Depends(get_agent_demo_service),
 ):
     """Confirm execution of a pending task."""
-    return await service.execute_task(user.id)
+    return await service.execute_task(user.id, demo)
 
 
 @router.post("/cancel")

@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveApiUrl } from "./api/client";
 import {
   fetchDashboardHome,
@@ -32,6 +32,7 @@ import {
 import { ArticleCreatePage } from "./components/articles/ArticleCreatePage";
 import { ArticleReaderPage } from "./components/articles/ArticleReaderPage";
 import { AuthPage } from "./components/auth/AuthPage";
+import { CourseAgentEnrollPage } from "./components/courses/CourseAgentEnrollPage";
 import { assets } from "./assets";
 import { AiChatPanel } from "./components/chat/AiChatPanel";
 import { ChatPage } from "./components/chat/ChatPage";
@@ -71,6 +72,7 @@ import {
   mapApiLibraryArticleToReaderArticle,
   resolveTagIdsFromUserTags
 } from "./utils/libraryArticle";
+import { runAgentDemoActions } from "./utils/agentDemoPlayer";
 import { createSlug } from "./utils/slug";
 
 /** When not `"false"`, failed API requests fall back to `src/data/*` demo content (hackathon default). */
@@ -486,6 +488,10 @@ function App() {
   const [isArticleSaving, setIsArticleSaving] = useState(false);
   const [isProjectSaving, setIsProjectSaving] = useState(false);
   const [participatedFeaturedIds, setParticipatedFeaturedIds] = useState(() => new Set());
+  const [agentDemoStartOpen, setAgentDemoStartOpen] = useState(false);
+  const [agentDemoDoneOpen, setAgentDemoDoneOpen] = useState(false);
+  const [agentDemoAura, setAgentDemoAura] = useState(false);
+  const agentInviteHandledRef = useRef(new Set());
 
   const chatListRef = useRef(null);
   const routeStateRef = useRef({ tab: activeTab, path: currentPath });
@@ -504,6 +510,7 @@ function App() {
   const currentProjectSlug = resolveProjectSlugFromPath(currentPath);
   const currentArticleSlug = resolveArticleSlugFromPath(currentPath);
   const currentCourseSlug = resolveCourseSlugFromPath(currentPath);
+  const isAgentDemoEnrollPage = currentCourseSlug === "agent-demo-enroll";
   const isProjectCreatePage = currentPath === NAV_LINKS.projectsCreate;
   const authMode = resolveAuthModeFromPath(currentPath);
   const sessionToken =
@@ -931,6 +938,36 @@ function App() {
     navigateTo(path);
   };
 
+  const executeAgentDemoWithPlayback = useCallback(async () => {
+    setAgentDemoStartOpen(false);
+    try {
+      const data = await pulseExecute();
+      const actions = data?.frontend_actions;
+      if (Array.isArray(actions) && actions.length > 0) {
+        setAgentDemoAura(true);
+        document.body.classList.add("agent-demo-playing");
+        try {
+          await runAgentDemoActions(actions, { navigateTo });
+        } finally {
+          setAgentDemoAura(false);
+          document.body.classList.remove("agent-demo-playing");
+        }
+      }
+      setAgentDemoDoneOpen(true);
+    } catch {
+      setAgentDemoDoneOpen(true);
+    }
+  }, [pulseExecute, navigateTo]);
+
+  const cancelAgentDemoInvite = useCallback(async () => {
+    setAgentDemoStartOpen(false);
+    try {
+      await pulseCancel();
+    } catch {
+      // ошибка уже в pulseError
+    }
+  }, [pulseCancel]);
+
   const sendLikeSignal = (entity, id) => {
     const body = { entity, id, ts: Date.now() };
     if (typeof fetch !== "function") {
@@ -1085,20 +1122,36 @@ function App() {
     openPath(NAV_LINKS.projectsCreate);
   };
 
-  const joinProject = async (project) => {
-    const projectId = project?.id;
+  const joinProjectMutation = useMutation({
+    mutationFn: async ({ projectId, token }) => {
+      await postProjectJoin(token, projectId, null);
+    },
+    onSuccess: (_data, variables) => {
+      window.alert("Заявка в команду отправлена.");
+      void queryClient.invalidateQueries({ queryKey: ["projects", "detail", variables.projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["projects", "hub"] });
+    },
+    onError: (error) => {
+      window.alert(formatOpenApiError(error) || "Не удалось отправить заявку. Попробуйте позже.");
+    }
+  });
+
+  const joinProject = (project) => {
+    const fromProject =
+      typeof project?.id === "string" && project.id.trim() ? project.id.trim() : "";
+    const projectId = fromProject || (currentProjectSlug && String(currentProjectSlug).trim()) || "";
     if (!projectId) {
+      window.alert("Не удалось определить проект. Обновите страницу.");
       return;
     }
-    if (!authToken) {
+    if (!authToken?.trim()) {
       window.alert("Войдите в аккаунт, чтобы отправить заявку в команду.");
       return;
     }
-    try {
-      await postProjectJoin(authToken, projectId, null);
-    } catch (error) {
-      window.alert(formatOpenApiError(error) || "Не удалось отправить заявку. Попробуйте позже.");
+    if (joinProjectMutation.isPending) {
+      return;
     }
+    joinProjectMutation.mutate({ projectId, token: authToken.trim() });
   };
 
   const cycleLibraryShowcase = (direction) => {
@@ -1393,6 +1446,21 @@ function App() {
   }, [pulseMessages]);
 
   useEffect(() => {
+    const last = pulseMessages[pulseMessages.length - 1];
+    if (!last || last.role !== "ai" || !Array.isArray(last.buttons)) {
+      return;
+    }
+    if (!last.buttons.includes("Запустить агента")) {
+      return;
+    }
+    if (agentInviteHandledRef.current.has(last.id)) {
+      return;
+    }
+    agentInviteHandledRef.current.add(last.id);
+    setAgentDemoStartOpen(true);
+  }, [pulseMessages]);
+
+  useEffect(() => {
     const syncTabWithHash = () => {
       const nextPath = resolvePathFromHash(window.location.hash);
 
@@ -1508,7 +1576,7 @@ function App() {
       onOpenAuth={() => openAuthPage("login")}
     />
   ) : isArticleReaderPage ? (
-    articleReaderLoading ? (
+    articleReaderLoading && !isAgentDemoEnrollPage ? (
       <section className="article-reader-page">
         <div className="library-page-head article-reader-head">
           <button type="button" className="news-back-btn library-back-btn" aria-label="Назад" onClick={openLibraryPage}>
@@ -1520,6 +1588,8 @@ function App() {
           Загружаем материал…
         </p>
       </section>
+    ) : isAgentDemoEnrollPage ? (
+      <CourseAgentEnrollPage onBack={openLibraryPage} userEmail={authUser?.email ?? ""} />
     ) : (
       <ArticleReaderPage
         mode={currentCourseSlug ? "course" : "article"}
@@ -1570,6 +1640,7 @@ function App() {
         project={mapProjectDraftToDetails(currentProjectDraft)}
         onBack={openProjectsHub}
         onJoinProject={joinProject}
+        isJoining={joinProjectMutation.isPending}
         sessionToken={null}
         onOpenTasks={() => navigateTo(`${NAV_LINKS.projects}/${currentProjectDraft.id}/tasks`)}
       />
@@ -1596,6 +1667,7 @@ function App() {
         project={projectDetailsQuery.data}
         onBack={openProjectsHub}
         onJoinProject={joinProject}
+        isJoining={joinProjectMutation.isPending}
         sessionToken={sessionToken}
         onOpenTasks={() => navigateTo(`${NAV_LINKS.projects}/${projectDetailsQuery.data.id}/tasks`)}
       />
@@ -1655,7 +1727,7 @@ function App() {
       onSendMessage={sendMessage}
       onChangeChatInput={setChatInput}
       onSubmit={handleChatSubmit}
-      onExecutePendingTask={pulseExecute}
+      onExecutePendingTask={executeAgentDemoWithPlayback}
       onCancelPendingTask={pulseCancel}
     />
   ) : (
@@ -1781,12 +1853,68 @@ function App() {
               onSendMessage={sendMessage}
               onChangeChatInput={setChatInput}
               onSubmit={handleChatSubmit}
-              onExecutePendingTask={pulseExecute}
+              onExecutePendingTask={executeAgentDemoWithPlayback}
               onCancelPendingTask={pulseCancel}
             />
           ) : null}
         </AnimatePresence>
       </div>
+
+      {agentDemoAura ? <div className="agent-demo-aura" aria-hidden="true" /> : null}
+
+      {agentDemoStartOpen ? (
+        <div
+          className="agent-demo-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agent-demo-start-title"
+        >
+          <div className="agent-demo-modal">
+            <h2 id="agent-demo-start-title">Запустить демо агента?</h2>
+            <p>
+              ИИ покажет запись на демо-курс: переход к форме, плавное заполнение полей и отправка. Шаги выполняются с паузами,
+              чтобы было удобно наблюдать.
+            </p>
+            <div className="agent-demo-modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => void cancelAgentDemoInvite()}>
+                Отмена
+              </button>
+              <button type="button" className="btn-primary" onClick={() => void executeAgentDemoWithPlayback()}>
+                Начать демо
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {agentDemoDoneOpen ? (
+        <div
+          className="agent-demo-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agent-demo-done-title"
+        >
+          <div className="agent-demo-modal">
+            <h2 id="agent-demo-done-title">Демо завершено</h2>
+            <p>Заявка отправлена в сценарии агента, запись на курс сохранена на сервере. Можете продолжить работу с платформой.</p>
+            <div className="agent-demo-modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setAgentDemoDoneOpen(false)}>
+                Закрыть
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  setAgentDemoDoneOpen(false);
+                  openLibraryPage();
+                }}
+              >
+                К библиотеке
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

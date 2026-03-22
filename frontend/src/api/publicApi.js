@@ -141,6 +141,25 @@ export async function postRecommendationLike(body) {
   if (error) throw error;
 }
 
+/**
+ * ML feedback: POST /api/recommendations/feedback (entity_id, reaction, ts).
+ * Requires JWT. Use for open, like, share reactions when user is authenticated.
+ */
+export async function postRecommendationFeedback(token, body) {
+  const response = await fetch(resolveApiUrl("/api/recommendations/feedback"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(token)
+    },
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const msg = await extractErrorMessage(response, "Feedback failed");
+    throw new Error(msg);
+  }
+}
+
 /** Analytics: POST `InterestsPayload` (openapi). */
 export async function postLibraryInterests(body) {
   const { error } = await apiClient.POST("/api/library/interests", { body });

@@ -44,6 +44,7 @@ export function RecommendationsPanel({
   onTopCardExitComplete,
   likedRecommendations,
   onToggleRecommendationLike,
+  onOpenRecommendation,
   onShareRecommendation,
   isLoading = false
 }) {
@@ -185,7 +186,14 @@ export function RecommendationsPanel({
                     drag={canDismiss}
                     dragElastic={0.08}
                     dragMomentum={false}
-                    style={{ x: dragX, y: dragY, rotate: cardRotate, opacity: cardOpacity, scale: cardScale }}
+                    style={{
+                      x: dragX,
+                      y: dragY,
+                      rotate: cardRotate,
+                      opacity: cardOpacity,
+                      scale: cardScale,
+                      touchAction: "none"
+                    }}
                     onDragStart={() => {
                       if (!canDismiss) {
                         return;
@@ -258,7 +266,7 @@ export function RecommendationsPanel({
                         type="button"
                         aria-label="Открыть ссылку"
                         onPointerDown={stopCardDrag}
-                        onClick={() => window.open(topCard.link, "_blank", "noopener,noreferrer")}
+                        onClick={() => (onOpenRecommendation ? onOpenRecommendation(topCard) : window.open(topCard.link, "_blank", "noopener,noreferrer"))}
                         whileHover={{ y: -3, scale: 1.04 }}
                         whileTap={{ scale: 0.94 }}
                       >

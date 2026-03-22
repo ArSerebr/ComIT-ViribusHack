@@ -16,6 +16,14 @@ class DashboardRepository:
         )
         return list((await self._session.execute(stmt)).scalars().all())
 
+    async def get_recommendations_by_ids(
+        self, ids: Sequence[str]
+    ) -> list[DashboardRecommendation]:
+        if not ids:
+            return []
+        stmt = select(DashboardRecommendation).where(DashboardRecommendation.id.in_(ids))
+        return list((await self._session.execute(stmt)).scalars().all())
+
     async def get_home_snapshot(self) -> DashboardHomeSnapshot | None:
         stmt = select(DashboardHomeSnapshot).where(DashboardHomeSnapshot.id == 1)
         return (await self._session.execute(stmt)).scalar_one_or_none()

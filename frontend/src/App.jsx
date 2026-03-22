@@ -23,6 +23,7 @@ import {
   patchProfileMe,
   postFeaturedParticipate,
   postLibraryInterests,
+  postRecommendationFeedback,
   postRecommendationLike,
   registerWithEmail
 } from "./api/publicApi";
@@ -912,11 +913,15 @@ function App() {
     void postRecommendationLike(body).catch(() => {});
   };
 
+  const sendRecommendationFeedback = (entityId, reaction) => {
+    if (!sessionToken) return;
+    const body = { entity_id: entityId, reaction, ts: Date.now() };
+    void postRecommendationFeedback(sessionToken, body).catch(() => {});
+  };
+
   const rotateDeck = () => {
     setDeck((prev) => {
-      if (prev.length < 2) {
-        return prev;
-      }
+      if (prev.length === 0) return prev;
       const [first, ...rest] = prev;
       return [...rest, { ...first, instanceId: `${first.id}-${Date.now()}` }];
     });
@@ -946,6 +951,7 @@ function App() {
     setLikedRecommendations((prev) => {
       const next = !prev[recommendationId];
       sendLikeSignal("recommendation", recommendationId);
+      sendRecommendationFeedback(recommendationId, "like");
       return { ...prev, [recommendationId]: next };
     });
   };
@@ -959,6 +965,7 @@ function App() {
   };
 
   const shareRecommendation = async (recommendation) => {
+    sendRecommendationFeedback(recommendation.id, "share");
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
     try {
@@ -975,6 +982,11 @@ function App() {
     } catch {
       window.prompt("Скопируйте ссылку:", recommendation.link);
     }
+  };
+
+  const openRecommendation = (recommendation) => {
+    sendRecommendationFeedback(recommendation.id, "open");
+    window.open(recommendation.link, "_blank", "noopener,noreferrer");
   };
 
   const openNewsList = () => {
@@ -1700,6 +1712,7 @@ function App() {
               onTopCardExitComplete={handleTopCardExitComplete}
               likedRecommendations={likedRecommendations}
               onToggleRecommendationLike={toggleRecommendationLike}
+              onOpenRecommendation={openRecommendation}
               onShareRecommendation={shareRecommendation}
               isLoading={recommendationsDeckLoading}
             />

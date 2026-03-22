@@ -25,6 +25,7 @@ def test_create_app_exposes_openapi():
     assert "/api/library/articles" in body["paths"]
     assert "/api/admin/projects/columns" in body["paths"]
     assert "/api/news/featured/{news_id}/participate" in body["paths"]
+    assert "/api/recommendations/feedback" in body["paths"]
     assert "/api/analytics/universities" in body["paths"]
     assert "/api/analytics/universities/{university_id}/dashboard" in body["paths"]
     assert "/api/analytics/universities/{university_id}/export/students" in body["paths"]

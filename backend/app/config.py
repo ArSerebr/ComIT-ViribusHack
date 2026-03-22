@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # PulseCore (AI-чат); в Docker — http://pulse-core:8091, локально — http://localhost:8091.
     pulse_core_base_url: str = "http://localhost:8091"
 
+    # ML Service (рекомендации); в Docker — http://ml:9000, локально — http://localhost:9000.
+    ml_service_url: str = "http://localhost:9000"
+
     # JWT и токены сброса/верификации пароля (fastapi-users).
     jwt_secret: str = Field(
         ...,

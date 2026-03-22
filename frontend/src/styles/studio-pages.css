@@ -410,7 +410,7 @@
 
 .article-reader-title {
   margin: 0;
-  font-size: clamp(40px, 3vw, 56px);
+  font-size: clamp(39px, 3vw, 39px);
   font-weight: 600;
   letter-spacing: -0.05em;
 }
@@ -433,7 +433,7 @@
 .article-reader-meta-icon {
   width: 17px;
   height: 17px;
-  display: block;
+  display: none;
   background: rgba(255, 255, 255, 0.78);
 }
 
@@ -501,6 +501,7 @@
 .article-reader-sidebar {
   display: grid;
   gap: 14px;
+  margin-top: 95px;
 }
 
 .article-reader-reco-card {

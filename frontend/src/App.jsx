@@ -28,6 +28,7 @@ import { ChatPage } from "./components/chat/ChatPage";
 import { BottomCards } from "./components/dashboard/BottomCards";
 import { SummaryCards } from "./components/dashboard/SummaryCards";
 import { LibraryPage } from "./components/library/LibraryPage";
+import { MobileShell } from "./components/layout/MobileShell";
 import { TopBar } from "./components/layout/TopBar";
 import { NewsPage } from "./components/news/NewsPage";
 import { ProfilePage } from "./components/profile/ProfilePage";
@@ -1419,20 +1420,28 @@ function App() {
           />
 
           {!shouldHideTopBar ? (
-            <TopBar
-              activeTab={activeTab}
-              aiAssistantEnabled={aiAssistantEnabled}
-              isAiOpen={aiMode}
-              isNotificationsOpen={isNotificationsOpen}
-              notificationItems={notificationItems}
-              onCloseNotifications={() => setIsNotificationsOpen(false)}
-              onGoHome={handleGoHome}
-              onOpenProfile={openProfilePage}
-              onMenuClick={handleMenuClick}
-              onOpenNotification={handleOpenNotification}
-              onToggleNotifications={() => setIsNotificationsOpen((prev) => !prev)}
-              isNewsView
-            />
+            <>
+              <TopBar
+                activeTab={activeTab}
+                aiAssistantEnabled={aiAssistantEnabled}
+                isAiOpen={aiMode}
+                isNotificationsOpen={isNotificationsOpen}
+                notificationItems={notificationItems}
+                onCloseNotifications={() => setIsNotificationsOpen(false)}
+                onGoHome={handleGoHome}
+                onOpenProfile={openProfilePage}
+                onMenuClick={handleMenuClick}
+                onOpenNotification={handleOpenNotification}
+                onToggleNotifications={() => setIsNotificationsOpen((prev) => !prev)}
+                isNewsView
+              />
+              <MobileShell
+                activeTab={activeTab}
+                aiAssistantEnabled={aiAssistantEnabled}
+                isAiOpen={aiMode}
+                onMenuClick={handleMenuClick}
+              />
+            </>
           ) : null}
 
           <main className={`dashboard-layout dashboard-layout-news ${shouldHideTopBar ? "dashboard-layout-auth" : ""}`.trim()}>

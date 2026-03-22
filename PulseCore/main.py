@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from routes import tasks, status, tokens, history
 from routes import Comit_chat
+from routes import comit_work_plan
 
 app = FastAPI()
 
@@ -24,3 +25,4 @@ app.include_router(tokens.router)
 app.include_router(tasks.router)
 app.include_router(history.router)
 app.include_router(Comit_chat.router)
+app.include_router(comit_work_plan.router)

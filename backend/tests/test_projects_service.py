@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from app.modules.projects.models import ProjectsColumn, ProjectsProject
@@ -11,6 +11,7 @@ from app.modules.projects.schemas import ProjectCreateBody, ProjectUpdateBody
 from app.modules.projects.service import ProjectsService
 from schemas import (
     IntegrationItem,
+    ParticipantRow,
     ProductivityBlock,
     ProgressBlock,
     TodoBlock,
@@ -240,3 +241,87 @@ async def test_update_project_moderator_can_edit_system_project():
     assert status == "ok"
     assert out is not None
     assert owner_row.title == "New"
+
+
+@pytest.mark.asyncio
+async def test_start_work_plan_generate_ok():
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
+    project = MagicMock(spec=ProjectsProject)
+    project.id = "p1"
+    project.owner_user_id = uid
+    project.description = "D"
+    repo = AsyncMock()
+    repo.get_project_only = AsyncMock(return_value=project)
+    pulse = AsyncMock()
+    pulse.submit_work_plan = AsyncMock(return_value="task-abc")
+    sink = AsyncMock()
+    svc = ProjectsService(repo, sink, pulse)
+    details = MagicMock()
+    details.title = "Title"
+    details.description = "D"
+    details.participants = []
+    with patch.object(svc, "get_project_details", new_callable=AsyncMock, return_value=details):
+        st, tid = await svc.start_work_plan_generate(user, "p1", "2026-06-01")
+    assert st == "ok"
+    assert tid == "task-abc"
+    pulse.submit_work_plan.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_start_work_plan_generate_misconfigured_without_pulse():
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
+    repo = AsyncMock()
+    sink = AsyncMock()
+    svc = ProjectsService(repo, sink, None)
+    st, tid = await svc.start_work_plan_generate(user, "p1", None)
+    assert st == "misconfigured"
+    assert tid is None
+
+
+@pytest.mark.asyncio
+async def test_assign_work_plan_delegates_to_task_model():
+    uid = uuid.uuid4()
+    user = MagicMock()
+    user.id = uid
+    project = MagicMock(spec=ProjectsProject)
+    project.id = "p1"
+    project.title = "T"
+    project.description = "D"
+    project.owner_user_id = uid
+    repo = AsyncMock()
+    repo.get_project_only = AsyncMock(return_value=project)
+    sink = AsyncMock()
+    svc = ProjectsService(repo, sink, None)
+    details = MagicMock()
+    details.participants = [
+        ParticipantRow(
+            id="m1",
+            name="Member",
+            avatarUrl="",
+            avatarVariant="default",
+            role="Backend Engineer",
+            skills=["python"],
+        )
+    ]
+    task = {
+        "id": "t1",
+        "title": "Implement API",
+        "description": "REST",
+        "required_skills": ["python"],
+        "category": "backend",
+        "difficulty": "medium",
+        "estimated_hours": 8,
+        "priority": "must_have",
+        "deadline_iso": "2026-05-01",
+    }
+    with patch.object(svc, "get_project_details", new_callable=AsyncMock, return_value=details):
+        with patch("app.modules.projects.service.TaskAssignmentModel") as TM:
+            TM.return_value.assign_project_data.return_value = {"project_id": "p1", "assignments": []}
+            st, payload = await svc.assign_work_plan(user, "p1", [task])
+    assert st == "ok"
+    assert payload == {"project_id": "p1", "assignments": []}
+    TM.return_value.assign_project_data.assert_called_once()

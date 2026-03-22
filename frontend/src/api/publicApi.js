@@ -135,6 +135,56 @@ export async function createProject(token, body) {
   return data;
 }
 
+/** POST `/api/projects/{project_id}/join` — заявка в команду проекта (требуется JWT). */
+export async function postProjectJoin(token, projectId, message = null) {
+  const { data, error } = await apiClient.POST("/api/projects/{project_id}/join", {
+    params: { path: { project_id: projectId } },
+    headers: authHeaders(token),
+    body: { message }
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** POST `/api/projects/{id}/work-plan/generate` — PulseCore, возвращает task_id для poll `/api/pulse/task/...`. */
+export async function postWorkPlanGenerate(token, projectId, projectDeadline) {
+  const res = await fetch(
+    resolveApiUrl(`/api/projects/${encodeURIComponent(projectId)}/work-plan/generate`),
+    {
+      method: "POST",
+      headers: {
+        ...authHeaders(token),
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({ projectDeadline: projectDeadline || null })
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** POST `/api/projects/{id}/work-plan/assign` — распределение задач по участникам проекта. */
+export async function postWorkPlanAssign(token, projectId, tasks) {
+  const res = await fetch(resolveApiUrl(`/api/projects/${encodeURIComponent(projectId)}/work-plan/assign`), {
+    method: "POST",
+    headers: {
+      ...authHeaders(token),
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({ tasks })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 /** Analytics: POST `LikePayload` (openapi). */
 export async function postRecommendationLike(body) {
   const { error } = await apiClient.POST("/api/recommendations/like", { body });

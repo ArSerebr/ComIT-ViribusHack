@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from app.modules.dashboard.models import DashboardRecommendation
@@ -41,6 +41,7 @@ async def test_get_home_returns_none_when_no_snapshot():
 @pytest.mark.asyncio
 async def test_get_home_validates_json_from_snapshot():
     repo = AsyncMock()
+    repo.session = MagicMock()
     snap = MagicMock()
     snap.home_json = {
         "events": {"count": 2, "deltaLabel": "+1"},
@@ -48,9 +49,14 @@ async def test_get_home_validates_json_from_snapshot():
         "highlightCourse": {"title": "Course", "imageUrl": "https://x/i.png", "path": "/learn"},
     }
     repo.get_home_snapshot = AsyncMock(return_value=snap)
-    svc = DashboardService(repo)
-
-    home = await svc.get_home()
+    with patch(
+        "app.modules.dashboard.service.hackathons_public_api.count_upcoming_hackathons",
+        new_callable=AsyncMock,
+        return_value=7,
+    ):
+        svc = DashboardService(repo)
+        home = await svc.get_home()
 
     assert isinstance(home, DashboardHome)
-    assert home.events.count == 2
+    assert home.events.count == 7
+    assert home.events.deltaLabel == "предстоящих в каталоге"

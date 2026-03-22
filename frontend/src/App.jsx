@@ -1807,6 +1807,9 @@ function App() {
                 aiAssistantEnabled={aiAssistantEnabled}
                 isAiOpen={aiMode}
                 onMenuClick={handleMenuClick}
+                onOpenProfile={openProfilePage}
+                userAvatarUrl={profileMeQuery.data?.avatarUrl ?? null}
+                isLoggedIn={Boolean(sessionToken)}
               />
             </>
           ) : null}

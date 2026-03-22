@@ -36,6 +36,21 @@ services:
       start_period: 5s
     restart: unless-stopped
 
+  mongo:
+    image: mongo:7
+    command: ["mongod", "--quiet"]
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
   backend:
     profiles: ["core"]
     # Стабильные имена для Drone cleanup и прод-деплоя (не default project_service).
@@ -57,6 +72,10 @@ services:
       SKIP_SEED: ${SKIP_SEED:-}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      # В Docker backend и qmsg-core в одной сети; localhost не работает.
+      QMSG_CORE_BASE_URL: http://qmsg-core:8090
+      PULSE_CORE_BASE_URL: http://pulse-core:8091
+      ML_SERVICE_URL: http://ml:9000
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     healthcheck:
@@ -76,6 +95,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ml:
+        condition: service_started
     restart: unless-stopped
 
   admin-panel:
@@ -132,6 +153,7 @@ services:
       - "${FRONTEND_PORT:-8080}:80"
     depends_on:
       - backend
+      - qmsg-core
     restart: unless-stopped
 
   frontend-analytics:
@@ -149,6 +171,85 @@ services:
       - backend
     restart: unless-stopped
 
+  hackathon-parser:
+    profiles: ["core"]
+    image: comit-hackathon-parser:latest
+    build:
+      context: ./hackathon-parser
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
+      PARSE_INTERVAL_HOURS: ${PARSE_INTERVAL_HOURS:-1}
+    ports:
+      - "${HACKATHON_PARSER_PORT:-8012}:8012"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  pulse-core:
+    profiles: ["core"]
+    image: comit-pulse-core:latest
+    build:
+      context: ./PulseCore
+      dockerfile: Dockerfile
+    environment:
+      MONGO_URL: mongodb://mongo:27017/
+    ports:
+      - "${PULSE_CORE_PORT:-8091}:8091"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  qmsg-core:
+    profiles: ["core"]
+    image: comit-qmsg-core:latest
+    build:
+      context: ./QmsgCore/backend
+      dockerfile: Dockerfile
+    environment:
+      GC_DATABASE_DSN: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
+      GC_JWT_SECRET: ${JWT_SECRET:-disabled-core-jwt-secret}
+      GC_PULSE_BASE_URL: http://pulse-core:8091
+      GC_SERVER_PORT: 8090
+    ports:
+      - "${QMSG_CORE_PORT:-8090}:8090"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8090/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      pulse-core:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ml:
+    profiles: ["core"]
+    image: comit-ml:latest
+    build:
+      context: ./ML
+      dockerfile: Dockerfile
+    environment:
+      GIGACHAT_AUTH_KEY: ${GIGACHAT_AUTH_KEY:-}
+    volumes:
+      - ml_data:/app/data
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  mongo_data:
+  ml_data:
   frontend_node_modules:

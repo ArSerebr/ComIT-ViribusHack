@@ -10,3 +10,4 @@ from app.modules.news import models as _news_models  # noqa: F401
 from app.modules.notifications import models as _notifications_models  # noqa: F401
 from app.modules.profile import models as _profile_models  # noqa: F401
 from app.modules.projects import models as _projects_models  # noqa: F401
+from app.modules.hackathons import models as _hackathons_models  # noqa: F401

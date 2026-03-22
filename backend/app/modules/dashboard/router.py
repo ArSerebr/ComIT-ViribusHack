@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from app.modules.auth.deps import current_user_optional
 from app.modules.dashboard.deps import get_dashboard_service
 from app.modules.dashboard.service import DashboardService
+from app.modules.recommendations.deps import get_recommendations_service
+from app.modules.recommendations.service import RecommendationsService
 from fastapi import APIRouter, Depends, HTTPException
 from schemas import DashboardHome, ErrorDetail, RecommendationCard
 
@@ -12,9 +15,14 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 @router.get("/recommendations", response_model=list[RecommendationCard])
 async def get_dashboard_recommendations(
-    service: DashboardService = Depends(get_dashboard_service),
+    rec_service: RecommendationsService = Depends(get_recommendations_service),
+    user=Depends(current_user_optional),
 ):
-    return await service.list_recommendations()
+    """Personalized recommendations via ML for auth users, static fallback otherwise."""
+    return await rec_service.list_recommendations(
+        user_id=user.id if user else None,
+        limit=10,
+    )
 
 
 @router.get(

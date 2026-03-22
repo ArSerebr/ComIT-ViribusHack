@@ -10,6 +10,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, repoRoot, "");
   const apiProxyTarget =
     env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8000";
+  const qmsgProxyTarget =
+    env.VITE_QMSG_PROXY_TARGET || "http://127.0.0.1:8090";
 
   return {
     plugins: [react()],
@@ -19,6 +21,10 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "^/api": {
           target: apiProxyTarget,
+          changeOrigin: true,
+        },
+        "^/qmsg": {
+          target: qmsgProxyTarget,
           changeOrigin: true,
         },
       },

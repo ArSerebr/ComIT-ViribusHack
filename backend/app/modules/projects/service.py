@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import secrets
 from collections import defaultdict
 from typing import Any, Literal, cast
 
 from app.contracts.analytics import JoinRequestSink
+from app.modules.groupchat import public_api as groupchat_public_api
 from app.core.permissions import can_edit_content
 from app.core.slug import project_details_path, slugify_project_identifier
 from app.modules.auth.models import User
@@ -73,6 +75,7 @@ def _project_details_from_orm(
         title=project.title,
         ownerName=detail.owner_name,
         detailsUrl=project.details_url,
+        groupChatId=project.group_chat_id,
         joinLabel=detail.join_label,
         teamCaption=detail.team_caption,
         productivityCaption=detail.productivity_caption,
@@ -152,6 +155,15 @@ class ProjectsService:
         sort_order = await self._repo.max_sort_order_in_column(body.column_id) + 1
         vis = body.visibility
         details_url = project_details_path(canonical_id)
+        group_chat_id: str | None = None
+        try:
+            group_chat_id = await groupchat_public_api.create_group_for_project(
+                body.title, user.id
+            )
+        except Exception as e:
+            logging.getLogger(__name__).warning(
+                "Failed to create QmsgCore group for project %s: %s", canonical_id, e
+            )
         project = ProjectsProject(
             id=canonical_id,
             code=body.code,
@@ -166,6 +178,7 @@ class ProjectsService:
             column_id=body.column_id,
             sort_order=sort_order,
             owner_user_id=user.id,
+            group_chat_id=group_chat_id,
         )
         detail = ProjectsProjectDetail(
             project_id=canonical_id,
@@ -267,6 +280,13 @@ class ProjectsService:
             return "not_found"
         if not can_edit_content(user, project.owner_user_id):
             return "forbidden"
+        if project.group_chat_id and project.owner_user_id:
+            try:
+                await groupchat_public_api.delete_group(
+                    project.group_chat_id, project.owner_user_id
+                )
+            except Exception:
+                pass
         await self._repo.delete_project(project_id)
         await self._repo.commit()
         return "ok"

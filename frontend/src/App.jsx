@@ -23,6 +23,7 @@ import {
   patchProfileMe,
   postFeaturedParticipate,
   postLibraryInterests,
+  postRecommendationFeedback,
   postRecommendationLike,
   registerWithEmail
 } from "./api/publicApi";
@@ -44,12 +45,11 @@ import { ProjectCreatePage } from "./components/projects/ProjectCreatePage";
 import { ProjectHubPage } from "./components/projects/ProjectHubPage";
 import { RecommendationsPanel } from "./components/recommendations/RecommendationsPanel";
 import { ARTICLE_DETAILS_BY_SLUG, ARTICLE_SIDE_RECOMMENDATIONS, COURSE_DETAILS_BY_SLUG } from "./data/contentStudioData";
-import { INITIAL_CHAT, NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
+import { NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
 import {
   CHAT_PAGE_COMPOSER_PROMPTS,
   CHAT_PAGE_HERO_ACTIONS,
-  CHAT_PAGE_HISTORY_ITEMS,
-  CHAT_PAGE_STATUS_CARD
+  CHAT_PAGE_HISTORY_ITEMS
 } from "./data/chatPageData";
 import {
   createInitialLibraryInterestState,
@@ -61,7 +61,7 @@ import {
 import { NOTIFICATION_ITEMS } from "./data/notificationsData";
 import { FEATURED_NEWS_ITEMS, mapApiFeaturedNews, mapApiMiniNews, MINI_NEWS_ITEMS } from "./data/newsData";
 import { PROJECT_HUB_COLUMNS } from "./data/projectHubData";
-import { nextAssistantMessage } from "./utils/chatAssistant";
+import { usePulseChat } from "./hooks/usePulseChat";
 import {
   buildLibraryArticleCreateBody,
   buildTagIdLookupFromArticles,
@@ -436,7 +436,6 @@ function App() {
   const [currentPath, setCurrentPath] = useState(() => resolvePathFromHash(window.location.hash));
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
   const [aiMode, setAiMode] = useState(false);
-  const [isAiResponding, setIsAiResponding] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isDeckOpen, setIsDeckOpen] = useState(false);
   const [activeLibraryShowcaseIndex, setActiveLibraryShowcaseIndex] = useState(0);
@@ -445,7 +444,6 @@ function App() {
   const [likedNews, setLikedNews] = useState(createInitialNewsLikes);
   const [likedRecommendations, setLikedRecommendations] = useState({});
   const [chatInput, setChatInput] = useState("");
-  const [messages, setMessages] = useState(INITIAL_CHAT);
   const [deck, setDeck] = useState(mapRecommendationsWithInstanceId);
   const [dismissDirection, setDismissDirection] = useState(null);
   const [pageTransitionDirection, setPageTransitionDirection] = useState(0);
@@ -470,7 +468,6 @@ function App() {
   const [participatedFeaturedIds, setParticipatedFeaturedIds] = useState(() => new Set());
 
   const chatListRef = useRef(null);
-  const pendingAssistantRepliesRef = useRef(0);
   const routeStateRef = useRef({ tab: activeTab, path: currentPath });
   const libraryInterestsSyncedRef = useRef(false);
   const libraryProfileInterestsSyncedRef = useRef({ token: null, applied: false });
@@ -491,6 +488,19 @@ function App() {
   const sessionToken =
     authToken?.trim() ||
     (typeof window !== "undefined" ? window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)?.trim() || "" : "");
+
+  const shouldShowAiPopup = aiMode && !isAuthPage;
+  const pulseChatEnabled = (isChatPage || shouldShowAiPopup) && !!sessionToken;
+  const {
+    messages: pulseMessages,
+    isLoading: pulseLoading,
+    error: pulseError,
+    status: pulseStatus,
+    isPending: pulsePending,
+    sendMessage: pulseSendMessage,
+    executePendingTask: pulseExecute,
+    cancelPendingTask: pulseCancel,
+  } = usePulseChat({ sessionToken: sessionToken || "", enabled: pulseChatEnabled });
 
   const dashboardHomeQuery = useQuery({
     queryKey: ["dashboard", "home"],
@@ -570,7 +580,7 @@ function App() {
   const projectDetailsQuery = useQuery({
     queryKey: ["projects", "detail", currentProjectSlug],
     queryFn: () => fetchProjectById(currentProjectSlug),
-    enabled: Boolean(isProjectsPage && currentProjectSlug && !currentProjectDraft),
+    enabled: Boolean(isProjectsPage && currentProjectSlug),
     staleTime: 60_000,
   });
 
@@ -619,7 +629,7 @@ function App() {
       })),
     }));
 
-    if (!projectDrafts.length) {
+    if (sessionToken || !projectDrafts.length) {
       return mappedColumns;
     }
 
@@ -633,7 +643,7 @@ function App() {
           }
         : column,
     );
-  }, [hubColumnsRaw, projectDrafts]);
+  }, [hubColumnsRaw, projectDrafts, sessionToken]);
 
   const summaryHome =
     dashboardHomeQuery.isError && !STATIC_FALLBACK ? null : dashboardHomeQuery.data;
@@ -711,9 +721,8 @@ function App() {
   const canDismiss = !dismissDirection;
   const showProjectDetailRoute = Boolean(currentProjectSlug);
   const homeNewsItem = miniNewsItems[0];
-  const chatPageMessages = messages.some((message) => message.role === "user") ? messages.slice(1) : [];
+  const chatPageMessages = pulseMessages;
   const activeLibraryHero = libraryShowcaseItems[activeLibraryShowcaseIndex]?.hero || LIBRARY_HERO_RESOURCE;
-  const shouldShowAiPopup = aiMode && !isAuthPage;
   const articleDraftMap = useMemo(
     () =>
       articleDrafts.reduce((acc, draft) => {
@@ -888,16 +897,6 @@ function App() {
     navigateTo(path);
   };
 
-  const setAssistantPendingDelta = (delta) => {
-    pendingAssistantRepliesRef.current = Math.max(0, pendingAssistantRepliesRef.current + delta);
-    setIsAiResponding(pendingAssistantRepliesRef.current > 0);
-  };
-
-  const resetAssistantPendingState = () => {
-    pendingAssistantRepliesRef.current = 0;
-    setIsAiResponding(false);
-  };
-
   const sendLikeSignal = (entity, id) => {
     const body = { entity, id, ts: Date.now() };
     if (typeof fetch !== "function") {
@@ -914,11 +913,15 @@ function App() {
     void postRecommendationLike(body).catch(() => {});
   };
 
+  const sendRecommendationFeedback = (entityId, reaction) => {
+    if (!sessionToken) return;
+    const body = { entity_id: entityId, reaction, ts: Date.now() };
+    void postRecommendationFeedback(sessionToken, body).catch(() => {});
+  };
+
   const rotateDeck = () => {
     setDeck((prev) => {
-      if (prev.length < 2) {
-        return prev;
-      }
+      if (prev.length === 0) return prev;
       const [first, ...rest] = prev;
       return [...rest, { ...first, instanceId: `${first.id}-${Date.now()}` }];
     });
@@ -948,6 +951,7 @@ function App() {
     setLikedRecommendations((prev) => {
       const next = !prev[recommendationId];
       sendLikeSignal("recommendation", recommendationId);
+      sendRecommendationFeedback(recommendationId, "like");
       return { ...prev, [recommendationId]: next };
     });
   };
@@ -961,6 +965,7 @@ function App() {
   };
 
   const shareRecommendation = async (recommendation) => {
+    sendRecommendationFeedback(recommendation.id, "share");
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
     try {
@@ -977,6 +982,11 @@ function App() {
     } catch {
       window.prompt("Скопируйте ссылку:", recommendation.link);
     }
+  };
+
+  const openRecommendation = (recommendation) => {
+    sendRecommendationFeedback(recommendation.id, "open");
+    window.open(recommendation.link, "_blank", "noopener,noreferrer");
   };
 
   const openNewsList = () => {
@@ -1122,7 +1132,6 @@ function App() {
   const closeAiExperience = (navigateHome = false) => {
     setAiMode(false);
     setAiAssistantEnabled(false);
-    resetAssistantPendingState();
 
     if (navigateHome && activeTab === "chat") {
       openPath("/");
@@ -1334,42 +1343,18 @@ function App() {
 
   const sendMessage = (rawText) => {
     const text = rawText.trim();
-    if (!text) {
-      return;
-    }
-
-    const userMessage = {
-      id: `u-${Date.now()}`,
-      role: "user",
-      content: text
-    };
-
+    if (!text) return;
     setAiAssistantEnabled(true);
     setAiMode(true);
-    setMessages((prev) => [...prev, userMessage]);
     setChatInput("");
-    setAssistantPendingDelta(1);
-
-    const reply = nextAssistantMessage(text);
-    window.setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `a-${Date.now()}`,
-          role: "assistant",
-          content: reply.content,
-          actions: reply.actions
-        }
-      ]);
-      setAssistantPendingDelta(-1);
-    }, 260);
+    pulseSendMessage(text);
   };
 
   useEffect(() => {
     if (chatListRef.current) {
       chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [pulseMessages]);
 
   useEffect(() => {
     const syncTabWithHash = () => {
@@ -1534,11 +1519,12 @@ function App() {
       onOpenAuth={() => openAuthPage("login")}
     />
   ) : isProjectsPage && showProjectDetailRoute ? (
-    currentProjectDraft ? (
+    currentProjectDraft && !sessionToken ? (
       <ProjectDetailsPage
         project={mapProjectDraftToDetails(currentProjectDraft)}
         onBack={openProjectsHub}
         onJoinProject={joinProject}
+        sessionToken={null}
       />
     ) : projectDetailsQuery.isLoading ? (
       <section className="project-details-page">
@@ -1563,6 +1549,7 @@ function App() {
         project={projectDetailsQuery.data}
         onBack={openProjectsHub}
         onJoinProject={joinProject}
+        sessionToken={sessionToken}
       />
     )
   ) : isProjectsPage ? (
@@ -1599,14 +1586,29 @@ function App() {
       historyItems={CHAT_PAGE_HISTORY_ITEMS}
       composerPrompts={CHAT_PAGE_COMPOSER_PROMPTS}
       heroActions={CHAT_PAGE_HERO_ACTIONS}
-      statusCard={CHAT_PAGE_STATUS_CARD}
+      statusCard={
+        pulseStatus
+          ? {
+              title: pulseStatus.model ?? "AI",
+              version: "",
+              etaLabel: pulseStatus.status ?? "",
+              progress: pulseStatus.progress ?? 0
+            }
+          : { title: "ComIT AI", version: "", etaLabel: "Ожидание", progress: 0 }
+      }
       messages={chatPageMessages}
+      isPending={pulsePending}
       chatInput={chatInput}
       chatListRef={chatListRef}
+      isLoading={pulseLoading}
+      error={pulseError}
+      needsAuth={!sessionToken}
       onClose={handleCloseAiPage}
       onSendMessage={sendMessage}
       onChangeChatInput={setChatInput}
       onSubmit={handleChatSubmit}
+      onExecutePendingTask={pulseExecute}
+      onCancelPendingTask={pulseCancel}
     />
   ) : (
     <section className="left-content">
@@ -1710,6 +1712,7 @@ function App() {
               onTopCardExitComplete={handleTopCardExitComplete}
               likedRecommendations={likedRecommendations}
               onToggleRecommendationLike={toggleRecommendationLike}
+              onOpenRecommendation={openRecommendation}
               onShareRecommendation={shareRecommendation}
               isLoading={recommendationsDeckLoading}
             />
@@ -1720,15 +1723,18 @@ function App() {
           {shouldShowAiPopup && !shouldHideTopBar ? (
             <AiChatPanel
               isVisible={shouldShowAiPopup}
-              isAgentActive={isAiResponding}
+              isAgentActive={pulsePending}
               quickPrompts={QUICK_PROMPTS}
-              messages={messages}
+              messages={pulseMessages}
               chatInput={chatInput}
               chatListRef={chatListRef}
+              needsAuth={!sessionToken}
               onClose={handleCloseAiOverlay}
               onSendMessage={sendMessage}
               onChangeChatInput={setChatInput}
               onSubmit={handleChatSubmit}
+              onExecutePendingTask={pulseExecute}
+              onCancelPendingTask={pulseCancel}
             />
           ) : null}
         </AnimatePresence>

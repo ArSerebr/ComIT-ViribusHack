@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
 
 from app.modules.profile.models import ProfileUniversity, UserProfile, UserProfileInterest
 from sqlalchemy import delete, func, select
@@ -10,6 +11,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class ProfileRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def get_display_names_by_user_ids(
+        self, user_ids: Sequence[uuid.UUID]
+    ) -> dict[uuid.UUID, str | None]:
+        """Return user_id -> display_name for given user IDs."""
+        if not user_ids:
+            return {}
+        stmt = select(UserProfile.user_id, UserProfile.display_name).where(
+            UserProfile.user_id.in_(user_ids)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return {r[0]: r[1] for r in rows}
 
     async def get_profile(self, user_id: uuid.UUID) -> UserProfile | None:
         stmt = select(UserProfile).where(UserProfile.user_id == user_id)

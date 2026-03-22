@@ -28,6 +28,15 @@ class Settings(BaseSettings):
     # Redis (сессии Bearer через RedisStrategy в fastapi-users; в Docker — хост `redis`).
     redis_url: str = "redis://localhost:6379/0"
 
+    # QmsgCore (групповой чат); в Docker — http://qmsg-core:8090, локально — http://localhost:8090.
+    qmsg_core_base_url: str = "http://localhost:8090"
+
+    # PulseCore (AI-чат); в Docker — http://pulse-core:8091, локально — http://localhost:8091.
+    pulse_core_base_url: str = "http://localhost:8091"
+
+    # ML Service (рекомендации); в Docker — http://ml:9000, локально — http://localhost:9000.
+    ml_service_url: str = "http://localhost:9000"
+
     # JWT и токены сброса/верификации пароля (fastapi-users).
     jwt_secret: str = Field(
         ...,

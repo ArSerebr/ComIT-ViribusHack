@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { assets } from "../../assets";
+import { ProjectChatPanel } from "./ProjectChatPanel";
 
 function DetailCard({ children, className = "", delay = 0 }) {
   return (
@@ -51,7 +52,7 @@ function IntegrationBrand({ brand }) {
   );
 }
 
-export function ProjectDetailsPage({ project, onBack, onJoinProject }) {
+export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToken }) {
   return (
     <section className="project-details-page">
       <div className="project-details-head">
@@ -249,6 +250,8 @@ export function ProjectDetailsPage({ project, onBack, onJoinProject }) {
           ))}
         </div>
       </motion.section>
+
+      <ProjectChatPanel project={project} sessionToken={sessionToken} />
     </section>
   );
 }

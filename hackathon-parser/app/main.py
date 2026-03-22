@@ -1,4 +1,4 @@
-"""Hackathon Parser Service — FastAPI + APScheduler."""
+"""Content Parser — хакатоны + IT-новости (RSS). FastAPI + APScheduler."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from fastapi import FastAPI
 
 from app.api.routes import router
 from app.config import get_settings
+from app.news.runner import run_news_task
 from app.services.runner import run_parse_task
 
 logging.basicConfig(
@@ -18,9 +19,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Hackathon Parser",
-    version="1.0.0",
-    description="Сервис парсинга хакатонов с hacklist.ru, cups.online и др.",
+    title="ComIT Content Parser",
+    version="1.1.0",
+    description="Хакатоны (hacklist, cups, Networkly) и IT-новости (RSS: Хабр, VC.ru, iXBT).",
 )
 app.include_router(router)
 
@@ -38,11 +39,17 @@ scheduler = AsyncIOScheduler()
 async def startup() -> None:
     settings = get_settings()
     interval_hours = settings.parse_interval_hours
+    news_hours = settings.news_parse_interval_hours
     scheduler.add_job(run_parse_task, "interval", hours=interval_hours, id="parse_hackathons")
+    scheduler.add_job(run_news_task, "interval", hours=news_hours, id="parse_it_news")
     scheduler.start()
-    logger.info("Scheduler started, parse every %d hour(s)", interval_hours)
-    # Запуск при старте
+    logger.info(
+        "Scheduler: hackathons every %d h, IT news every %d h",
+        interval_hours,
+        news_hours,
+    )
     await run_parse_task()
+    await run_news_task()
 
 
 @app.on_event("shutdown")

@@ -3,6 +3,7 @@
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
 
+from app.news.runner import run_news_task
 from app.services.runner import run_parse_task
 
 router = APIRouter(prefix="/api", tags=["parser"])
@@ -25,9 +26,19 @@ async def health() -> HealthResponse:
 
 @router.post("/parse/trigger", response_model=TriggerResponse)
 async def trigger_parse(background_tasks: BackgroundTasks) -> TriggerResponse:
-    """Запустить парсинг в фоне."""
+    """Запустить парсинг хакатонов в фоне."""
     background_tasks.add_task(run_parse_task)
     return TriggerResponse(
         status="started",
-        message="Парсинг запущен в фоновом режиме",
+        message="Парсинг хакатонов запущен в фоне",
+    )
+
+
+@router.post("/parse/trigger-news", response_model=TriggerResponse)
+async def trigger_news(background_tasks: BackgroundTasks) -> TriggerResponse:
+    """Запустить сбор IT-новостей (RSS) в фоне."""
+    background_tasks.add_task(run_news_task)
+    return TriggerResponse(
+        status="started",
+        message="Сбор IT-новостей запущен в фоне",
     )

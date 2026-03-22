@@ -10,7 +10,15 @@ function splitTags(rawTags) {
     .slice(0, 8);
 }
 
-export function ArticleCreatePage({ onBack, onSubmitArticle, isSubmitting = false, drafts = [], onOpenDraft }) {
+export function ArticleCreatePage({
+  onBack,
+  onSubmitArticle,
+  isSubmitting = false,
+  drafts = [],
+  onOpenDraft,
+  isAuthenticated = false,
+  onOpenAuth
+}) {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [tagsInput, setTagsInput] = useState("");
@@ -37,16 +45,32 @@ export function ArticleCreatePage({ onBack, onSubmitArticle, isSubmitting = fals
       return;
     }
 
-    const created = await onSubmitArticle({
+    const result = await onSubmitArticle({
       title: normalizedTitle,
       summary: normalizedSummary,
       content: normalizedContent,
       tags: parsedTags
     });
 
-    if (created) {
-      setStatusMessage("Черновик статьи сохранен.");
+    if (result && typeof result === "object" && "savedToServer" in result) {
+      if (result.savedToServer) {
+        setStatusMessage("Статья сохранена на сервере и появится в библиотеке.");
+      } else if (result.errorMessage) {
+        setStatusMessage(
+          `Сервер не принял статью: ${result.errorMessage}. Копия осталась в локальных черновиках.`
+        );
+      } else {
+        setStatusMessage(
+          "Сохранено только локально. Войдите в аккаунт — тогда материал отправится в общую библиотеку при сохранении."
+        );
+      }
       clearForm();
+      return;
+    }
+
+    if (result) {
+      clearForm();
+      setStatusMessage("Черновик сохранён.");
       return;
     }
 
@@ -62,6 +86,15 @@ export function ArticleCreatePage({ onBack, onSubmitArticle, isSubmitting = fals
         <div>
           <h1>Создание статьи</h1>
           <p>Соберите структуру материала, теги и описание для публикации в библиотеке.</p>
+          {!isAuthenticated ? (
+            <p className="project-create-auth-hint">
+              Чтобы статья сохранилась в общей базе,{" "}
+              <button type="button" className="project-create-auth-link" onClick={onOpenAuth}>
+                войдите в аккаунт
+              </button>
+              .
+            </p>
+          ) : null}
         </div>
       </div>
 

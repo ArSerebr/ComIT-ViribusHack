@@ -2,7 +2,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { assets } from "../../assets";
 
-export function ProjectCreatePage({ onBack, onSubmitProject, isSubmitting = false, drafts = [], onOpenDraft }) {
+export function ProjectCreatePage({
+  onBack,
+  onSubmitProject,
+  isSubmitting = false,
+  drafts = [],
+  onOpenDraft,
+  isAuthenticated = false,
+  onOpenAuth
+}) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -20,19 +28,38 @@ export function ProjectCreatePage({ onBack, onSubmitProject, isSubmitting = fals
       return;
     }
 
-    const created = await onSubmitProject({
+    const result = await onSubmitProject({
       title: normalizedTitle,
       description: normalizedDescription,
       teamName: normalizedTeam,
       visibility
     });
 
-    if (created) {
-      setStatusMessage("Проект сохранен в локальные черновики.");
+    if (result && typeof result === "object" && "savedToServer" in result) {
+      if (result.savedToServer) {
+        setStatusMessage("Проект сохранён на сервере — он в хабе и в панели администратора.");
+      } else if (result.errorMessage) {
+        setStatusMessage(
+          `Сервер не принял проект: ${result.errorMessage}. Копия осталась в локальных черновиках.`
+        );
+      } else {
+        setStatusMessage(
+          "Сохранено только локально. Войдите в аккаунт — тогда проект отправится в общую базу при создании."
+        );
+      }
       setTitle("");
       setDescription("");
       setTeamName("");
       setVisibility("private");
+      return;
+    }
+
+    if (result) {
+      setTitle("");
+      setDescription("");
+      setTeamName("");
+      setVisibility("private");
+      setStatusMessage("Черновик сохранён.");
       return;
     }
 
@@ -48,6 +75,15 @@ export function ProjectCreatePage({ onBack, onSubmitProject, isSubmitting = fals
         <div>
           <h1>Создание проекта</h1>
           <p>Оформите карточку проекта, чтобы команда могла подключиться и начать работу.</p>
+          {!isAuthenticated ? (
+            <p className="project-create-auth-hint">
+              Чтобы проект сохранился в общей базе (и отображался в админке),{" "}
+              <button type="button" className="project-create-auth-link" onClick={onOpenAuth}>
+                войдите в аккаунт
+              </button>
+              .
+            </p>
+          ) : null}
         </div>
       </div>
 

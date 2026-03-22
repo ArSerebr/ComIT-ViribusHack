@@ -1,7 +1,40 @@
-﻿import { apiClient, resolveApiUrl } from "./client";
+import { apiClient, resolveApiUrl } from "./client";
 
 function authHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/** Сообщение из тела ошибки openapi-fetch / FastAPI (detail строка или массив). */
+export function formatOpenApiError(error) {
+  if (error == null || error === false) {
+    return "Неизвестная ошибка";
+  }
+  if (typeof error === "string") {
+    return error;
+  }
+  if (typeof error === "object" && error !== null) {
+    const d = error.detail;
+    if (typeof d === "string" && d.trim()) {
+      return d.trim();
+    }
+    if (Array.isArray(d) && d.length > 0) {
+      const first = d[0];
+      if (typeof first === "string") {
+        return first;
+      }
+      if (first && typeof first.msg === "string") {
+        return first.msg;
+      }
+    }
+    if (typeof error.message === "string" && error.message.trim()) {
+      return error.message.trim();
+    }
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
 }
 
 async function extractErrorMessage(response, fallbackMessage) {
@@ -38,10 +71,22 @@ export async function fetchNewsMini() {
   return data ?? [];
 }
 
-export async function fetchNewsFeatured() {
-  const { data, error } = await apiClient.GET("/api/news/featured");
+/** GET `/api/news/featured`. Если передан token, добавит Authorization для получения participated. */
+export async function fetchNewsFeatured(token) {
+  const { data, error } = await apiClient.GET("/api/news/featured", {
+    headers: authHeaders(token)
+  });
   if (error) throw error;
   return data ?? [];
+}
+
+/** POST `/api/news/featured/{news_id}/participate` — участие в мероприятии (требуется JWT). */
+export async function postFeaturedParticipate(token, newsId) {
+  const { error } = await apiClient.POST("/api/news/featured/{news_id}/participate", {
+    params: { path: { news_id: newsId } },
+    headers: authHeaders(token)
+  });
+  if (error) throw error;
 }
 
 export async function fetchNotifications() {
@@ -56,6 +101,16 @@ export async function fetchLibraryBundle() {
   return data;
 }
 
+/** Создание статьи в БД (требуется JWT). Ответ — `LibraryArticle`. */
+export async function createLibraryArticle(token, body) {
+  const { data, error } = await apiClient.POST("/api/library/articles", {
+    headers: authHeaders(token),
+    body
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function fetchProjectsHub() {
   const { data, error } = await apiClient.GET("/api/projects/hub");
   if (error) throw error;
@@ -65,6 +120,16 @@ export async function fetchProjectsHub() {
 export async function fetchProjectById(projectId) {
   const { data, error } = await apiClient.GET("/api/projects/{project_id}", {
     params: { path: { project_id: projectId } },
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Создание проекта в БД (требуется JWT). Ответ — `ProjectDetails` с каноническим `id`. */
+export async function createProject(token, body) {
+  const { data, error } = await apiClient.POST("/api/projects", {
+    headers: authHeaders(token),
+    body
   });
   if (error) throw error;
   return data;
@@ -132,6 +197,34 @@ export async function patchCurrentUserProfile(token, body) {
   });
   if (error) throw error;
   return data;
+}
+
+/** Profile (interests, bio): GET `/api/profile/me` (OpenAPI `ProfileMe`). */
+export async function fetchProfileMe(token) {
+  const { data, error } = await apiClient.GET("/api/profile/me", {
+    headers: authHeaders(token)
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** PATCH `/api/profile/me` (`ProfileMePatch`, e.g. `interestIds`). */
+export async function patchProfileMe(token, body) {
+  const { data, error } = await apiClient.PATCH("/api/profile/me", {
+    headers: authHeaders(token),
+    body
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** GET `/api/profile/universities` — список университетов для выбора в профиле. */
+export async function fetchUniversities(token) {
+  const { data, error } = await apiClient.GET("/api/profile/universities", {
+    headers: authHeaders(token)
+  });
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function logoutCurrentUser(token) {

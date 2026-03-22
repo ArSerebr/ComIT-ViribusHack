@@ -1,10 +1,20 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
+from datetime import datetime
 
 from app.contracts.analytics import JoinRequestSink
 from app.modules.analytics.repository import AnalyticsRepository
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def get_join_requests_by_applicant_ids(
+    session: AsyncSession, applicant_ids: Sequence[uuid.UUID]
+) -> list[tuple[int, str, uuid.UUID | None, datetime]]:
+    """Return (id, project_id, applicant_user_id, created_at) for given applicants."""
+    repo = AnalyticsRepository(session)
+    return await repo.get_join_requests_by_applicant_ids(applicant_ids)
 
 
 class _JoinRequestSink:

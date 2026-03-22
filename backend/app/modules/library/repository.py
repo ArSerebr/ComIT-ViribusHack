@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import uuid
 from collections.abc import Sequence
 
 from app.modules.library.models import (
     LibraryArticle,
     LibraryArticleTag,
     LibraryInterestOption,
+    LibraryInterestTag,
     LibraryShowcaseItem,
     LibraryTag,
 )
@@ -65,12 +67,33 @@ class LibraryRepository:
         )
         return list((await self._session.execute(stmt)).scalars().all())
 
+    async def list_interest_ids_for_articles(self, article_ids: Sequence[str]) -> dict[str, list[str]]:
+        """Interest option ids per article, derived from article tags and ``library_interest_tag``."""
+        if not article_ids:
+            return {}
+        stmt = (
+            select(LibraryArticleTag.article_id, LibraryInterestTag.interest_id)
+            .join(LibraryInterestTag, LibraryInterestTag.tag_id == LibraryArticleTag.tag_id)
+            .where(LibraryArticleTag.article_id.in_(article_ids))
+        )
+        rows = (await self._session.execute(stmt)).all()
+        by_article: dict[str, set[str]] = {}
+        for aid, iid in rows:
+            by_article.setdefault(str(aid), set()).add(str(iid))
+        return {aid: sorted(ids) for aid, ids in by_article.items()}
+
     async def get_article(self, article_id: str) -> LibraryArticle | None:
         stmt = select(LibraryArticle).where(LibraryArticle.id == article_id)
         return (await self._session.execute(stmt)).scalar_one_or_none()
 
     async def add_article(self, row: LibraryArticle) -> None:
         self._session.add(row)
+
+    async def flush(self) -> None:
+        await self._session.flush()
+
+    async def commit(self) -> None:
+        await self._session.commit()
 
     async def delete_article(self, article_id: str) -> bool:
         res = await self._session.execute(
@@ -147,3 +170,22 @@ class LibraryRepository:
             select(LibraryArticleTag.article_id).where(LibraryArticleTag.tag_id == tag_id).limit(1)
         )
         return (await self._session.execute(stmt)).first() is not None
+
+    async def get_articles_by_owner_ids(
+        self, owner_ids: Sequence[uuid.UUID]
+    ) -> list[tuple[str, str, str, uuid.UUID | None]]:
+        """Return (id, title, author_name, owner_user_id) for articles owned by given users."""
+        if not owner_ids:
+            return []
+        stmt = (
+            select(
+                LibraryArticle.id,
+                LibraryArticle.title,
+                LibraryArticle.author_name,
+                LibraryArticle.owner_user_id,
+            )
+            .where(LibraryArticle.owner_user_id.in_(owner_ids))
+            .order_by(LibraryArticle.owner_user_id, LibraryArticle.id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r[0], r[1], r[2], r[3]) for r in rows]

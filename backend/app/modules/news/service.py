@@ -24,7 +24,10 @@ def _mini_to_schema(row: NewsMini) -> NewsMiniItem:
     )
 
 
-def _featured_to_schema(row: NewsFeatured) -> FeaturedNewsItem:
+def _featured_to_schema(
+    row: NewsFeatured,
+    participated: bool | None = None,
+) -> FeaturedNewsItem:
     return FeaturedNewsItem(
         id=row.id,
         title=row.title,
@@ -33,6 +36,7 @@ def _featured_to_schema(row: NewsFeatured) -> FeaturedNewsItem:
         imageUrl=row.image_url,
         ctaLabel=row.cta_label,
         detailsUrl=row.details_url,
+        participated=participated,
     )
 
 
@@ -44,8 +48,14 @@ class NewsService:
         rows = await self._repo.list_mini_ordered()
         return [_mini_to_schema(r) for r in rows]
 
-    async def list_featured(self) -> list[FeaturedNewsItem]:
+    async def list_featured(self, user: User | None = None) -> list[FeaturedNewsItem]:
         rows = await self._repo.list_featured_ordered()
+        if user is not None:
+            participant_ids = frozenset(await self._repo.get_participant_ids(user.id))
+            return [
+                _featured_to_schema(r, participated=r.id in participant_ids)
+                for r in rows
+            ]
         return [_featured_to_schema(r) for r in rows]
 
     async def create_news_mini(
@@ -65,6 +75,7 @@ class NewsService:
             author_user_id=user.id,
         )
         await self._repo.add_mini(row)
+        await self._repo.commit()
         return ("ok", _mini_to_schema(row))
 
     async def update_news_mini(
@@ -84,6 +95,7 @@ class NewsService:
             row.image_url = body.image_url
         if body.details_url is not None:
             row.details_url = body.details_url
+        await self._repo.commit()
         return ("ok", _mini_to_schema(row))
 
     async def delete_news_mini(
@@ -97,6 +109,7 @@ class NewsService:
         if not can_edit_content(user, row.author_user_id):
             return "forbidden"
         await self._repo.delete_mini(news_id)
+        await self._repo.commit()
         return "ok"
 
     async def create_news_featured(
@@ -121,6 +134,7 @@ class NewsService:
             author_user_id=user.id,
         )
         await self._repo.add_featured(row)
+        await self._repo.commit()
         return ("ok", _featured_to_schema(row))
 
     async def update_news_featured(
@@ -146,6 +160,7 @@ class NewsService:
             row.cta_label = body.cta_label
         if body.details_url is not None:
             row.details_url = body.details_url
+        await self._repo.commit()
         return ("ok", _featured_to_schema(row))
 
     async def delete_news_featured(
@@ -159,4 +174,17 @@ class NewsService:
         if row is None:
             return "not_found"
         await self._repo.delete_featured(news_id)
+        await self._repo.commit()
         return "ok"
+
+    async def participate_featured(
+        self,
+        user: User,
+        news_id: str,
+    ) -> tuple[Literal["ok", "not_found", "forbidden"], None]:
+        row = await self._repo.get_featured(news_id)
+        if row is None:
+            return ("not_found", None)
+        await self._repo.add_participant(user.id, news_id)
+        await self._repo.commit()
+        return ("ok", None)

@@ -81,3 +81,21 @@ class LibraryArticleTag(Base):
         nullable=False,
         server_default=text("0"),
     )
+
+
+class LibraryInterestTag(Base):
+    """Maps catalog interests to tags; article interestIds are derived via article tags."""
+
+    __tablename__ = "library_interest_tag"
+    __table_args__ = (Index("ix_library_interest_tag_tag_id", "tag_id"),)
+
+    interest_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("library_interest_option.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    tag_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("library_tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    )

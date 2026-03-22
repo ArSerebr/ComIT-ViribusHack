@@ -79,7 +79,8 @@ export const LIBRARY_ARTICLE_ITEMS = [
     description:
       "По ходу статьи эксперты рассказывают про типичные инженерные вещи — тестирование, прикладную бизнес-логику и интеграцию компонентов.",
     authorName: "PythonGo PRO",
-    authorAvatarUrl: assets.avatarPhoto
+    authorAvatarUrl: assets.avatarPhoto,
+    interestIds: ["backend"]
   },
   {
     id: "catboost-xgboost-trees",
@@ -91,7 +92,8 @@ export const LIBRARY_ARTICLE_ITEMS = [
     description:
       "Данный обзор охватывает сразу несколько тем. Мы начнём с устройства решающего дерева и градиентного бустинга, затем подробно поговорим об XGBoost и CatBoost.",
     authorName: "Top MLman",
-    authorAvatarUrl: assets.avatarPhoto
+    authorAvatarUrl: assets.avatarPhoto,
+    interestIds: ["backend", "ml-engineering"]
   },
   {
     id: "neural-generation-comparison",
@@ -104,6 +106,7 @@ export const LIBRARY_ARTICLE_ITEMS = [
     description:
       "По ходу статьи эксперты рассказывают про типичные инженерные вещи — тестирование, прикладную бизнес-логику и интеграцию компонентов.",
     authorName: "MaxabouAI",
-    authorAvatarUrl: assets.avatarPhoto
+    authorAvatarUrl: assets.avatarPhoto,
+    interestIds: ["backend", "ml-engineering"]
   }
 ];

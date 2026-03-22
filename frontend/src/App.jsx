@@ -1,4 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiClient, resolveApiUrl } from "./api/client";
@@ -10,11 +10,18 @@ import {
   fetchNewsFeatured,
   fetchNewsMini,
   fetchNotifications,
+  createLibraryArticle,
+  createProject,
+  fetchUniversities,
+  formatOpenApiError,
+  fetchProfileMe,
   fetchProjectById,
   fetchProjectsHub,
   loginWithPassword,
   logoutCurrentUser,
   patchCurrentUserProfile,
+  patchProfileMe,
+  postFeaturedParticipate,
   postLibraryInterests,
   postRecommendationLike,
   registerWithEmail
@@ -55,6 +62,13 @@ import { NOTIFICATION_ITEMS } from "./data/notificationsData";
 import { FEATURED_NEWS_ITEMS, mapApiFeaturedNews, mapApiMiniNews, MINI_NEWS_ITEMS } from "./data/newsData";
 import { PROJECT_HUB_COLUMNS } from "./data/projectHubData";
 import { nextAssistantMessage } from "./utils/chatAssistant";
+import {
+  buildLibraryArticleCreateBody,
+  buildTagIdLookupFromArticles,
+  mapApiLibraryArticleToReaderArticle,
+  resolveTagIdsFromUserTags
+} from "./utils/libraryArticle";
+import { createSlug } from "./utils/slug";
 
 /** When not `"false"`, failed API requests fall back to `src/data/*` demo content (hackathon default). */
 const STATIC_FALLBACK = import.meta.env.VITE_API_STATIC_FALLBACK !== "false";
@@ -199,16 +213,6 @@ const ARTICLE_DRAFTS_STORAGE_KEY = "comit.article.drafts";
 const PROJECT_DRAFTS_STORAGE_KEY = "comit.project.drafts";
 const ARTICLE_TAG_TONES = ["green", "cyan", "coral", "yellow", "pink", "blue"];
 
-function createSlug(value) {
-  return value
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]/gu, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 48);
-}
-
 function readFromLocalStorage(storageKey, fallbackValue) {
   if (typeof window === "undefined") {
     return fallbackValue;
@@ -282,14 +286,14 @@ function createArticleDraftRecord(payload) {
     summary: payload.summary,
     content: payload.content,
     tags: payload.tags || [],
-    updatedLabel: "РўРѕР»СЊРєРѕ С‡С‚Рѕ",
+    updatedLabel: "Только что",
     viewsLabel: "0",
     paragraphs: payload.content
       .split(/\n{2,}/)
       .map((paragraph) => paragraph.trim())
       .filter(Boolean)
       .slice(0, 4),
-    points: points.length ? points : ["РњР°С‚РµСЂРёР°Р» СЃРѕС…СЂР°РЅРµРЅ РєР°Рє С‡РµСЂРЅРѕРІРёРє Рё РіРѕС‚РѕРІ Рє РґРѕСЂР°Р±РѕС‚РєРµ."],
+    points: points.length ? points : ["Материал сохранён как черновик и готов к доработке."],
     heroImageUrl: assets.posterTechConf,
     relatedCourseSlug: "machine-learning-from-zero"
   };
@@ -307,7 +311,7 @@ function mapArticleDraftToLibraryItem(draft) {
     tags,
     title: draft.title,
     description: draft.summary,
-    authorName: "Р’С‹",
+    authorName: "Вы",
     authorAvatarUrl: assets.avatarPhoto,
     detailsUrl: `${NAV_LINKS.articles}/${draft.slug}`
   };
@@ -323,7 +327,7 @@ function createProjectDraftRecord(payload) {
     description: payload.description,
     teamName: payload.teamName,
     visibility: payload.visibility,
-    updatedLabel: "РўРѕР»СЊРєРѕ С‡С‚Рѕ",
+    updatedLabel: "Только что",
     detailsUrl: `${NAV_LINKS.projects}/${id}`
   };
 }
@@ -343,6 +347,36 @@ function mapProjectDraftToHubProject(draft) {
   };
 }
 
+/** Тело `POST /api/projects` из черновика (колонка «идея» по умолчанию). */
+function buildProjectCreateApiBody(draft) {
+  const details = mapProjectDraftToDetails(draft);
+  return {
+    id: draft.id,
+    columnId: "idea",
+    code: draft.code,
+    title: draft.title,
+    description: draft.description,
+    teamName: draft.teamName,
+    updatedLabel: draft.updatedLabel,
+    teamAvatarUrl: draft.teamAvatarUrl ?? assets.avatarPhoto,
+    detailsUrl: draft.detailsUrl,
+    visibility: draft.visibility === "public" ? "public" : "private",
+    ownerName: draft.teamName,
+    joinLabel: details.joinLabel,
+    teamCaption: details.teamCaption,
+    productivityCaption: details.productivityCaption,
+    progressCaption: details.progressCaption,
+    todoCaption: details.todoCaption,
+    integrationCaption: details.integrationCaption,
+    teamMembersPreview: details.teamMembersPreview,
+    productivity: details.productivity,
+    progress: details.progress,
+    todo: details.todo,
+    integrations: details.integrations,
+    participants: details.participants
+  };
+}
+
 function mapProjectDraftToDetails(draft) {
   return {
     id: draft.id,
@@ -350,34 +384,34 @@ function mapProjectDraftToDetails(draft) {
     title: draft.title,
     ownerName: draft.teamName,
     detailsUrl: draft.detailsUrl,
-    joinLabel: "РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊСЃСЏ РІ РєРѕРјР°РЅРґСѓ",
-    teamCaption: "РЈС‡Р°СЃС‚РЅРёРєРё С‡РµСЂРЅРѕРІРёРєР° РїСЂРѕРµРєС‚Р°",
-    productivityCaption: "РњРµС‚СЂРёРєРё Р±СѓРґСѓС‚ РґРѕСЃС‚СѓРїРЅС‹ РїРѕСЃР»Рµ РїСѓР±Р»РёРєР°С†РёРё",
-    progressCaption: "РћС†РµРЅРєР° РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРѕ С‚РµРєСѓС‰РµР№ РІРµСЂСЃРёРё",
-    todoCaption: "Р§С‚Рѕ РЅСѓР¶РЅРѕ СЃРґРµР»Р°С‚СЊ РґР»СЏ РїРµСЂРІРѕРіРѕ СЂРµР»РёР·Р°",
-    integrationCaption: "РџРѕРґРєР»СЋС‡РёС‚Рµ СЃРµСЂРІРёСЃС‹ РїРѕСЃР»Рµ РїСѓР±Р»РёРєР°С†РёРё РїСЂРѕРµРєС‚Р°",
+    joinLabel: "Присоединиться в команду",
+    teamCaption: "Участники черновика проекта",
+    productivityCaption: "Метрики будут доступны после публикации",
+    progressCaption: "Оценка готовности по текущей версии",
+    todoCaption: "Что нужно сделать для первого релиза",
+    integrationCaption: "Подключите сервисы после публикации проекта",
     teamMembersPreview: [
       { id: `${draft.id}-member-1`, name: draft.teamName, avatarUrl: assets.avatarPhoto, avatarVariant: "default" },
-      { id: `${draft.id}-member-2`, name: "РќРѕРІС‹Р№ СѓС‡Р°СЃС‚РЅРёРє", avatarUrl: assets.avatarPhoto, avatarVariant: "warm" },
-      { id: `${draft.id}-member-3`, name: "РќРѕРІС‹Р№ СѓС‡Р°СЃС‚РЅРёРє", avatarUrl: assets.avatarPhoto, avatarVariant: "cool" }
+      { id: `${draft.id}-member-2`, name: "Новый участник", avatarUrl: assets.avatarPhoto, avatarVariant: "warm" },
+      { id: `${draft.id}-member-3`, name: "Новый участник", avatarUrl: assets.avatarPhoto, avatarVariant: "cool" }
     ],
-    productivity: { value: "0%", delta: "Р”Р°РЅРЅС‹Рµ РїРѕСЏРІСЏС‚СЃСЏ РїРѕСЃР»Рµ Р·Р°РїСѓСЃРєР°" },
+    productivity: { value: "0%", delta: "Данные появятся после запуска" },
     progress: { value: "10%", percent: 10 },
-    todo: { task: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ roadmap Рё СЂР°СЃРїСЂРµРґРµР»РёС‚СЊ СЂРѕР»Рё РІ РєРѕРјР°РЅРґРµ", updatedLabel: "РўРѕР»СЊРєРѕ С‡С‚Рѕ" },
+    todo: { task: "Подготовить roadmap и распределить роли в команде", updatedLabel: "Только что" },
     integrations: [
       {
         id: `${draft.id}-github`,
         brand: "github",
-        description: "Р РµРїРѕР·РёС‚РѕСЂРёР№ РґР»СЏ РёСЃС…РѕРґРЅРѕРіРѕ РєРѕРґР°",
-        statusLabel: "РќРµ РїРѕРґРєР»СЋС‡РµРЅРѕ",
-        connectedSince: "РћР¶РёРґР°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё"
+        description: "Репозиторий для исходного кода",
+        statusLabel: "Не подключено",
+        connectedSince: "Ожидает настройки"
       },
       {
         id: `${draft.id}-hosting`,
         brand: "timeweb",
-        description: "РҐРѕСЃС‚РёРЅРі Рё РґРѕРјРµРЅРЅР°СЏ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ",
-        statusLabel: "РќРµ РїРѕРґРєР»СЋС‡РµРЅРѕ",
-        connectedSince: "РћР¶РёРґР°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё"
+        description: "Хостинг и доменная конфигурация",
+        statusLabel: "Не подключено",
+        connectedSince: "Ожидает настройки"
       }
     ],
     participants: [
@@ -387,16 +421,17 @@ function mapProjectDraftToDetails(draft) {
         avatarUrl: assets.avatarPhoto,
         avatarVariant: "default",
         comitId: "draft",
-        timeInProject: "0 РјРёРЅ",
-        role: "РРЅРёС†РёР°С‚РѕСЂ",
-        status: "РџР»Р°РЅРёСЂРѕРІР°РЅРёРµ",
-        lastTask: "РЎРѕР·РґР°С‚СЊ СЃС‚СЂСѓРєС‚СѓСЂСѓ РїСЂРѕРµРєС‚Р°"
+        timeInProject: "0 мин",
+        role: "Инициатор",
+        status: "Планирование",
+        lastTask: "Создать структуру проекта"
       }
     ]
   };
 }
 
 function App() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(() => resolveTabFromHash(window.location.hash));
   const [currentPath, setCurrentPath] = useState(() => resolvePathFromHash(window.location.hash));
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
@@ -432,11 +467,13 @@ function App() {
   });
   const [isArticleSaving, setIsArticleSaving] = useState(false);
   const [isProjectSaving, setIsProjectSaving] = useState(false);
+  const [participatedFeaturedIds, setParticipatedFeaturedIds] = useState(() => new Set());
 
   const chatListRef = useRef(null);
   const pendingAssistantRepliesRef = useRef(0);
   const routeStateRef = useRef({ tab: activeTab, path: currentPath });
   const libraryInterestsSyncedRef = useRef(false);
+  const libraryProfileInterestsSyncedRef = useRef({ token: null, applied: false });
 
   const isHomePage = activeTab === "home";
   const isNewsPage = activeTab === "news";
@@ -451,6 +488,9 @@ function App() {
   const currentCourseSlug = resolveCourseSlugFromPath(currentPath);
   const isProjectCreatePage = currentPath === NAV_LINKS.projectsCreate;
   const authMode = resolveAuthModeFromPath(currentPath);
+  const sessionToken =
+    authToken?.trim() ||
+    (typeof window !== "undefined" ? window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)?.trim() || "" : "");
 
   const dashboardHomeQuery = useQuery({
     queryKey: ["dashboard", "home"],
@@ -471,8 +511,8 @@ function App() {
   });
 
   const newsFeaturedQuery = useQuery({
-    queryKey: ["news", "featured"],
-    queryFn: fetchNewsFeatured,
+    queryKey: ["news", "featured", sessionToken],
+    queryFn: () => fetchNewsFeatured(sessionToken?.trim() || undefined),
     staleTime: 60_000,
   });
 
@@ -491,7 +531,29 @@ function App() {
   const libraryQuery = useQuery({
     queryKey: ["library"],
     queryFn: fetchLibraryBundle,
-    enabled: isLibraryPage,
+    enabled: isLibraryPage || isArticleCreatePage || Boolean(currentArticleSlug),
+    staleTime: 60_000,
+  });
+
+  const articlesForLibraryTagLookup = useMemo(() => {
+    const api = libraryQuery.data?.articles;
+    if (api && api.length > 0) {
+      return api;
+    }
+    return STATIC_FALLBACK ? LIBRARY_ARTICLE_ITEMS : [];
+  }, [libraryQuery.data?.articles]);
+
+  const profileMeQuery = useQuery({
+    queryKey: ["profile", "me", authToken],
+    queryFn: () => fetchProfileMe(authToken),
+    enabled: Boolean((isLibraryPage || isProfilePage) && authToken),
+    staleTime: 60_000,
+  });
+
+  const universitiesQuery = useQuery({
+    queryKey: ["profile", "universities", authToken],
+    queryFn: () => fetchUniversities(authToken),
+    enabled: Boolean(isProfilePage && authToken),
     staleTime: 60_000,
   });
 
@@ -630,7 +692,19 @@ function App() {
         ? LIBRARY_ARTICLE_ITEMS
         : [];
   const draftLibraryArticleItems = articleDrafts.map(mapArticleDraftToLibraryItem);
-  const libraryArticleItems = [...draftLibraryArticleItems, ...libraryArticleItemsBase];
+  const filteredLibraryArticleItemsBase = useMemo(() => {
+    const selectedIds = Object.entries(selectedLibraryInterests)
+      .filter(([, isSelected]) => isSelected)
+      .map(([id]) => id);
+    if (selectedIds.length === 0) {
+      return libraryArticleItemsBase;
+    }
+    return libraryArticleItemsBase.filter((article) => {
+      const ids = article.interestIds ?? [];
+      return ids.some((i) => selectedIds.includes(i));
+    });
+  }, [libraryArticleItemsBase, selectedLibraryInterests]);
+  const libraryArticleItems = [...draftLibraryArticleItems, ...filteredLibraryArticleItemsBase];
 
   const topCard = deck[0];
   const stackedCards = deck.slice(1, 3);
@@ -649,8 +723,28 @@ function App() {
     [articleDrafts],
   );
   const currentArticleDraft = currentArticleSlug ? articleDraftMap[currentArticleSlug] || null : null;
+
+  const libraryArticleFromApi = useMemo(() => {
+    if (!currentArticleSlug || currentArticleDraft) {
+      return null;
+    }
+    const articles = libraryQuery.data?.articles ?? [];
+    return articles.find((a) => a.id === currentArticleSlug) ?? null;
+  }, [currentArticleSlug, currentArticleDraft, libraryQuery.data?.articles]);
+
+  const articleReaderLoading =
+    Boolean(currentArticleSlug && !currentCourseSlug) &&
+    !currentArticleDraft &&
+    !ARTICLE_DETAILS_BY_SLUG[currentArticleSlug] &&
+    !libraryArticleFromApi &&
+    !STATIC_FALLBACK &&
+    libraryQuery.isPending;
+
   const activeArticleDetails = currentArticleSlug
-    ? currentArticleDraft || ARTICLE_DETAILS_BY_SLUG[currentArticleSlug] || ARTICLE_DETAILS_BY_SLUG["ml-ab-tests"]
+    ? currentArticleDraft ||
+      (libraryArticleFromApi ? mapApiLibraryArticleToReaderArticle(libraryArticleFromApi) : null) ||
+      ARTICLE_DETAILS_BY_SLUG[currentArticleSlug] ||
+      (libraryQuery.isPending && !STATIC_FALLBACK ? null : ARTICLE_DETAILS_BY_SLUG["ml-ab-tests"])
     : null;
   const activeCourseDetails = currentCourseSlug
     ? COURSE_DETAILS_BY_SLUG[currentCourseSlug] || COURSE_DETAILS_BY_SLUG["machine-learning-from-zero"]
@@ -674,14 +768,40 @@ function App() {
   }, [recommendationsQuery.data]);
 
   useEffect(() => {
-    if (!libraryBundle?.interestOptions?.length || libraryInterestsSyncedRef.current) {
+    libraryInterestsSyncedRef.current = false;
+    libraryProfileInterestsSyncedRef.current = { token: null, applied: false };
+  }, [authToken]);
+
+  useEffect(() => {
+    if (!libraryBundle?.interestOptions?.length) {
+      return;
+    }
+    if (authToken) {
+      if (!profileMeQuery.isSuccess || profileMeQuery.data === undefined) {
+        return;
+      }
+      const prev = libraryProfileInterestsSyncedRef.current;
+      if (prev.token === authToken && prev.applied) {
+        return;
+      }
+      const selectedSet = new Set((profileMeQuery.data.interests ?? []).map((i) => i.id));
+      setSelectedLibraryInterests(
+        libraryBundle.interestOptions.reduce(
+          (acc, option) => ({ ...acc, [option.id]: selectedSet.has(option.id) }),
+          {},
+        ),
+      );
+      libraryProfileInterestsSyncedRef.current = { token: authToken, applied: true };
+      return;
+    }
+    if (libraryInterestsSyncedRef.current) {
       return;
     }
     setSelectedLibraryInterests(
       libraryBundle.interestOptions.reduce((acc, option) => ({ ...acc, [option.id]: option.selected }), {}),
     );
     libraryInterestsSyncedRef.current = true;
-  }, [libraryBundle]);
+  }, [libraryBundle, authToken, profileMeQuery.isSuccess, profileMeQuery.data]);
 
   useEffect(() => {
     if (!libraryShowcaseItems.length) {
@@ -904,7 +1024,17 @@ function App() {
   };
 
   const openProjectDetails = (project) => {
-    openPath(project?.detailsUrl || NAV_LINKS.projects);
+    const id = project?.id;
+    const detailsUrl = typeof project?.detailsUrl === "string" ? project.detailsUrl.trim() : "";
+    if (detailsUrl.startsWith("/")) {
+      openPath(detailsUrl);
+      return;
+    }
+    if (id) {
+      openPath(`${NAV_LINKS.projects}/${id}`);
+      return;
+    }
+    openPath(NAV_LINKS.projects);
   };
 
   const openProjectCreate = () => {
@@ -960,9 +1090,32 @@ function App() {
       return;
     }
     void postLibraryInterests(body).catch(() => {});
+    if (authToken) {
+      void patchProfileMe(authToken, { interestIds: selectedIds })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+        })
+        .catch(() => {});
+    }
   };
 
-  const openFeaturedEvent = (eventItem) => {
+  const openFeaturedEvent = async (eventItem) => {
+    if (!eventItem?.id) {
+      openPath(NAV_LINKS.events);
+      return;
+    }
+    const alreadyParticipated =
+      participatedFeaturedIds.has(eventItem.id) || Boolean(eventItem.participated);
+    if (authToken && !alreadyParticipated) {
+      try {
+        await postFeaturedParticipate(authToken, eventItem.id);
+        setParticipatedFeaturedIds((prev) => new Set([...prev, eventItem.id]));
+        queryClient.invalidateQueries({ queryKey: ["news", "featured"] });
+      } catch (error) {
+        alert(formatOpenApiError(error));
+        return;
+      }
+    }
     openPath(eventItem?.detailsUrl || NAV_LINKS.events);
   };
 
@@ -1087,12 +1240,52 @@ function App() {
     }
   };
 
+  const handleSaveProfileModule = async (payload) => {
+    if (!authToken) {
+      return false;
+    }
+    try {
+      await patchProfileMe(authToken, payload);
+      queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleCreateArticle = async (payload) => {
     setIsArticleSaving(true);
+    const draft = createArticleDraftRecord(payload);
+    const effectiveToken =
+      (typeof window !== "undefined" && window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)?.trim()) ||
+      authToken?.trim() ||
+      "";
+    const tagLookup = buildTagIdLookupFromArticles(articlesForLibraryTagLookup);
+    const tagIds = resolveTagIdsFromUserTags(payload.tags || [], tagLookup);
+
     try {
-      const draft = createArticleDraftRecord(payload);
+      if (!effectiveToken) {
+        setArticleDrafts((prev) => [draft, ...prev]);
+        return { draft, savedToServer: false, errorMessage: null };
+      }
+      const authorName = authUser?.email ? authUser.email.split("@")[0] : "Автор";
+      const body = buildLibraryArticleCreateBody({
+        id: draft.id,
+        title: payload.title.trim(),
+        summary: payload.summary.trim(),
+        content: payload.content.trim(),
+        tagIds,
+        authorName,
+        authorAvatarUrl: assets.avatarPhoto
+      });
+      const created = await createLibraryArticle(effectiveToken, body);
+      const merged = { ...createArticleDraftRecord(payload), id: created.id, slug: created.id };
+      setArticleDrafts((prev) => [merged, ...prev]);
+      queryClient.invalidateQueries({ queryKey: ["library"] });
+      return { draft: merged, savedToServer: true, errorMessage: null };
+    } catch (e) {
       setArticleDrafts((prev) => [draft, ...prev]);
-      return draft;
+      return { draft, savedToServer: false, errorMessage: formatOpenApiError(e) };
     } finally {
       setIsArticleSaving(false);
     }
@@ -1100,10 +1293,28 @@ function App() {
 
   const handleCreateProject = async (payload) => {
     setIsProjectSaving(true);
+    const draft = createProjectDraftRecord(payload);
+    const effectiveToken =
+      (typeof window !== "undefined" && window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)?.trim()) ||
+      authToken?.trim() ||
+      "";
     try {
-      const draft = createProjectDraftRecord(payload);
+      if (!effectiveToken) {
+        setProjectDrafts((prev) => [draft, ...prev]);
+        return { draft, savedToServer: false, errorMessage: null };
+      }
+      const created = await createProject(effectiveToken, buildProjectCreateApiBody(draft));
+      const merged = {
+        ...draft,
+        id: created.id,
+        detailsUrl: created.detailsUrl ?? `${NAV_LINKS.projects}/${created.id}`
+      };
+      setProjectDrafts((prev) => [merged, ...prev]);
+      queryClient.invalidateQueries({ queryKey: ["projects", "hub"] });
+      return { draft: merged, savedToServer: true, errorMessage: null };
+    } catch (e) {
       setProjectDrafts((prev) => [draft, ...prev]);
-      return draft;
+      return { draft, savedToServer: false, errorMessage: formatOpenApiError(e) };
     } finally {
       setIsProjectSaving(false);
     }
@@ -1248,14 +1459,19 @@ function App() {
   ) : isProfilePage ? (
     <ProfilePage
       user={authUser}
+      profile={profileMeQuery.data}
+      profileLoading={profileMeQuery.isPending}
+      universities={universitiesQuery.data ?? []}
+      universitiesLoading={universitiesQuery.isPending}
       isLoading={isAuthBusy || isProfileSaving}
-      isAuthenticated={Boolean(authToken)}
+      isAuthenticated={Boolean(sessionToken)}
       articleDraftCount={articleDrafts.length}
       projectDraftCount={projectDrafts.length}
       onBack={handleGoHome}
       onOpenAuth={() => openAuthPage("register")}
       onLogout={handleLogout}
       onSaveProfile={handleSaveProfile}
+      onSaveProfileModule={handleSaveProfileModule}
       onOpenArticleCreate={openArticleCreatePage}
       onOpenProjectCreate={openProjectCreate}
       onOpenLibrary={openLibraryPage}
@@ -1267,22 +1483,39 @@ function App() {
       isSubmitting={isArticleSaving}
       drafts={articleDrafts}
       onOpenDraft={openArticleDraft}
+      isAuthenticated={Boolean(sessionToken)}
+      onOpenAuth={() => openAuthPage("login")}
     />
   ) : isArticleReaderPage ? (
-    <ArticleReaderPage
-      mode={currentCourseSlug ? "course" : "article"}
-      article={activeArticleDetails}
-      course={activeCourseDetails}
-      recommendations={ARTICLE_SIDE_RECOMMENDATIONS}
-      onBack={openLibraryPage}
-      onOpenRecommendation={openArticleRecommendation}
-      onOpenRelatedCourse={() => openCourseDetails(activeArticleDetails?.relatedCourseSlug)}
-    />
+    articleReaderLoading ? (
+      <section className="article-reader-page">
+        <div className="library-page-head article-reader-head">
+          <button type="button" className="news-back-btn library-back-btn" aria-label="Назад" onClick={openLibraryPage}>
+            <img src={assets.arrowSmallLeftIcon} alt="" />
+          </button>
+          <h1 className="library-page-title">Статьи и курсы</h1>
+        </div>
+        <p className="article-create-status" style={{ padding: "24px 20px" }}>
+          Загружаем материал…
+        </p>
+      </section>
+    ) : (
+      <ArticleReaderPage
+        mode={currentCourseSlug ? "course" : "article"}
+        article={activeArticleDetails}
+        course={activeCourseDetails}
+        recommendations={ARTICLE_SIDE_RECOMMENDATIONS}
+        onBack={openLibraryPage}
+        onOpenRecommendation={openArticleRecommendation}
+        onOpenRelatedCourse={() => openCourseDetails(activeArticleDetails?.relatedCourseSlug)}
+      />
+    )
   ) : isNewsPage ? (
     <NewsPage
       miniNewsItems={miniNewsItems}
       featuredNewsItems={featuredNewsItems}
       likedNews={likedNews}
+      participatedFeaturedIds={participatedFeaturedIds}
       onToggleNewsLike={toggleNewsLike}
       onOpenMiniNews={openMiniNews}
       onParticipateInEvent={openFeaturedEvent}
@@ -1297,6 +1530,8 @@ function App() {
       isSubmitting={isProjectSaving}
       drafts={projectDrafts}
       onOpenDraft={openProjectDraft}
+      isAuthenticated={Boolean(sessionToken)}
+      onOpenAuth={() => openAuthPage("login")}
     />
   ) : isProjectsPage && showProjectDetailRoute ? (
     currentProjectDraft ? (

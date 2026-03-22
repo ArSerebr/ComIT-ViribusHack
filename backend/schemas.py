@@ -50,6 +50,7 @@ class FeaturedNewsItem(BaseModel):
     imageUrl: str
     ctaLabel: str
     detailsUrl: str
+    participated: bool | None = None
 
 
 class HubProject(BaseModel):
@@ -166,6 +167,7 @@ class LibraryArticle(BaseModel):
     description: str
     authorName: str
     authorAvatarUrl: str
+    interestIds: list[str] = Field(default_factory=list)
 
 
 class LibraryBundle(BaseModel):
@@ -223,15 +225,22 @@ class ProfileInterest(BaseModel):
     label: str
 
 
+class ProfileUniversityOut(BaseModel):
+    id: str
+    name: str
+
+
 class ProfileMe(BaseModel):
     displayName: str | None = None
     bio: str | None = None
+    university: ProfileUniversityOut | None = None
     interests: list[ProfileInterest] = Field(default_factory=list)
 
 
 class ProfileMePatch(BaseModel):
     displayName: str | None = None
     bio: str | None = None
+    universityId: str | None = None
     interestIds: list[str] | None = None
 
 

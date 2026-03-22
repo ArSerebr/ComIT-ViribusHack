@@ -5,7 +5,7 @@ API-facing shapes come from :mod:`schemas`; this module is the single source for
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypedDict
 
 from schemas import (
     ArticleTag,
@@ -35,12 +35,42 @@ from schemas import (
 
 AV = "/img/avatar-photo.jpg"
 
+
+class UniversityFixture(TypedDict):
+    id: str
+    name: str
+    sort_order: int
+
+
+UNIVERSITIES: list[UniversityFixture] = [
+    {"id": "msu", "name": "МГУ им. М.В. Ломоносова", "sort_order": 0},
+    {"id": "spbu", "name": "СПбГУ", "sort_order": 1},
+    {"id": "hse", "name": "НИУ ВШЭ", "sort_order": 2},
+    {"id": "mipt", "name": "МФТИ", "sort_order": 3},
+    {"id": "itmo", "name": "Университет ИТМО", "sort_order": 4},
+    {"id": "bmstu", "name": "МГТУ им. Н.Э. Баумана", "sort_order": 5},
+    {"id": "msai", "name": "МАИ", "sort_order": 6},
+    {"id": "miem", "name": "НИУ МИЭМ", "sort_order": 7},
+    {"id": "msu-lomonosov", "name": "МГУ (факультет ВМК)", "sort_order": 8},
+    {"id": "ranepa", "name": "РАНХиГС", "sort_order": 9},
+    {"id": "finuniversity", "name": "Финансовый университет", "sort_order": 10},
+    {"id": "mtuci", "name": "МТУСИ", "sort_order": 11},
+    {"id": "mipt-phystech", "name": "МФТИ (Физтех-школа)", "sort_order": 12},
+    {"id": "innopolis", "name": "Университет Иннополис", "sort_order": 13},
+    {"id": "tpu", "name": "ТПУ", "sort_order": 14},
+    {"id": "nsu", "name": "НГУ", "sort_order": 15},
+    {"id": "urfu", "name": "УрФУ", "sort_order": 16},
+    {"id": "other", "name": "Другой вуз", "sort_order": 99},
+]
+
 __all__ = [
     "AV",
     "DASHBOARD_HOME",
+    "UNIVERSITIES",
     "FEATURED_NEWS",
     "KNOWN_PROJECT_IDS",
     "LIBRARY_BUNDLE",
+    "LIBRARY_INTEREST_TAG_LINKS",
     "NEWS_MINI",
     "NOTIFICATIONS",
     "PROJECT_DETAILS_BY_ID",
@@ -410,6 +440,7 @@ LIBRARY_BUNDLE = LibraryBundle(
             ),
             authorName="PythonGo PRO",
             authorAvatarUrl=AV,
+            interestIds=["backend"],
         ),
         LibraryArticle(
             id="catboost-xgboost-trees",
@@ -424,6 +455,7 @@ LIBRARY_BUNDLE = LibraryBundle(
             ),
             authorName="Top MLman",
             authorAvatarUrl=AV,
+            interestIds=["backend", "ml-engineering"],
         ),
         LibraryArticle(
             id="neural-generation-comparison",
@@ -439,9 +471,20 @@ LIBRARY_BUNDLE = LibraryBundle(
             ),
             authorName="MaxabouAI",
             authorAvatarUrl=AV,
+            interestIds=["backend", "ml-engineering"],
         ),
     ],
 )
+
+# Pairs (interest_id, tag_id) for ``library_interest_tag``; matches tag sets in ``LIBRARY_BUNDLE.articles``.
+LIBRARY_INTEREST_TAG_LINKS: list[tuple[str, str]] = [
+    ("ml-engineering", "ml"),
+    ("ml-engineering", "ai"),
+    ("ml-engineering", "gen-model"),
+    ("backend", "python"),
+    ("backend", "golang"),
+    ("backend", "fullstack"),
+]
 
 NOTIFICATIONS: list[NotificationItem] = [
     NotificationItem(

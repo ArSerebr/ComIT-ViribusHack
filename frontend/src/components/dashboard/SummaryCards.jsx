@@ -86,7 +86,7 @@ export function SummaryCards({
         }}
       >
         <h2>Мероприятия</h2>
-        <p>Статистика за последний месяц</p>
+        <p>Предстоящие в каталоге хакатонов</p>
         <button className="small-arrow-btn" type="button">
           <img src={assets.alignCenterIcon} alt="" />
         </button>

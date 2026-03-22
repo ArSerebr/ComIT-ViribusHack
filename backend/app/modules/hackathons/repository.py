@@ -49,3 +49,9 @@ class HackathonRepository:
             select(Hackathon).where(Hackathon.id == hackathon_id)
         )
         return result.scalar_one_or_none()
+
+    async def count_upcoming(self) -> int:
+        """Число предстоящих хакатонов (та же логика дат, что у GET /api/hackathons)."""
+        result = await self._session.execute(select(Hackathon))
+        rows = list(result.scalars().all())
+        return sum(1 for r in rows if hackathon_is_upcoming(r))

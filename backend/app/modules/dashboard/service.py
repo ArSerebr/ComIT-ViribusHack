@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.modules.dashboard.models import DashboardRecommendation
 from app.modules.dashboard.repository import DashboardRepository
+from app.modules.hackathons import public_api as hackathons_public_api
 from schemas import DashboardHome, RecommendationCard
 
 
@@ -27,4 +28,17 @@ class DashboardService:
         snap = await self._repo.get_home_snapshot()
         if snap is None:
             return None
-        return DashboardHome.model_validate(snap.home_json)
+        home = DashboardHome.model_validate(snap.home_json)
+        upcoming = await hackathons_public_api.count_upcoming_hackathons(
+            self._repo.session
+        )
+        return home.model_copy(
+            update={
+                "events": home.events.model_copy(
+                    update={
+                        "count": upcoming,
+                        "deltaLabel": "предстоящих в каталоге",
+                    }
+                )
+            }
+        )

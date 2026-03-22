@@ -46,6 +46,7 @@ import { ProjectCreatePage } from "./components/projects/ProjectCreatePage";
 import { ProjectHubPage } from "./components/projects/ProjectHubPage";
 import { RecommendationsPanel } from "./components/recommendations/RecommendationsPanel";
 import { OnboardingPage } from "./components/onboarding/OnboardingPage";
+import { ToastStack } from "./components/ui/Toast";
 import { ARTICLE_DETAILS_BY_SLUG, ARTICLE_SIDE_RECOMMENDATIONS, COURSE_DETAILS_BY_SLUG } from "./data/contentStudioData";
 import { NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
 import {
@@ -459,6 +460,7 @@ function App() {
   const [authSuccessMessage, setAuthSuccessMessage] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isOnboardingBusy, setIsOnboardingBusy] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [articleDrafts, setArticleDrafts] = useState(() => {
     const value = readFromLocalStorage(ARTICLE_DRAFTS_STORAGE_KEY, []);
@@ -881,6 +883,18 @@ function App() {
     };
   }, [authToken]);
 
+  const showToast = (message, type = "error") => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 5000);
+  };
+
+  const dismissToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const syncRouteState = (path) => {
     const nextRoute = {
       tab: resolveTabFromPath(path),
@@ -1067,7 +1081,7 @@ function App() {
       body: { message: null },
     });
     if (error) {
-      window.alert("Не удалось отправить заявку. Попробуйте позже.");
+      showToast("Не удалось отправить заявку. Попробуйте позже.");
     }
   };
 
@@ -1128,7 +1142,7 @@ function App() {
         setParticipatedFeaturedIds((prev) => new Set([...prev, eventItem.id]));
         queryClient.invalidateQueries({ queryKey: ["news", "featured"] });
       } catch (error) {
-        alert(formatOpenApiError(error));
+        showToast(formatOpenApiError(error));
         return;
       }
     }
@@ -1803,6 +1817,8 @@ function App() {
           ) : null}
         </AnimatePresence>
       </div>
+
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

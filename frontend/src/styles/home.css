@@ -130,7 +130,7 @@
 .productivity-content strong {
   margin-top: 9px;
   display: block;
-  font-size: 40px;
+  font-size: clamp(28px, 2.4vw, 36px);
   font-weight: 550;
   line-height: 1;
 }

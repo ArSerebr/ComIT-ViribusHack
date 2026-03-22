@@ -42,6 +42,10 @@
   gap: 14px;
 }
 
+.projects-hub-column-tabs {
+  display: none;
+}
+
 .projects-hub-filter-btn {
   width: 64px;
   height: 64px;

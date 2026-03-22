@@ -59,8 +59,10 @@ export async function fetchDashboardHome() {
   return data;
 }
 
-export async function fetchDashboardRecommendations() {
-  const { data, error } = await apiClient.GET("/api/dashboard/recommendations");
+export async function fetchDashboardRecommendations(token) {
+  const { data, error } = await apiClient.GET("/api/dashboard/recommendations", {
+    headers: authHeaders(token)
+  });
   if (error) throw error;
   return data ?? [];
 }

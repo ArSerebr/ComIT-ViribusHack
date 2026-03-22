@@ -49,6 +49,7 @@ from app.seed.fixtures import (
     RECOMMENDATIONS,
     UNIVERSITIES,
 )
+from app.seed.recommendation_catalog_seed import run_recommendation_catalog_seed
 from fastapi_users.password import PasswordHelper
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -64,6 +65,7 @@ MODULE_ORDER: tuple[str, ...] = (
     "library",
     "notifications",
     "dashboard",
+    "recommendation_catalog",
     "analytics",
 )
 
@@ -292,6 +294,11 @@ async def seed_dashboard(session: AsyncSession, wipe: bool) -> None:
     await session.merge(snap)
 
 
+async def seed_recommendation_catalog(session: AsyncSession, wipe: bool) -> None:
+    """Каталог карточек для ML и главной: CSV + предстоящие hackathon."""
+    await run_recommendation_catalog_seed(session, wipe)
+
+
 SEED_REGISTRY: dict[str, SeedFn] = {
     "auth": seed_auth,
     "profile": seed_profile,
@@ -301,6 +308,7 @@ SEED_REGISTRY: dict[str, SeedFn] = {
     "library": seed_library,
     "notifications": seed_notifications,
     "dashboard": seed_dashboard,
+    "recommendation_catalog": seed_recommendation_catalog,
 }
 
 

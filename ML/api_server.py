@@ -42,7 +42,9 @@ USERS_PATH = NEWS_DIR / "data" / "raw" / "students.csv"
 CARDS_PATH = NEWS_DIR / "data" / "raw" / "news.csv"
 INTERACTIONS_PATH = NEWS_DIR / "data" / "raw" / "interactions.csv"
 
-EVENT_CARD_TYPES = frozenset({"event", "meetup", "hackathon"})
+EVENT_CARD_TYPES = frozenset(
+    {"event", "meetup", "hackathon", "project", "course", "article"}
+)
 
 
 def _fallback_news(user_id: str, limit: int) -> list[dict]:
@@ -67,10 +69,11 @@ def _fallback_news(user_id: str, limit: int) -> list[dict]:
 
 
 def _fallback_events(user_id: str, limit: int) -> list[dict]:
-    """Cold-start: return top events by recency when user not in CSV."""
+    """Cold-start: return top events/catalog items by recency when user not in CSV."""
     cards = load_cards()
     event_cards = [
-        c for c in cards
+        c
+        for c in cards
         if c.get("card_type") in EVENT_CARD_TYPES and c.get("status") == "active"
     ]
     event_cards.sort(

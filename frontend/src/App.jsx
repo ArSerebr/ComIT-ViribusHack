@@ -544,8 +544,8 @@ function App() {
   });
 
   const recommendationsQuery = useQuery({
-    queryKey: ["dashboard", "recommendations"],
-    queryFn: fetchDashboardRecommendations,
+    queryKey: ["dashboard", "recommendations", sessionToken],
+    queryFn: () => fetchDashboardRecommendations(sessionToken?.trim() || undefined),
     staleTime: 60_000,
   });
 
@@ -1008,14 +1008,6 @@ function App() {
     if (!sessionToken) return;
     const body = { entity_id: entityId, reaction, ts: Date.now() };
     void postRecommendationFeedback(sessionToken, body).catch(() => {});
-  };
-
-  const rotateDeck = () => {
-    setDeck((prev) => {
-      if (prev.length === 0) return prev;
-      const [first, ...rest] = prev;
-      return [...rest, { ...first, instanceId: `${first.id}-${Date.now()}` }];
-    });
   };
 
   const dismissTopCard = (gesture) => {
@@ -1600,12 +1592,14 @@ function App() {
     sendMessage(chatInput);
   };
 
-  const handleTopCardExitComplete = () => {
-    if (dismissDirection) {
-      rotateDeck();
-      setDismissDirection(null);
-    }
-  };
+  const handleTopCardExitComplete = useCallback(() => {
+    setDeck((prev) => {
+      if (prev.length === 0) return prev;
+      const [first, ...rest] = prev;
+      return [...rest, { ...first, instanceId: `${first.id}-${Date.now()}` }];
+    });
+    setDismissDirection(null);
+  }, []);
 
   const mainContent = showOnboarding ? (
     <OnboardingPage
@@ -1874,6 +1868,9 @@ function App() {
                 aiAssistantEnabled={aiAssistantEnabled}
                 isAiOpen={aiMode}
                 onMenuClick={handleMenuClick}
+                onOpenProfile={openProfilePage}
+                userAvatarUrl={profileMeQuery.data?.avatarUrl ?? null}
+                isLoggedIn={Boolean(sessionToken)}
               />
             </>
           ) : null}

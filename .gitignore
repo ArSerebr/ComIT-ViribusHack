@@ -32,6 +32,19 @@ coverage/
 .vite/
 .turbo/
 *.tsbuildinfo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+**/.venv/
+**/venv/
 
 # OS
 .DS_Store
@@ -40,6 +53,7 @@ Desktop.ini
 
 # Editors / IDEs
 .cursor/
+.claude/
 .idea/
 .vscode/*
 !.vscode/extensions.json

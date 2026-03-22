@@ -1,0 +1,45 @@
+"""Публичный API модуля recommendations для других bounded context."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+
+from app.modules.recommendations.repository import RecommendationCatalogRepository
+from schemas import RecommendationCard
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def list_recommendation_catalog_ordered(
+    session: AsyncSession,
+) -> list[RecommendationCard]:
+    """Все активные карточки каталога в порядке sort_order (статический fallback)."""
+    repo = RecommendationCatalogRepository(session)
+    rows = await repo.list_active_ordered()
+    return [
+        RecommendationCard(
+            id=r.id,
+            title=r.title,
+            subtitle=r.subtitle,
+            image=r.image_url,
+            link=r.link_url,
+        )
+        for r in rows
+    ]
+
+
+async def get_catalog_cards_by_ids(
+    session: AsyncSession, ids: Sequence[str]
+) -> list[RecommendationCard]:
+    """Вернуть RecommendationCard для строк recommendation_catalog."""
+    repo = RecommendationCatalogRepository(session)
+    rows = await repo.get_by_ids(list(ids))
+    return [
+        RecommendationCard(
+            id=r.id,
+            title=r.title,
+            subtitle=r.subtitle,
+            image=r.image_url,
+            link=r.link_url,
+        )
+        for r in rows
+    ]

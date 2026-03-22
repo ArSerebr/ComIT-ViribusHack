@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir requests
 # API server + sync script
 RUN pip install --no-cache-dir uvicorn fastapi psycopg2-binary
 
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
+
 EXPOSE 9000
 
-# API server (порт 9000)
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "9000"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

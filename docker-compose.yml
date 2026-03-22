@@ -74,6 +74,7 @@ services:
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       # В Docker backend и qmsg-core в одной сети; localhost не работает.
       QMSG_CORE_BASE_URL: http://qmsg-core:8090
+      PULSE_CORE_BASE_URL: http://pulse-core:8091
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     healthcheck:

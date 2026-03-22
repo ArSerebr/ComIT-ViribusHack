@@ -21,6 +21,7 @@ from app.modules.profile import router as profile_router
 from app.modules.profile.admin_router import router as profile_admin_router
 from app.modules.groupchat import router as groupchat_router
 from app.modules.projects import router as projects_router
+from app.modules.pulse.router import router as pulse_router
 from app.modules.projects.admin_router import router as projects_admin_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +36,7 @@ _MODULE_ROUTERS = [
     projects_router,
     projects_admin_router,
     groupchat_router,
+    pulse_router,
     library_router,
     library_admin_router,
     profile_router,

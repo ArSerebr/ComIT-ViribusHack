@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # QmsgCore (групповой чат); в Docker — http://qmsg-core:8090, локально — http://localhost:8090.
     qmsg_core_base_url: str = "http://localhost:8090"
 
+    # PulseCore (AI-чат); в Docker — http://pulse-core:8091, локально — http://localhost:8091.
+    pulse_core_base_url: str = "http://localhost:8091"
+
     # JWT и токены сброса/верификации пароля (fastapi-users).
     jwt_secret: str = Field(
         ...,

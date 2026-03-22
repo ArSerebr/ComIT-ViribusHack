@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ComIT AI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #1565c0;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+      flex-shrink: 0;
+    }
+    .header-logo {
+      width: 34px; height: 34px;
+      background: rgba(255,255,255,.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700;
+    }
+    .header-title { font-size: 16px; font-weight: 600; }
+    .header-sub  { font-size: 11px; opacity: .7; margin-top: 1px; }
+    .uid-pill {
+      margin-left: auto;
+      font-size: 11px;
+      background: rgba(255,255,255,.15);
+      padding: 4px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: all;
+    }
+
+    /* ── Status bar ── */
+    .statusbar {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 6px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+      flex-shrink: 0;
+    }
+    .s-dot { width: 8px; height: 8px; border-radius: 50%; background: #bdbdbd; transition: background .3s; flex-shrink: 0; }
+    .s-text { font-size: 12px; color: #666; min-width: 0; flex: 1; }
+    .progress-track { width: 120px; height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+    .progress-fill  { height: 100%; width: 0; border-radius: 2px; transition: width .4s ease, background .3s; }
+
+    /* ── Chat area ── */
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Messages ── */
+    .msg { display: flex; flex-direction: column; max-width: 70%; gap: 6px; }
+    .msg.user { align-self: flex-end; align-items: flex-end; }
+    .msg.ai   { align-self: flex-start; align-items: flex-start; }
+
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .msg.user .bubble {
+      background: #1565c0;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.ai .bubble {
+      background: #fff;
+      color: #212121;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+
+    /* task content inside bubble */
+    .task-explanation { font-size: 13px; white-space: pre-wrap; }
+    .task-steps {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #888;
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+
+    /* ── Button rows ── */
+    .btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .btn {
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: filter .15s, opacity .15s;
+      font-family: inherit;
+    }
+    .btn:disabled { opacity: .45; cursor: default; }
+    .btn:not(:disabled):hover { filter: brightness(.92); }
+
+    .btn-confirm { background: #1565c0; color: #fff; }
+    .btn-cancel  { background: #f5f5f5; color: #555; border: 1px solid #ddd; }
+    .btn-source  {
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #bbdefb;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    /* ── Typing indicator ── */
+    .typing { display: none; align-self: flex-start; }
+    .typing .bubble { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.1); padding: 12px 16px; }
+    .dots { display: flex; gap: 5px; align-items: center; }
+    .dots span {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #bdbdbd;
+      animation: bounce 1.3s infinite ease-in-out;
+    }
+    .dots span:nth-child(2) { animation-delay: .2s; }
+    .dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-7px); }
+    }
+
+    /* ── Input bar ── */
+    .inputbar {
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 10px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    textarea#inp {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      line-height: 1.45;
+      max-height: 110px;
+      overflow-y: auto;
+      transition: border-color .2s;
+    }
+    textarea#inp:focus { border-color: #1565c0; }
+    textarea#inp:disabled { background: #fafafa; }
+
+    #sendBtn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #1565c0;
+      color: #fff;
+      font-size: 17px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    #sendBtn:disabled { background: #ccc; cursor: default; }
+    #sendBtn:not(:disabled):hover { background: #0d47a1; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">C</div>
+  <div>
+    <div class="header-title">ComIT AI Ассистент</div>
+    <div class="header-sub">Учебная платформа</div>
+  </div>
+  <div class="uid-pill" id="uidPill" title="Ваш ID сессии">—</div>
+</div>
+
+<!-- Status bar -->
+<div class="statusbar">
+  <div class="s-dot"  id="sDot"></div>
+  <div class="s-text" id="sText">Готов к работе</div>
+  <div class="progress-track">
+    <div class="progress-fill" id="sFill"></div>
+  </div>
+</div>
+
+<!-- Chat -->
+<div class="chat" id="chat">
+  <div class="typing msg ai" id="typing">
+    <div class="bubble">
+      <div class="dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Input -->
+<div class="inputbar">
+  <textarea id="inp" rows="1" placeholder="Напишите сообщение…"></textarea>
+  <button id="sendBtn" title="Отправить">&#9658;</button>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────
+const API = `http://localhost:${location.port || 8001}`;
+
+// ── UID ───────────────────────────────────────────────────────────
+let uid = localStorage.getItem('comit_uid');
+if (!uid) {
+  uid = 'u_' + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem('comit_uid', uid);
+}
+document.getElementById('uidPill').textContent = uid;
+
+// ── State ─────────────────────────────────────────────────────────
+let busy = false;
+let statusTimer = null;
+
+// ── Boot ──────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', loadHistory);
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/api/history/${uid}`);
+    const msgs = await res.json();
+    for (const m of msgs) renderMessage(m.role, m);
+  } catch (_) { /* server may not be up yet */ }
+}
+
+// ── Input handling ────────────────────────────────────────────────
+const inp = document.getElementById('inp');
+const sendBtn = document.getElementById('sendBtn');
+
+inp.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+  setTimeout(() => resizeTextarea(), 0);
+});
+sendBtn.addEventListener('click', doSend);
+
+function resizeTextarea() {
+  inp.style.height = 'auto';
+  inp.style.height = Math.min(inp.scrollHeight, 110) + 'px';
+}
+
+function doSend() {
+  const text = inp.value.trim();
+  if (!text || busy) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+  sendMessage(text);
+}
+
+// ── Send ──────────────────────────────────────────────────────────
+async function sendMessage(text) {
+  setBusy(true);
+  renderMessage('user', { role: 'user', content: text, buttons: [] });
+
+  try {
+    const res = await fetch(`${API}/api/comit/chat?uid=${uid}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text }),
+    });
+    const { task_id } = await res.json();
+
+    showTyping();
+    startStatusPoll();
+
+    const result = await pollTask(task_id);
+
+    stopStatusPoll();
+    hideTyping();
+    renderMessage('ai', result);
+
+  } catch (err) {
+    stopStatusPoll();
+    hideTyping();
+    renderMessage('ai', { role: 'ai', content: '⚠️ Ошибка соединения с сервером.', buttons: [] });
+  }
+
+  setBusy(false);
+}
+
+// ── Polling ───────────────────────────────────────────────────────
+async function pollTask(taskId) {
+  for (;;) {
+    await sleep(450);
+    try {
+      const res = await fetch(`${API}/api/task/${taskId}`);
+      const data = await res.json();
+      if (data.status === 'READY') return data.result;
+      if (data.status === 'FAILED') return {
+        role: 'ai',
+        content: 'Произошла ошибка при выполнении запроса. Попробуйте ещё раз.',
+        buttons: [],
+      };
+    } catch (_) {
+      return { role: 'ai', content: '⚠️ Не удалось получить ответ от сервера.', buttons: [] };
+    }
+  }
+}
+
+function startStatusPoll() {
+  fetchStatus();
+  statusTimer = setInterval(fetchStatus, 700);
+}
+function stopStatusPoll() {
+  clearInterval(statusTimer);
+  statusTimer = null;
+  setStatus('Готов к работе', '#4caf50', 0);
+}
+async function fetchStatus() {
+  try {
+    const res = await fetch(`${API}/api/status?uid=${uid}`);
+    const s = await res.json();
+    setStatus(s.status || '…', s.statusColor || '#2485B6', s.progress ?? 0);
+  } catch (_) {}
+}
+function setStatus(text, color, pct) {
+  document.getElementById('sText').textContent = text;
+  document.getElementById('sDot').style.background = color;
+  const fill = document.getElementById('sFill');
+  fill.style.width = pct + '%';
+  fill.style.background = color;
+}
+
+// ── Render message ────────────────────────────────────────────────
+function renderMessage(role, data) {
+  const chat  = document.getElementById('chat');
+  const typing = document.getElementById('typing');
+
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+
+  // Bubble
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+
+  const content = data.content;
+  if (typeof content === 'string') {
+    bubble.textContent = content;
+  } else if (content && typeof content === 'object') {
+    // Task response: {explanation, to_show}
+    const expEl = document.createElement('div');
+    expEl.className = 'task-explanation';
+    expEl.textContent = content.explanation || '';
+    bubble.appendChild(expEl);
+
+    const toShow = content.to_show;
+    if (toShow && toShow.length) {
+      const stepsEl = document.createElement('div');
+      stepsEl.className = 'task-steps';
+      stepsEl.textContent = 'Действия: ' + toShow.map(a => a.action).join(', ');
+      bubble.appendChild(stepsEl);
+    }
+  }
+
+  wrap.appendChild(bubble);
+
+  // Buttons
+  const buttons = data.buttons || [];
+  if (buttons.length) {
+    const row = document.createElement('div');
+    row.className = 'btn-row';
+
+    for (const btn of buttons) {
+      if (typeof btn === 'string') {
+        // Confirm / Cancel action buttons
+        const el = document.createElement('button');
+        el.className = `btn ${btn === 'Отмена' ? 'btn-cancel' : 'btn-confirm'}`;
+        el.textContent = btn;
+        el.addEventListener('click', () => handleAction(btn, row));
+        row.appendChild(el);
+      } else if (btn && btn.url) {
+        // Source link buttons
+        const el = document.createElement('a');
+        el.className = 'btn btn-source';
+        el.textContent = btn.label;
+        el.href = btn.url;
+        el.target = '_blank';
+        el.rel = 'noopener';
+        row.appendChild(el);
+      }
+    }
+
+    wrap.appendChild(row);
+  }
+
+  chat.insertBefore(wrap, typing);
+  scrollBottom();
+}
+
+// ── Action buttons ────────────────────────────────────────────────
+async function handleAction(action, row) {
+  row.querySelectorAll('button').forEach(b => b.disabled = true);
+
+  if (action === 'Отмена') {
+    try {
+      const res = await fetch(`${API}/api/comit/cancel?uid=${uid}`, { method: 'POST' });
+      const data = await res.json();
+      renderMessage('ai', { role: 'ai', content: data.message || 'Задача отменена.', buttons: [] });
+    } catch (_) {
+      renderMessage('ai', { role: 'ai', content: 'Ошибка при отмене.', buttons: [] });
+    }
+    return;
+  }
+
+  if (action === 'Запустить агента') {
+    setBusy(true);
+    showTyping();
+    startStatusPoll();
+    try {
+      const res = await fetch(`${API}/api/comit/execute?uid=${uid}`, { method: 'POST' });
+      const data = await res.json();
+      stopStatusPoll();
+      hideTyping();
+      renderMessage('ai', { role: 'ai', content: data.message || 'Готово.', buttons: [] });
+    } catch (_) {
+      stopStatusPoll();
+      hideTyping();
+      renderMessage('ai', { role: 'ai', content: 'Ошибка при выполнении.', buttons: [] });
+    }
+    setBusy(false);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function showTyping() { document.getElementById('typing').style.display = 'flex'; scrollBottom(); }
+function hideTyping() { document.getElementById('typing').style.display = 'none'; }
+function scrollBottom() { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; }
+function setBusy(v) {
+  busy = v;
+  sendBtn.disabled = v;
+  inp.disabled = v;
+  if (!v) inp.focus();
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

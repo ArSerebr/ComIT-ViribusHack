@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(venv/Scripts/python.exe -c \":*)",
+      "Bash(powershell.exe -Command \"Get-ChildItem ''C:\\\\Users\\\\user\\\\OneDrive\\\\Desktop\\\\Pulse_Agents\\\\PulseAI\\\\venv'' | Select-Object Name, FullName\")"
+    ]
+  }
+}

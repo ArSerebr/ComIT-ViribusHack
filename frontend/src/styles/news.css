@@ -349,3 +349,163 @@
     font-size: 15px;
   }
 }
+
+/* ==========================================================================
+   News page — hackathons strip (bottom)
+   ========================================================================== */
+
+.news-hackathons-section {
+  margin-top: clamp(40px, 6vh, 64px);
+  padding-top: clamp(28px, 4vh, 40px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.news-hackathons-head {
+  margin-bottom: 22px;
+  max-width: 720px;
+}
+
+.news-hackathons-title {
+  margin: 0 0 8px;
+  font-size: clamp(26px, 2.2vw, 32px);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.news-hackathons-caption {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.news-hackathons-loading,
+.news-hackathons-fallback,
+.news-hackathons-empty {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.62);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.news-hackathons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 18px;
+}
+
+.news-hackathon-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.news-hackathon-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.news-hackathon-card--static {
+  cursor: default;
+}
+
+.news-hackathon-card--static:hover {
+  transform: none;
+}
+
+.news-hackathon-card-image-wrap {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.news-hackathon-card-image-wrap--placeholder {
+  opacity: 0.55;
+}
+
+.news-hackathon-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.news-hackathon-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.news-hackathon-card-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-hackathon-card-meta {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.news-hackathon-card-org {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(203, 120, 99, 0.95);
+}
+
+.news-hackathon-card-desc {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.news-hackathon-card-cta {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8b4a8;
+}
+
+.news-hackathon-card:hover .news-hackathon-card-cta {
+  color: #f0cbbf;
+}
+
+@media (max-width: 860px) {
+  .news-hackathons-section {
+    margin-top: 32px;
+    padding-top: 28px;
+  }
+
+  .news-hackathons-grid {
+    gap: 14px;
+  }
+
+  .news-hackathon-card-image-wrap {
+    height: 112px;
+  }
+}

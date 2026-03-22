@@ -6,6 +6,7 @@ import {
   fetchDashboardHome,
   fetchDashboardRecommendations,
   fetchCurrentUserProfile,
+  fetchHackathons,
   fetchLibraryBundle,
   fetchNewsFeatured,
   fetchNewsMini,
@@ -546,6 +547,13 @@ function App() {
     staleTime: 60_000,
   });
 
+  const newsHackathonsQuery = useQuery({
+    queryKey: ["hackathons", "news-page"],
+    queryFn: () => fetchHackathons(12),
+    enabled: isNewsPage,
+    staleTime: 300_000,
+  });
+
   const notificationsQuery = useQuery({
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
@@ -675,6 +683,11 @@ function App() {
 
   const showNewsOfflineNotice =
     STATIC_FALLBACK && (newsMiniQuery.isError || newsFeaturedQuery.isError);
+
+  const newsHackathonsItems = newsHackathonsQuery.data ?? [];
+  const newsHackathonsLoading =
+    isNewsPage && newsHackathonsQuery.isPending && newsHackathonsQuery.data === undefined;
+  const newsHackathonsError = isNewsPage && newsHackathonsQuery.isError;
 
   const recommendationsDeckLoading =
     recommendationsQuery.isPending &&
@@ -1530,6 +1543,9 @@ function App() {
       onBack={handleGoHome}
       isLoading={newsPageLoading}
       showOfflineFallbackNotice={showNewsOfflineNotice}
+      hackathonsItems={newsHackathonsItems}
+      hackathonsLoading={newsHackathonsLoading}
+      hackathonsError={newsHackathonsError}
     />
   ) : isProjectsPage && isProjectCreatePage ? (
     <ProjectCreatePage

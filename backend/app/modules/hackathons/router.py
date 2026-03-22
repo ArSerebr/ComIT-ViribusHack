@@ -62,11 +62,21 @@ async def list_hackathons(
     repo: HackathonRepository = Depends(get_hackathon_repository),
     source: str | None = Query(None, description="Фильтр по источнику"),
     status: str | None = Query(None, description="Фильтр по статусу"),
+    upcoming_only: bool = Query(
+        True,
+        description="Только ещё не завершившиеся (конец события или день старта в будущем относительно UTC)",
+    ),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> list[HackathonItem]:
     """Список хакатонов (парсятся с hacklist.ru, cups.online и др.)."""
-    rows = await repo.list_all(source=source, status=status, limit=limit, offset=offset)
+    rows = await repo.list_all(
+        source=source,
+        status=status,
+        limit=limit,
+        offset=offset,
+        only_upcoming=upcoming_only,
+    )
     return [_to_item(r) for r in rows]
 
 

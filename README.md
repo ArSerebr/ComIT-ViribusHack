@@ -18,6 +18,9 @@ https://comit.robofirst.ru/
 ## Figma проекта
 https://www.figma.com/design/4ferZ0muDwZe9Qh8iPRtiO/%D0%A5%D0%90%D0%9A%D0%90%D0%A2%D0%9E%D0%9D?node-id=0-1&p=f&t=xwQ1RNWlXpxzycK2-0
 
+## Презентация проекта
+https://docs.google.com/presentation/d/1NHAbkkhbvQBN345mIWRH_dMzHc0q7kk20pPSl6MKEZY/edit?slide=id.p#slide=id.p
+
 ## 1. Технологический стек
 
 - Python 3.12 (FastAPI, Django, вспомогательные сервисы)

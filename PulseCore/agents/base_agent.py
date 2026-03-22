@@ -65,7 +65,27 @@ class Agent:
                 full_prompt += f"\n{field}: {value}"
 
         try:
-            response_text = llm(full_prompt, self.model)
+            raw = llm(full_prompt, self.model)
+
+            # Адаптер LLM может вернуть dict или скаляр; json.loads принимает только str/bytes
+            if isinstance(raw, dict):
+                if len(self.output_fields) == 1:
+                    key = self.output_fields[0]
+                    result = {
+                        key: raw.get(key, raw),
+                    }
+                else:
+                    result = {field: raw.get(field) for field in self.output_fields}
+                log_entry = {
+                    "agent": self.name,
+                    "model": self.model,
+                    "input": input_data,
+                    "output": result,
+                }
+                logger.info(json.dumps(log_entry, ensure_ascii=False))
+                return result
+
+            response_text = raw if isinstance(raw, str) else ("" if raw is None else str(raw))
 
             result = {}
             if len(self.output_fields) == 1:
@@ -76,7 +96,7 @@ class Agent:
                         result[self.output_fields[0]] = parsed[self.output_fields[0]]
                     else:
                         result[self.output_fields[0]] = response_text
-                except (json.JSONDecodeError, ValueError):
+                except (json.JSONDecodeError, TypeError, ValueError):
                     result[self.output_fields[0]] = response_text
             else:
                 try:
@@ -86,7 +106,7 @@ class Agent:
                             result[field] = parsed_json.get(field)
                     else:
                         result[self.output_fields[0]] = response_text
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, TypeError):
                     result[self.output_fields[0]] = response_text
 
             log_entry = {

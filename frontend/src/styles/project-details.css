@@ -266,7 +266,19 @@
   background: linear-gradient(90deg, #ff3561 0%, #fd7d33 64%, #ebb81d 100%);
 }
 
-/* To-do card */
+/* To-do card: вся область + стрелка ведут на /projects/:id/tasks */
+.project-details-todo-hitbox {
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  border-radius: inherit;
+}
+
+.project-details-todo-hitbox:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
 .project-details-todo-spark {
   width: 22px;
   height: 22px;
@@ -311,6 +323,8 @@
   position: absolute;
   right: 20px;
   bottom: 16px;
+  z-index: 4;
+  pointer-events: auto;
 }
 
 .project-details-fluff {
@@ -1363,4 +1377,166 @@
     color: rgba(255, 255, 255, 0.35);
     letter-spacing: 0.08em;
   }
+}
+
+/* ==========================================================================
+   Project tasks (AI plan + assignment)
+   ========================================================================== */
+
+.project-tasks-page {
+  width: 100%;
+  padding-bottom: clamp(52px, 10vh, 112px);
+}
+
+.project-tasks-layout {
+  padding: clamp(20px, 4vw, 28px);
+  margin-top: 20px;
+}
+
+.project-tasks-lead {
+  margin: 0 0 20px;
+  line-height: 1.5;
+  opacity: 0.92;
+}
+
+.project-tasks-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.project-tasks-deadline-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  max-width: 280px;
+}
+
+.project-tasks-deadline-input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+}
+
+.project-tasks-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.project-tasks-error {
+  color: #ffb4b4;
+  margin: 0 0 16px;
+}
+
+.project-tasks-block {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.project-tasks-h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.project-tasks-concept {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.project-tasks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-tasks-list-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.project-tasks-meta {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.project-tasks-desc {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.project-tasks-skills {
+  margin: 8px 0 0;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.project-tasks-coverage {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.project-tasks-assign-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.project-tasks-assign-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.project-tasks-assign-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: baseline;
+}
+
+.project-tasks-assignee {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+}
+
+.project-tasks-score {
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.project-tasks-why {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.project-tasks-link-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
 }

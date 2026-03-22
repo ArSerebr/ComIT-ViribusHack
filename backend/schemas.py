@@ -86,6 +86,9 @@ class ParticipantRow(PersonPreview):
     role: str | None = None
     status: str | None = None
     lastTask: str | None = None
+    skills: list[str] = Field(default_factory=list)
+    secondarySkills: list[str] = Field(default_factory=list)
+    userId: str | None = None
 
 
 class ProductivityBlock(BaseModel):

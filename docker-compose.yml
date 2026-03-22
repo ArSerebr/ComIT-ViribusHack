@@ -76,6 +76,8 @@ services:
       QMSG_CORE_BASE_URL: http://qmsg-core:8090
       PULSE_CORE_BASE_URL: http://pulse-core:8091
       ML_SERVICE_URL: http://ml:9000
+      GIGACHAT_AUTH_KEY: ${GIGACHAT_AUTH_KEY:-}
+      GIGACHAT_ACCESS_TOKEN: ${GIGACHAT_ACCESS_TOKEN:-}
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     healthcheck:

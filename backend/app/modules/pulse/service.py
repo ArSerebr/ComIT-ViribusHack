@@ -20,6 +20,24 @@ class PulseService:
         """Submit chat message. Returns task_id."""
         return await self._client.submit_chat(self._uid(user_id), message)
 
+    async def submit_work_plan(
+        self,
+        user_id: uuid.UUID,
+        *,
+        project_title: str,
+        project_description: str,
+        project_deadline: str,
+        project_id_hint: str = "",
+    ) -> str:
+        """Submit work plan generation. Returns task_id."""
+        return await self._client.submit_work_plan(
+            self._uid(user_id),
+            project_title=project_title,
+            project_description=project_description,
+            project_deadline=project_deadline,
+            project_id_hint=project_id_hint,
+        )
+
     async def poll_task(self, task_id: str) -> dict:
         """Poll task status. Returns {status, result?}."""
         return await self._client.poll_task(task_id)

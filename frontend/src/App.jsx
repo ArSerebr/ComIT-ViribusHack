@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { apiClient, resolveApiUrl } from "./api/client";
+import { resolveApiUrl } from "./api/client";
 import {
   fetchDashboardHome,
   fetchDashboardRecommendations,
@@ -23,6 +23,7 @@ import {
   patchProfileMe,
   postFeaturedParticipate,
   postLibraryInterests,
+  postProjectJoin,
   postRecommendationFeedback,
   postRecommendationLike,
   registerWithEmail
@@ -43,6 +44,7 @@ import { ProfilePage } from "./components/profile/ProfilePage";
 import { ProjectDetailsPage } from "./components/projects/ProjectDetailsPage";
 import { ProjectCreatePage } from "./components/projects/ProjectCreatePage";
 import { ProjectHubPage } from "./components/projects/ProjectHubPage";
+import { ProjectTasksPage } from "./components/projects/ProjectTasksPage";
 import { RecommendationsPanel } from "./components/recommendations/RecommendationsPanel";
 import { ARTICLE_DETAILS_BY_SLUG, ARTICLE_SIDE_RECOMMENDATIONS, COURSE_DETAILS_BY_SLUG } from "./data/contentStudioData";
 import { NAV_LINKS, QUICK_PROMPTS, RECOMMENDATIONS } from "./data/dashboardData";
@@ -128,6 +130,23 @@ function resolveProjectSlugFromPath(path) {
   }
 
   return slug;
+}
+
+function resolveProjectTasksRoute(path) {
+  const prefix = `${NAV_LINKS.projects}/`;
+  if (!path.startsWith(prefix)) {
+    return null;
+  }
+  const rest = path.slice(prefix.length);
+  const parts = rest.split("/").filter(Boolean);
+  if (parts.length === 2 && parts[1] === "tasks") {
+    const id = parts[0];
+    if (!id || id === "create" || id === "view") {
+      return null;
+    }
+    return { projectId: id };
+  }
+  return null;
 }
 
 const PAGE_ORDER = ["auth", "home", "projects", "news", "library", "chat", "profile"];
@@ -480,6 +499,7 @@ function App() {
   const isAuthPage = currentPath.startsWith(NAV_LINKS.auth);
   const isProfilePage = currentPath.startsWith(NAV_LINKS.profile);
   const isArticleCreatePage = currentPath.startsWith(NAV_LINKS.articleCreate);
+  const projectTasksRoute = resolveProjectTasksRoute(currentPath);
   const currentProjectSlug = resolveProjectSlugFromPath(currentPath);
   const currentArticleSlug = resolveArticleSlugFromPath(currentPath);
   const currentCourseSlug = resolveCourseSlugFromPath(currentPath);
@@ -719,7 +739,8 @@ function App() {
   const topCard = deck[0];
   const stackedCards = deck.slice(1, 3);
   const canDismiss = !dismissDirection;
-  const showProjectDetailRoute = Boolean(currentProjectSlug);
+  const showProjectTasksPage = Boolean(projectTasksRoute);
+  const showProjectDetailRoute = Boolean(currentProjectSlug && !showProjectTasksPage);
   const homeNewsItem = miniNewsItems[0];
   const chatPageMessages = pulseMessages;
   const activeLibraryHero = libraryShowcaseItems[activeLibraryShowcaseIndex]?.hero || LIBRARY_HERO_RESOURCE;
@@ -1056,12 +1077,14 @@ function App() {
     if (!projectId) {
       return;
     }
-    const { error } = await apiClient.POST("/api/projects/{project_id}/join", {
-      params: { path: { project_id: projectId } },
-      body: { message: null },
-    });
-    if (error) {
-      window.alert("Не удалось отправить заявку. Попробуйте позже.");
+    if (!authToken) {
+      window.alert("Войдите в аккаунт, чтобы отправить заявку в команду.");
+      return;
+    }
+    try {
+      await postProjectJoin(authToken, projectId, null);
+    } catch (error) {
+      window.alert(formatOpenApiError(error) || "Не удалось отправить заявку. Попробуйте позже.");
     }
   };
 
@@ -1518,6 +1541,13 @@ function App() {
       isAuthenticated={Boolean(sessionToken)}
       onOpenAuth={() => openAuthPage("login")}
     />
+  ) : isProjectsPage && showProjectTasksPage ? (
+    <ProjectTasksPage
+      projectId={projectTasksRoute.projectId}
+      sessionToken={sessionToken}
+      onBack={openProjectsHub}
+      onOpenProjectDetails={(p) => openPath(p.detailsUrl || `${NAV_LINKS.projects}/${p.id}`)}
+    />
   ) : isProjectsPage && showProjectDetailRoute ? (
     currentProjectDraft && !sessionToken ? (
       <ProjectDetailsPage
@@ -1525,6 +1555,7 @@ function App() {
         onBack={openProjectsHub}
         onJoinProject={joinProject}
         sessionToken={null}
+        onOpenTasks={() => navigateTo(`${NAV_LINKS.projects}/${currentProjectDraft.id}/tasks`)}
       />
     ) : projectDetailsQuery.isLoading ? (
       <section className="project-details-page">
@@ -1550,6 +1581,7 @@ function App() {
         onBack={openProjectsHub}
         onJoinProject={joinProject}
         sessionToken={sessionToken}
+        onOpenTasks={() => navigateTo(`${NAV_LINKS.projects}/${projectDetailsQuery.data.id}/tasks`)}
       />
     )
   ) : isProjectsPage ? (

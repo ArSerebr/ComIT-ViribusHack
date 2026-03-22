@@ -12,6 +12,10 @@ class ProjectsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @property
+    def session(self) -> AsyncSession:
+        return self._session
+
     async def project_exists(self, project_id: str) -> bool:
         stmt = select(ProjectsProject.id).where(ProjectsProject.id == project_id).limit(1)
         r = await self._session.execute(stmt)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from schemas import (
@@ -95,3 +95,17 @@ class ProjectsColumnUpdate(BaseModel):
 
     title: str | None = None
     sort_order: int | None = Field(default=None, alias="sortOrder")
+
+
+class WorkPlanGenerateBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    project_deadline: str | None = Field(default=None, alias="projectDeadline")
+
+
+class WorkPlanGenerateResponse(BaseModel):
+    task_id: str
+
+
+class WorkPlanAssignBody(BaseModel):
+    tasks: list[dict[str, Any]] = Field(..., min_length=1)

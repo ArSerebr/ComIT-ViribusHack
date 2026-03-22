@@ -37,6 +37,7 @@ services:
     restart: unless-stopped
 
   backend:
+    profiles: ["core"]
     # Стабильные имена для Drone cleanup и прод-деплоя (не default project_service).
     image: comit-backend:latest
     build:
@@ -47,7 +48,8 @@ services:
       # Не из .env: там часто localhost для uvicorn на хосте; в сети compose хост Redis — имя сервиса `redis`.
       REDIS_URL: redis://redis:6379/0
       SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-false}
-      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      # Обязателен только при запуске профиля `core`; по умолчанию профиль выключен.
+      JWT_SECRET: ${JWT_SECRET:-disabled-core-jwt-secret}
       JWT_LIFETIME_SECONDS: ${JWT_LIFETIME_SECONDS:-3600}
       RESET_PASSWORD_TOKEN_SECRET: ${RESET_PASSWORD_TOKEN_SECRET:-}
       VERIFICATION_TOKEN_SECRET: ${VERIFICATION_TOKEN_SECRET:-}
@@ -77,6 +79,7 @@ services:
     restart: unless-stopped
 
   admin-panel:
+    profiles: ["core"]
     image: comit-admin-panel:latest
     build:
       context: ./admin-panel
@@ -115,6 +118,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    profiles: ["core"]
     image: comit-frontend:latest
     build:
       context: ./frontend
@@ -131,6 +135,7 @@ services:
     restart: unless-stopped
 
   frontend-analytics:
+    profiles: ["core"]
     image: comit-frontend-analytics:latest
     build:
       context: ./frontend_analytics

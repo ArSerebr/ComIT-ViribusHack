@@ -95,7 +95,7 @@ steps:
         set -e
         cp /configs/.env .env || true
         export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-comit}"
-        docker compose build backend frontend admin-panel
+        docker compose build
     when:
       branch:
         include:
@@ -140,7 +140,7 @@ steps:
         path: /var/run/docker.sock
     commands:
       - |
-        docker images | grep -E "comit-(backend|frontend)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
+        docker images | grep -E "comit-(backend|frontend|hackathon-parser)" | grep -v "latest" | awk '{print $3}' | sort -u | xargs -r docker rmi -f || true
     when:
       branch:
         include:

@@ -49,7 +49,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
 
         # ── 2. Оффтоп / непонятный запрос ────────────────────────
         if msg_type == "other":
-            set_agent_status(uid, "ConversationAgent", 100)
+            set_agent_status(uid, "ConversationAgent", 40)
             res = comit_conversation_agent.run({
                 "message": message,
                 "session_context": session_ctx,
@@ -64,11 +64,12 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 "buttons": []
             }
             update_task_and_save(task_id, uid, "READY", result)
+            set_agent_status(uid, "READY", 100)
             return
 
         # ── 3. Вопрос ────────────────────────────────────────────
         if msg_type == "question":
-            set_agent_status(uid, "ConversationAgent", 100)
+            set_agent_status(uid, "ConversationAgent", 40)
             res = comit_conversation_agent.run({
                 "message": message,
                 "session_context": session_ctx,
@@ -83,6 +84,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 "buttons": []
             }
             update_task_and_save(task_id, uid, "READY", result)
+            set_agent_status(uid, "READY", 100)
             return
 
         # ── 4. Задача (агентский режим) ───────────────────────────
@@ -93,7 +95,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 on_step_start=lambda name, p: set_agent_status(uid, name, p)
             )
             final_memory = pipeline.run({"message": message})
-
+            set_agent_status(uid, "UserAgent", 60)
             explain = final_memory.get("pipeline_explanation", "Выполняю задачу...")
             front_requests = final_memory.get("frontend_requests", [])
             back_requests = final_memory.get("backend_requests", [])
@@ -120,6 +122,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 "buttons": ["Запустить агента", "Отмена"]
             }
             update_task_and_save(task_id, uid, "READY", result)
+            set_agent_status(uid, "READY", 100)
             return
 
         # ── 5. Поиск (RAG) ────────────────────────────────────────
@@ -129,6 +132,7 @@ def process_chat(task_id: str, uid: str, payload: dict):
                 mode="linear",
                 on_step_start=lambda name, p: set_agent_status(uid, name, p)
             )
+            set_agent_status(uid, "SearchAgent", 60)
             final_memory = pipeline.run({"message": message})
 
             answer = final_memory.get("answer", "По вашему запросу ничего не найдено.")

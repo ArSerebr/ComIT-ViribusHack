@@ -74,35 +74,39 @@ comit_search_results = Agent(
 
 AGENTS_METADATA = {
     "RequestClassifier": {
-        "color": "#2485B6",
+        "color": "#2444B6",
         "text": "Анализирую запрос"
     },
     "ConversationAgent": {
-        "color": "#4caf50",
-        "text": "Отвечаю на вопрос"
+        "color": "#aa42bd",
+        "text": "Вызываю LLM"
     },
     "TaskSetupAgent": {
-        "color": "#2196f3",
+        "color": "#67c0d8",
         "text": "Формулирую задачу"
     },
     "UserAgent": {
-        "color": "#9c27b0",
-        "text": "Выполняю действие"
+        "color": "#743bc5",
+        "text": "Выполняю звдвние"
     },
     "PlannerAgent": {
         "color": "#ff9800",
-        "text": "Планирую шаги"
+        "text": "Записываю план"
     },
     "SearchAgent": {
-        "color": "#2485B6",
-        "text": "Ищу по платформе"
+        "color": "#C62741",
+        "text": "Выполняю поиск на платформе"
     },
     "SearchResultsAgent": {
-        "color": "#4caf50",
+        "color": "#C5520F",
         "text": "Обрабатываю результаты"
     },
     "PulsAR": {
         "color": "#4caf50",
         "text": "Печатает..."
     },
+    "READY": {
+        "color": "#4caf50",
+        "text": "Печатает..."
+    }
 }

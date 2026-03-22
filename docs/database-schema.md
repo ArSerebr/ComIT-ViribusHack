@@ -111,6 +111,7 @@ Table projects_project {
   column_id varchar(64) [not null, ref: > projects_column.id]
   sort_order integer [not null, default: 0]
   owner_user_id uuid [ref: > "user".id, null]
+  group_chat_id varchar(64) [null, note: 'QmsgCore group ID (gr_xxx)']
 
   indexes {
     (column_id, sort_order) [name: 'ix_projects_project_column_sort']

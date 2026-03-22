@@ -570,7 +570,7 @@ function App() {
   const projectDetailsQuery = useQuery({
     queryKey: ["projects", "detail", currentProjectSlug],
     queryFn: () => fetchProjectById(currentProjectSlug),
-    enabled: Boolean(isProjectsPage && currentProjectSlug && !currentProjectDraft),
+    enabled: Boolean(isProjectsPage && currentProjectSlug),
     staleTime: 60_000,
   });
 
@@ -619,7 +619,7 @@ function App() {
       })),
     }));
 
-    if (!projectDrafts.length) {
+    if (sessionToken || !projectDrafts.length) {
       return mappedColumns;
     }
 
@@ -633,7 +633,7 @@ function App() {
           }
         : column,
     );
-  }, [hubColumnsRaw, projectDrafts]);
+  }, [hubColumnsRaw, projectDrafts, sessionToken]);
 
   const summaryHome =
     dashboardHomeQuery.isError && !STATIC_FALLBACK ? null : dashboardHomeQuery.data;
@@ -1534,11 +1534,12 @@ function App() {
       onOpenAuth={() => openAuthPage("login")}
     />
   ) : isProjectsPage && showProjectDetailRoute ? (
-    currentProjectDraft ? (
+    currentProjectDraft && !sessionToken ? (
       <ProjectDetailsPage
         project={mapProjectDraftToDetails(currentProjectDraft)}
         onBack={openProjectsHub}
         onJoinProject={joinProject}
+        sessionToken={null}
       />
     ) : projectDetailsQuery.isLoading ? (
       <section className="project-details-page">
@@ -1563,6 +1564,7 @@ function App() {
         project={projectDetailsQuery.data}
         onBack={openProjectsHub}
         onJoinProject={joinProject}
+        sessionToken={sessionToken}
       />
     )
   ) : isProjectsPage ? (

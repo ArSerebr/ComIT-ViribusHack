@@ -117,6 +117,7 @@ class ProjectDetails(BaseModel):
     title: str
     ownerName: str
     detailsUrl: str
+    groupChatId: str | None = None
     joinLabel: str
     teamCaption: str
     productivityCaption: str

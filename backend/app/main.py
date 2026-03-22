@@ -19,6 +19,7 @@ from app.modules.news import router as news_router
 from app.modules.notifications import router as notifications_router
 from app.modules.profile import router as profile_router
 from app.modules.profile.admin_router import router as profile_admin_router
+from app.modules.groupchat import router as groupchat_router
 from app.modules.projects import router as projects_router
 from app.modules.projects.admin_router import router as projects_admin_router
 from fastapi import FastAPI
@@ -33,6 +34,7 @@ _MODULE_ROUTERS = [
     news_router,
     projects_router,
     projects_admin_router,
+    groupchat_router,
     library_router,
     library_admin_router,
     profile_router,

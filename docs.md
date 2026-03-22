@@ -1,64 +1,76 @@
-# PulseAI — API Integration Guide
+# PulseAI — Frontend Integration Guide
 
-Документация для фронтенд-разработчика. Описывает как интегрировать чат-интерфейс с бэкендом PulseAI.
+Документация для фронтенд-разработчика. Описывает все API-эндпоинты, форматы данных и паттерн интеграции чата.
 
 ---
 
 ## Base URL
 
 ```
-http://localhost:8083
+http://chat.droidje-cloud.ru
 ```
 
-> При деплое — заменить на актуальный хост. 
+При локальной разработке: `http://localhost:8083`
 
 ---
 
-## Идентификация пользователя (uid)
+## Идентификация пользователя
 
-Каждый пользователь идентифицируется по `uid` — произвольной строке, которую **генерирует и хранит фронтенд/основной бэкенд**.
-Рекомендуется сохранять в `localStorage`, чтобы сессия сохранялась при перезагрузке.
+Каждый запрос требует параметр `uid` — строковый идентификатор пользователя, который **генерирует и хранит фронтенд**.
 
 ```js
-// Пример инициализации
 let uid = localStorage.getItem('uid');
 if (!uid) {
-  uid = crypto.randomUUID(); // или любой другой uuid-генератор
+  uid = crypto.randomUUID();
   localStorage.setItem('uid', uid);
 }
 ```
 
-`uid` передаётся как query-параметр во все запросы.
+`uid` передаётся как query-параметр (`?uid=...`) во все запросы.
 
 ---
 
-## Общий flow чата
+## Архитектура обработки запросов
 
-Обработка сообщения — **асинхронная**. Схема взаимодействия:
+Обработка каждого сообщения **асинхронная**:
 
 ```
-1. POST /api/comit/chat   → получить task_id
-2. GET  /api/task/{task_id}    → поллить до status == "READY"
-3. Показать result из ответа
+1. POST /api/comit/chat       → получить task_id
+2. GET  /api/task/{task_id}   → поллить каждые ~1s до status == "READY" | "FAILED"
+3. Отобразить result
 ```
 
-Параллельно можно поллить `/api/status` для отображения прогресс-бара (отображает агента который выполняет таск).
+Параллельно с шагом 2 можно поллить `/api/status?uid=...` для отображения прогресс-индикатора.
+
+---
+
+## Классификация запросов
+
+Бэкенд автоматически определяет тип входящего сообщения и выбирает нужный pipeline:
+
+| Тип | Описание | Что вернёт `result` |
+|-----|----------|---------------------|
+| `question` | Вопрос об учёбе, курсах, платформе | Текстовый ответ |
+| `search` | Поиск контента по платформе | Текстовый ответ + source-кнопки |
+| `task` | Действие на платформе (запись на курс и т.п.) | Объект с планом + action-кнопки подтверждения |
+| `other` | Оффтоп / непонятный запрос | Текстовый ответ |
+
+Фронтенд не передаёт тип — только текст сообщения. Классификация происходит на бэкенде.
 
 ---
 
 ## Эндпоинты
 
-### 1. Отправить сообщение
+### POST `/api/comit/chat`
 
-```
-POST /api/comit/chat?uid={uid}
-Content-Type: application/json
-```
+Отправить сообщение пользователя.
+
+**Query:** `uid` (обязательный)
 
 **Body:**
 ```json
 {
-  "message": "Текст сообщения пользователя"
+  "message": "Запиши меня на курс по Python"
 }
 ```
 
@@ -69,17 +81,15 @@ Content-Type: application/json
 }
 ```
 
-Сохрани `task_id` и начни поллинг.
+Немедленно начни поллинг задачи.
 
 ---
 
-### 2. Поллинг задачи
+### GET `/api/task/{task_id}`
 
-```
-GET /api/task/{task_id}
-```
+Получить статус и результат задачи.
 
-**Response пока задача выполняется:**
+**Пока обрабатывается (`PENDING`):**
 ```json
 {
   "task_id": "550e8400-...",
@@ -87,16 +97,16 @@ GET /api/task/{task_id}
 }
 ```
 
-**Response когда готово (`status == "READY"`):**
+**Готово (`READY`):**
 ```json
 {
   "task_id": "550e8400-...",
   "status": "READY",
-  "result": { ... }  // см. структуру result ниже
+  "result": { ... }
 }
 ```
 
-**Response при ошибке:**
+**Ошибка (`FAILED`):**
 ```json
 {
   "task_id": "550e8400-...",
@@ -105,122 +115,61 @@ GET /api/task/{task_id}
 }
 ```
 
-Рекомендуемый интервал поллинга: **700ms**.
+> При `FAILED` поле `result` присутствует. При `PENDING` — `result` отсутствует.
 
 ---
 
-### 3. Структура `result`
+### GET `/api/status`
 
-`result` зависит от типа запроса пользователя. Возможны три варианта:
+Текущий статус выполнения задачи для данного пользователя (прогресс-индикатор).
 
----
-
-#### Вариант A — обычный ответ (вопрос / разговор / поиск)
-
-`content` — строка с текстом ответа.
-`buttons` — пустой массив **или** массив source-кнопок (только при поиске).
-
-```json
-{
-  "role": "ai",
-  "content": "Курс по ML длится 8 недель и ведётся преподавателем Ивановым А.С.",
-  "buttons": []
-}
-```
-
-**Пример с source-кнопками (результат поиска):**
-
-```json
-{
-  "role": "ai",
-  "content": "По вашему запросу нашёл следующие материалы...",
-  "buttons": [
-    { "label": "Курс: Введение в машинное обучение", "type": "course", "url": "/courses/intro-ml" },
-    { "label": "Событие: Хакатон ML Weekend #3",     "type": "event",  "url": "/events/hackathon-ml-3" }
-  ]
-}
-```
-
-Source-кнопки — ссылки на материалы платформы. Открывай по `url`.
-
----
-
-#### Вариант B — задача (агентский режим)
-
-`content` — **объект**, не строка.
-`buttons` — массив с двумя action-кнопками: `"Запустить агента"` и `"Отмена"`.
-
-```json
-{
-  "role": "ai",
-  "content": {
-    "explanation": "Я проанализировал задачу. Вот что планирую сделать:\n1. Записать тебя на курс...",
-    "to_show": [
-      { "action": "enroll_course", "course_id": "intro-ml" }
-    ]
-  },
-  "buttons": ["Запустить агента", "Отмена"]
-}
-```
-
-- `explanation` — текст для отображения пользователю (что агент собирается сделать)
-- `to_show` — массив действий на фронтенде (можно отобразить как список шагов)
-
-**Пользователь должен подтвердить или отменить задачу.** После его выбора отправь один из запросов:
-
-```
-POST /api/comit/execute?uid={uid}   // Пользователь нажал "Запустить агента"
-POST /api/comit/cancel?uid={uid}    // Пользователь нажал "Отмена"
-```
-
-Оба запроса не требуют body. Оба возвращают `{"status": "ok"|"cancelled", "message": "..."}` — текст для отображения в чате.
-
----
-
-### 4. Статус агента (прогресс-бар)
-
-```
-GET /api/status?uid={uid}
-```
+**Query:** `uid` (обязательный)
 
 **Response:**
 ```json
 {
   "model": "SearchAgent",
-  "status": "Ищу по платформе",
-  "statusColor": "#2485B6",
-  "progress": 60
+  "status": "Выполняю поиск на платформе",
+  "statusColor": "#C62741",
+  "progress": 40
 }
 ```
 
-| Поле | Описание |
-|------|----------|
-| `model` | Название активного агента |
-| `status` | Текст для отображения (на русском) |
-| `statusColor` | HEX-цвет для визуализации агента |
-| `progress` | Прогресс от 0 до 100 |
+**Idle (нет активной задачи):**
+```json
+{
+  "model": "Multi-Agent",
+  "status": "Ожидание",
+  "statusColor": "#3CF0F0",
+  "progress": 0
+}
+```
 
-Рекомендуемый интервал поллинга: **700ms**, только пока идёт обработка.
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `model` | string | Название активного агента |
+| `status` | string | Человекочитаемый статус (RU) |
+| `statusColor` | string | HEX-цвет для визуализации |
+| `progress` | number | 0–100 |
 
-**Цвета агентов:**
+**Цвета и статусы агентов:**
 
-| Агент | Цвет | Статус |
-|-------|------|--------|
-| RequestClassifier | `#2485B6` | Анализирую запрос |
-| ConversationAgent | `#4caf50` | Отвечаю на вопрос |
-| TaskSetupAgent    | `#2196f3` | Формулирую задачу |
-| UserAgent         | `#9c27b0` | Выполняю действие |
-| PlannerAgent      | `#ff9800` | Планирую шаги |
-| SearchAgent       | `#2485B6` | Ищу по платформе |
-| SearchResultsAgent| `#4caf50` | Обрабатываю результаты |
+| Агент | Цвет | Текст статуса |
+|-------|------|---------------|
+| RequestClassifier | `#2444B6` | Анализирую запрос |
+| ConversationAgent | `#aa42bd` | Вызываю LLM |
+| TaskSetupAgent    | `#67c0d8` | Формулирую задачу |
+| UserAgent         | `#743bc5` | Выполняю задание |
+| PlannerAgent      | `#ff9800` | Записываю план |
+| SearchAgent       | `#C62741` | Выполняю поиск на платформе |
+| SearchResultsAgent| `#C5520F` | Обрабатываю результаты |
+| READY             | `#4caf50` | Печатает... |
 
 ---
 
-### 5. История сообщений
+### GET `/api/history/{uid}`
 
-```
-GET /api/history/{uid}
-```
+История сообщений пользователя (загружай при инициализации чата).
 
 **Response:**
 ```json
@@ -233,34 +182,172 @@ GET /api/history/{uid}
   },
   {
     "role": "ai",
-    "content": "Да, есть курс «Введение в машинное обучение»...",
+    "content": "Да, вот что нашёл...",
     "buttons": [
-      { "label": "Курс: Введение в машинное обучение", "type": "course", "url": "/courses/intro-ml" }
+      { "label": "Курс: Введение в ML", "type": "course", "url": "/courses/intro-ml" }
     ],
     "created_at": "2026-03-22T10:15:03"
   }
 ]
 ```
 
-Загружай при инициализации чата, чтобы восстановить историю после перезагрузки страницы.
+Отсортировано по `created_at` по возрастанию.
 
 ---
 
-## Полный пример интеграции (JS)
+### POST `/api/comit/execute`
+
+Подтвердить выполнение задачи (пользователь нажал «Запустить агента»).
+
+**Query:** `uid` (обязательный). Body не нужен.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "message": "Готово. Выполнено: enroll_course."
+}
+```
+
+**Ошибка если нет pending-задачи:**
+```json
+{ "detail": "No pending task" }
+```
+HTTP 400.
+
+---
+
+### POST `/api/comit/cancel`
+
+Отменить задачу (пользователь нажал «Отмена»).
+
+**Query:** `uid` (обязательный). Body не нужен.
+
+**Response:**
+```json
+{
+  "status": "cancelled",
+  "message": "Задача отменена."
+}
+```
+
+---
+
+### GET `/api/tokens`
+
+Заглушка биллинга (пока не используется по-настоящему).
+
+**Query:** `uid` (обязательный)
+
+**Response:**
+```json
+{
+  "tokens": 15,
+  "cost": 0
+}
+```
+
+---
+
+## Структура `result`
+
+`result` из `/api/task/{task_id}` имеет два формата в зависимости от типа запроса.
+
+---
+
+### Формат A — текстовый ответ
+
+Для типов `question`, `search`, `other`.
+
+```json
+{
+  "role": "ai",
+  "content": "Курс по Python длится 6 недель.",
+  "buttons": []
+}
+```
+
+При типе `search` — `buttons` содержит массив source-объектов:
+
+```json
+{
+  "role": "ai",
+  "content": "По запросу нашёл следующие материалы:",
+  "buttons": [
+    { "label": "Курс: Введение в Python", "type": "course", "url": "/courses/python-intro" },
+    { "label": "Статья: Основы алгоритмов",  "type": "article", "url": "/articles/algorithms-101" }
+  ]
+}
+```
+
+Source-кнопки — ссылки для навигации по платформе. Открывай по полю `url`.
+
+---
+
+### Формат B — агентская задача
+
+Для типа `task`. Требует подтверждения от пользователя.
+
+```json
+{
+  "role": "ai",
+  "content": {
+    "explanation": "Вот что планирую сделать:\n1. Записать тебя на курс «Python с нуля»\n2. Открыть страницу курса",
+    "to_show": [
+      { "action": "open_course_page", "params": { "course_id": "python-intro" } },
+      { "action": "enroll_course",    "params": { "course_id": "python-intro" } }
+    ]
+  },
+  "buttons": ["Запустить агента", "Отмена"]
+}
+```
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `content.explanation` | string | Текст для показа пользователю |
+| `content.to_show` | array | Список планируемых UI-действий (для отображения) |
+| `buttons` | string[] | Всегда `["Запустить агента", "Отмена"]` |
+
+После выбора пользователя:
+- «Запустить агента» → `POST /api/comit/execute?uid=...`
+- «Отмена» → `POST /api/comit/cancel?uid=...`
+
+---
+
+## Шпаргалка по кнопкам
+
+| Ситуация | `buttons` | Как обрабатывать |
+|----------|-----------|-----------------|
+| Обычный ответ / вопрос | `[]` | Кнопок нет |
+| Результаты поиска | `[{ label, type, url }, ...]` | Открыть `url` |
+| Агентская задача | `["Запустить агента", "Отмена"]` | POST execute / cancel |
+
+Как отличить source-кнопки от action-кнопок:
+```js
+if (typeof buttons[0] === 'object') {
+  // source-кнопки: { label, type, url }
+} else {
+  // action-кнопки: строки "Запустить агента" / "Отмена"
+}
+```
+
+---
+
+## Пример полной интеграции (JS)
 
 ```js
-const BASE_URL = 'http://localhost:8083';
+const BASE = 'http://chat.droidje-cloud.ru';
 
-// ── UID ──────────────────────────────────────────────────────────
-let uid = localStorage.getItem('uid');
-if (!uid) {
-  uid = crypto.randomUUID();
-  localStorage.setItem('uid', uid);
-}
+// uid — инициализация
+let uid = localStorage.getItem('uid') || (() => {
+  const id = crypto.randomUUID();
+  localStorage.setItem('uid', id);
+  return id;
+})();
 
 // ── Отправить сообщение ──────────────────────────────────────────
 async function sendMessage(text) {
-  const res = await fetch(`${BASE_URL}/api/comit/chat?uid=${uid}`, {
+  const res = await fetch(`${BASE}/api/comit/chat?uid=${uid}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: text }),
@@ -270,81 +357,85 @@ async function sendMessage(text) {
 }
 
 // ── Поллинг задачи ───────────────────────────────────────────────
-async function pollTask(task_id) {
-  while (true) {
-    await sleep(700);
-    const res = await fetch(`${BASE_URL}/api/task/${task_id}`);
+async function pollTask(task_id, timeoutMs = 120_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    await sleep(1000);
+    const res = await fetch(`${BASE}/api/task/${task_id}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
     if (data.status === 'READY')  return data.result;
     if (data.status === 'FAILED') throw new Error(data.result?.error || 'Unknown error');
-    // PENDING → продолжаем поллинг
+    // PENDING → продолжаем
   }
+  throw new Error('Timeout');
 }
 
-// ── Поллинг статуса (пока задача идёт) ──────────────────────────
-async function pollStatus(onUpdate) {
-  const interval = setInterval(async () => {
-    const res = await fetch(`${BASE_URL}/api/status?uid=${uid}`);
-    const data = await res.json();
-    onUpdate(data); // { model, status, statusColor, progress }
-  }, 700);
-  return () => clearInterval(interval); // вернуть функцию остановки
+// ── Поллинг статуса ──────────────────────────────────────────────
+function startStatusPolling(onUpdate) {
+  const id = setInterval(async () => {
+    try {
+      const res = await fetch(`${BASE}/api/status?uid=${uid}`);
+      onUpdate(await res.json()); // { model, status, statusColor, progress }
+    } catch {}
+  }, 1000);
+  return () => clearInterval(id);
 }
 
-// ── Рендер результата ────────────────────────────────────────────
+// ── Рендер result ────────────────────────────────────────────────
 function renderResult(result) {
   const { content, buttons } = result;
 
   if (typeof content === 'string') {
-    // Вариант A: обычный ответ или поиск
-    showMessage(content);
-    if (buttons.length > 0 && typeof buttons[0] === 'object') {
-      // Source-кнопки из поиска
-      showSourceButtons(buttons); // { label, type, url }
+    showAiMessage(content);
+
+    if (buttons.length && typeof buttons[0] === 'object') {
+      // source-кнопки (поиск): { label, type, url }
+      showSourceButtons(buttons);
     }
 
   } else if (typeof content === 'object') {
-    // Вариант B: задача — требует подтверждения
-    showMessage(content.explanation);
-    showActionButtons(buttons); // ["Запустить агента", "Отмена"]
+    // агентская задача — нужно подтверждение
+    showAiMessage(content.explanation);
+    showActionButtons(['Запустить агента', 'Отмена'], handleActionButton);
   }
 }
 
-// ── Обработка action-кнопок ──────────────────────────────────────
-async function onActionButton(label) {
-  if (label === 'Запустить агента') {
-    const res = await fetch(`${BASE_URL}/api/comit/execute?uid=${uid}`, { method: 'POST' });
-    const data = await res.json();
-    showMessage(data.message);
-  } else if (label === 'Отмена') {
-    const res = await fetch(`${BASE_URL}/api/comit/cancel?uid=${uid}`, { method: 'POST' });
-    const data = await res.json();
-    showMessage(data.message);
+// ── Action-кнопки ────────────────────────────────────────────────
+async function handleActionButton(label) {
+  const endpoint = label === 'Запустить агента' ? 'execute' : 'cancel';
+  const res = await fetch(`${BASE}/api/comit/${endpoint}?uid=${uid}`, { method: 'POST' });
+  const data = await res.json();
+  showAiMessage(data.message);
+}
+
+// ── Полный flow ──────────────────────────────────────────────────
+async function handleUserInput(text) {
+  showUserMessage(text);
+
+  const task_id = await sendMessage(text);
+  const stopStatus = startStatusPolling(updateStatusBar);
+
+  try {
+    const result = await pollTask(task_id);
+    renderResult(result);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    stopStatus();
+    resetStatusBar();
   }
 }
 
 // ── Загрузка истории ─────────────────────────────────────────────
 async function loadHistory() {
-  const res = await fetch(`${BASE_URL}/api/history/${uid}`);
+  const res = await fetch(`${BASE}/api/history/${uid}`);
   const messages = await res.json();
-  messages.forEach(msg => renderResult(msg));
-}
-
-// ── Полный flow ──────────────────────────────────────────────────
-async function handleUserInput(text) {
-  showMessage(text, 'user');
-
-  const task_id = await sendMessage(text);
-  const stopStatus = await pollStatus(updateStatusBar);
-
-  try {
-    const result = await pollTask(task_id);
-    renderResult(result);
-  } finally {
-    stopStatus();
-    clearStatusBar();
-  }
+  messages.forEach(m => {
+    if (m.role === 'user') showUserMessage(m.content);
+    else renderResult(m);
+  });
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -352,21 +443,12 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 ---
 
-## Типы кнопок — шпаргалка
-
-| Ситуация | Тип `buttons[i]` | Действие |
-|----------|-----------------|----------|
-| Обычный ответ | `[]` | кнопок нет |
-| Поиск по платформе | `{ label, type, url }` | открыть ссылку `url` |
-| Агентская задача | `"Запустить агента"` / `"Отмена"` | POST execute / cancel |
-
----
-
 ## Типичные ошибки
 
-| Ситуация | Что делать |
-|----------|------------|
-| `404` на `/api/task/{id}` | task_id неверный или задача удалена |
-| `400` на `/api/comit/execute` | нет pending-задачи для этого uid (уже выполнена или не было) |
-| `status: "FAILED"` | показать пользователю сообщение об ошибке, не блокировать ввод |
-| Долгий поллинг без ответа | ставь таймаут ~60 сек, показывай fallback-сообщение |
+| Ситуация | Причина | Что делать |
+|----------|---------|------------|
+| `404` на `/api/task/{id}` | Неверный или устаревший `task_id` | Показать ошибку пользователю |
+| `400` на `/api/comit/execute` | Нет pending-задачи для `uid` | Игнорировать или обновить UI |
+| `status: "FAILED"` | Ошибка агентского pipeline | Показать `result.error`, разблокировать ввод |
+| Поллинг без ответа >2 мин | Зависание бэкенда | Показать fallback-сообщение, разблокировать ввод |
+| `content` — объект вместо строки | Тип запроса = `task` | Рендерить `content.explanation`, показать action-кнопки |

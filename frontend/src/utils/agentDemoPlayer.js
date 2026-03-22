@@ -1,5 +1,5 @@
 /**
- * Последовательное воспроизведение сценария агента (демо запись на курс).
+ * Последовательное воспроизведение сценария агента (запись на курс).
  * @param {Array<{ action: string, target?: string, value?: string, delay_after_ms?: number, params?: object }>} actions
  * @param {{ navigateTo: (path: string) => void }} ctx
  */

@@ -1944,9 +1944,9 @@ function App() {
           aria-labelledby="agent-demo-start-title"
         >
           <div className="agent-demo-modal">
-            <h2 id="agent-demo-start-title">Запустить демо агента?</h2>
+            <h2 id="agent-demo-start-title">Запустить агента?</h2>
             <p>
-              ИИ покажет запись на демо-курс: переход к форме, плавное заполнение полей и отправка. Шаги выполняются с паузами,
+              ИИ покажет запись на курс: переход к форме, плавное заполнение полей и отправка. Шаги выполняются с паузами,
               чтобы было удобно наблюдать.
             </p>
             <div className="agent-demo-modal-actions">
@@ -1954,7 +1954,7 @@ function App() {
                 Отмена
               </button>
               <button type="button" className="btn-primary" onClick={() => void executeAgentDemoWithPlayback()}>
-                Начать демо
+                Начать
               </button>
             </div>
           </div>
@@ -1969,7 +1969,7 @@ function App() {
           aria-labelledby="agent-demo-done-title"
         >
           <div className="agent-demo-modal">
-            <h2 id="agent-demo-done-title">Демо завершено</h2>
+            <h2 id="agent-demo-done-title">Готово</h2>
             <p>Заявка отправлена в сценарии агента, запись на курс сохранена на сервере. Можете продолжить работу с платформой.</p>
             <div className="agent-demo-modal-actions">
               <button type="button" className="btn-secondary" onClick={() => setAgentDemoDoneOpen(false)}>

@@ -44,7 +44,7 @@ export const CHAT_PAGE_HISTORY_ITEMS = [
 export const CHAT_PAGE_COMPOSER_PROMPTS = [
   "Расскажи мне про ML",
   "Какой стек мне нужен?",
-  "Запиши меня на демо-курс ML-инженер"
+  "Запиши меня на курс ML-инженер"
 ];
 
 export const CHAT_PAGE_HERO_ACTIONS = ["Как начать изучать ML?", "AI мероприятия 2026"];

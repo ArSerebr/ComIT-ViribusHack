@@ -118,7 +118,7 @@ steps:
         set -e
         cp /configs/.env .env || true
         export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-comit}"
-        docker compose —profile core up —build
+        docker compose --profile core up --build
         # docker compose up -d
         # sleep 10
         # docker compose ps

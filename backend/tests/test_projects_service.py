@@ -183,6 +183,7 @@ async def test_delete_project_forbidden_for_stranger():
     p = MagicMock(spec=ProjectsProject)
     p.id = "p1"
     p.owner_user_id = owner
+    p.group_chat_id = None
     repo = AsyncMock()
     repo.get_project_only = AsyncMock(return_value=p)
     sink = AsyncMock()
@@ -210,6 +211,7 @@ async def test_update_project_moderator_can_edit_system_project():
     owner_row.is_hot = None
     owner_row.column_id = "col"
     owner_row.owner_user_id = None
+    owner_row.group_chat_id = None
     detail = MagicMock()
     detail.owner_name = "o"
     detail.join_label = "j"

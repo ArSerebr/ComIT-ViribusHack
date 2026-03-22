@@ -611,6 +611,223 @@
 }
 
 /* ==========================================================================
+   Project Chat Panel
+   ========================================================================== */
+
+.project-chat-panel {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 32px;
+  background: rgba(10, 10, 12, 0.82);
+}
+
+.project-chat-panel-head {
+  margin-bottom: 16px;
+}
+
+.project-chat-panel-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.project-chat-panel-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.project-chat-panel-error,
+.project-chat-panel-loading {
+  margin: 24px 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 15px;
+}
+
+.project-chat-panel-error {
+  color: #ff6b6b;
+}
+
+.project-chat-panel-messages {
+  flex: 1;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+  margin-bottom: 12px;
+}
+
+.project-chat-message {
+  padding: 12px 16px;
+  border-radius: 16px;
+  max-width: 85%;
+}
+
+.project-chat-message-user {
+  align-self: flex-end;
+  background: linear-gradient(128deg, rgba(112, 91, 160, 0.4), rgba(80, 76, 124, 0.3));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.project-chat-message-ai {
+  align-self: flex-start;
+  background: rgba(34, 34, 36, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.project-chat-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.project-chat-message-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.project-chat-message-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.project-chat-message-body {
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.project-chat-message-body p {
+  margin: 0 0 8px;
+}
+
+.project-chat-message-body p:last-child {
+  margin-bottom: 0;
+}
+
+.project-chat-typing-indicator {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.project-chat-typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  animation: project-chat-typing 1.4s ease-in-out infinite both;
+}
+
+.project-chat-typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.project-chat-typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes project-chat-typing {
+  0%,
+  80%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.project-chat-panel-form {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 14px;
+}
+
+.project-chat-panel-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.project-chat-ai-toggle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.project-chat-ai-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.project-chat-ai-toggle-on {
+  border-color: rgba(18, 229, 150, 0.5);
+  background: rgba(18, 229, 150, 0.1);
+  color: #12e596;
+}
+
+.project-chat-ai-toggle img {
+  width: 18px;
+  height: 18px;
+}
+
+.project-chat-panel-input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.project-chat-panel-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.project-chat-panel-send {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: linear-gradient(128deg, #cb7863 5%, #bc666c 52%, #9a5d91 100%);
+  color: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.project-chat-panel-send img {
+  width: 20px;
+  height: 20px;
+  transform: rotate(-90deg);
+}
+
+/* ==========================================================================
    Project Details Responsive
    ========================================================================== */
 

@@ -38,6 +38,7 @@ services:
 
   mongo:
     image: mongo:7
+    command: ["mongod", "--quiet"]
     ports:
       - "${MONGO_PORT:-27017}:27017"
     volumes:
@@ -71,6 +72,9 @@ services:
       SKIP_SEED: ${SKIP_SEED:-}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      # В Docker backend и qmsg-core в одной сети; localhost не работает.
+      QMSG_CORE_BASE_URL: http://qmsg-core:8090
+      PULSE_CORE_BASE_URL: http://pulse-core:8091
     ports:
       - "${BACKEND_PUBLISH_PORT:-8000}:8000"
     healthcheck:
@@ -146,6 +150,7 @@ services:
       - "${FRONTEND_PORT:-8080}:80"
     depends_on:
       - backend
+      - qmsg-core
     restart: unless-stopped
 
   frontend-analytics:
@@ -161,6 +166,22 @@ services:
       - "${FRONTEND_ANALYTICS_PORT:-8081}:80"
     depends_on:
       - backend
+    restart: unless-stopped
+
+  hackathon-parser:
+    profiles: ["core"]
+    image: comit-hackathon-parser:latest
+    build:
+      context: ./hackathon-parser
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
+      PARSE_INTERVAL_HOURS: ${PARSE_INTERVAL_HOURS:-1}
+    ports:
+      - "${HACKATHON_PARSER_PORT:-8012}:8012"
+    depends_on:
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
   pulse-core:

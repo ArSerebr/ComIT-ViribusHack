@@ -50,6 +50,7 @@ class ProjectsProject(Base):
         ForeignKey("user.id", ondelete="SET NULL"),
         nullable=True,
     )
+    group_chat_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class ProjectsProjectDetail(Base):

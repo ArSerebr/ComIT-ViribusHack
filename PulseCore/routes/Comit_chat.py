@@ -162,10 +162,9 @@ def execute_task(uid: str = Query(...)):
         raise HTTPException(status_code=400, detail="No pending task")
 
     last_task = state.get("last_task", {})
-    backend_requests = last_task.get("backend_requests", [])
+    backend_requests = list(last_task.get("backend_requests", []))
+    frontend_actions = list(last_task.get("frontend_requests", []))
 
-    # Здесь будет реальное выполнение backend_requests
-    # Пока формируем читаемый отчёт об исполненных действиях
     if backend_requests:
         actions = ", ".join(r.get("action", "?") for r in backend_requests)
         msg = f"Готово. Выполнено: {actions}."
@@ -177,7 +176,12 @@ def execute_task(uid: str = Query(...)):
     save_state(uid, state)
     save_message(uid, "ai", msg)
 
-    return {"status": "ok", "message": msg}
+    return {
+        "status": "ok",
+        "message": msg,
+        "frontend_actions": frontend_actions,
+        "backend_requests": backend_requests,
+    }
 
 
 @router.post("/api/comit/cancel")

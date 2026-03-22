@@ -197,7 +197,7 @@ async def seed_library(session: AsyncSession, wipe: bool) -> None:
         await session.execute(
             text(
                 "TRUNCATE library_article_tag, library_interest_tag, library_article, library_showcase_item, "
-                "library_interest_option, library_tag RESTART IDENTITY CASCADE"
+                "library_interest_option, library_tag, library_course RESTART IDENTITY CASCADE"
             )
         )
     for i, s in enumerate(LIBRARY_BUNDLE.showcaseItems):

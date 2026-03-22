@@ -35,6 +35,7 @@ def test_create_app_exposes_openapi():
     assert "/api/analytics/universities/{university_id}/export/projects" in body["paths"]
     assert "/api/analytics/universities/{university_id}/export/articles" in body["paths"]
     assert "/api/analytics/universities/{university_id}/export/join-requests" in body["paths"]
+    assert "/api/pulse/execute" in body["paths"]
     lib_article = body["components"]["schemas"]["LibraryArticle"]
     assert "interestIds" in lib_article["properties"]
     assert "UniversityListItem" in body["components"]["schemas"]

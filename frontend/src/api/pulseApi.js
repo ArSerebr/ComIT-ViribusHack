@@ -80,7 +80,7 @@ export async function getHistory(token) {
 /**
  * POST /api/pulse/execute — confirm task execution.
  * @param {string} token - ComIT session JWT
- * @returns {Promise<{ status: string, message: string }>}
+ * @returns {Promise<{ status: string, message: string, frontend_actions?: array }>}
  */
 export async function executeTask(token) {
   const res = await fetch(resolveApiUrl("/api/pulse/execute"), {

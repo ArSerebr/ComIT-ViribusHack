@@ -47,7 +47,7 @@ comit_planner_agent = Agent(
     name="PlannerAgent",
     model="gpt_nano",
     use_context=False,
-    input_fields=["frontend_request"],
+    input_fields=["task_description", "frontend_requests"],
     output_fields=["pipeline_explanation"],
     system_prompt_key="comit_planner_agent"
 )
@@ -114,7 +114,7 @@ AGENTS_METADATA = {
     },
     "UserAgent": {
         "color": "#743bc5",
-        "text": "Выполняю звдвние"
+        "text": "Выполняю задание"
     },
     "PlannerAgent": {
         "color": "#ff9800",

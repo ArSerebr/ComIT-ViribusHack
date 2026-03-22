@@ -153,7 +153,7 @@ export function usePulseChat({ sessionToken, enabled }) {
 
   const executePendingTask = useCallback(
     async () => {
-      if (!sessionToken) return;
+      if (!sessionToken) return null;
       try {
         const data = await executeTask(sessionToken);
         setMessages((prev) => [
@@ -165,8 +165,10 @@ export function usePulseChat({ sessionToken, enabled }) {
             buttons: [],
           },
         ]);
+        return data;
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
+        return null;
       }
     },
     [sessionToken],

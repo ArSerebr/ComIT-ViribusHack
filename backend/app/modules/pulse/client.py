@@ -78,7 +78,7 @@ class PulseCoreClient:
             return resp.json()
 
     async def execute(self, uid: str) -> dict:
-        """POST /api/comit/execute. Returns {status, message}."""
+        """POST /api/comit/execute. Returns PulseCore JSON (message, frontend_actions, ...)."""
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.post(
                 f"{self._base}/api/comit/execute",

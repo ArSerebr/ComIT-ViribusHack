@@ -72,7 +72,11 @@ export const INITIAL_CHAT = [
   }
 ];
 
-export const QUICK_PROMPTS = ["Главные новости IT", "Есть ли хакатоны от Т-Банка?"];
+export const QUICK_PROMPTS = [
+  "Главные новости IT",
+  "Есть ли хакатоны от Т-Банка?",
+  "Запиши меня на демо-курс ML-инженер"
+];
 
 export const NAV_LINKS = {
   courses: "/courses",

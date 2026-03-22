@@ -35,6 +35,7 @@ from app.modules.library.models import (
 )
 from app.modules.news.models import NewsFeatured, NewsMini
 from app.modules.notifications.models import NotificationsItem
+from app.modules.profile.models import ProfileUniversity
 from app.modules.projects.models import ProjectsColumn, ProjectsProject, ProjectsProjectDetail
 from app.seed.fixtures import (
     DASHBOARD_HOME,
@@ -46,6 +47,7 @@ from app.seed.fixtures import (
     PROJECT_DETAILS_BY_ID,
     PROJECT_HUB_COLUMNS,
     RECOMMENDATIONS,
+    UNIVERSITIES,
 )
 from fastapi_users.password import PasswordHelper
 from sqlalchemy import select, text
@@ -56,6 +58,7 @@ type SeedFn = Callable[[AsyncSession, bool], Awaitable[None]]
 
 MODULE_ORDER: tuple[str, ...] = (
     "auth",
+    "profile",
     "news",
     "projects",
     "library",
@@ -87,6 +90,19 @@ async def seed_auth(session: AsyncSession, wipe: bool) -> None:
             role="admin",
         )
     )
+
+
+async def seed_profile(session: AsyncSession, wipe: bool) -> None:
+    """Seed profile_university; on wipe truncate profile_university (CASCADE clears user_profile)."""
+    if wipe:
+        await session.execute(text("TRUNCATE profile_university CASCADE"))
+    for u in UNIVERSITIES:
+        row = ProfileUniversity(
+            id=u["id"],
+            name=u["name"],
+            sort_order=u["sort_order"],
+        )
+        await session.merge(row)
 
 
 async def seed_analytics(session: AsyncSession, wipe: bool) -> None:
@@ -278,6 +294,7 @@ async def seed_dashboard(session: AsyncSession, wipe: bool) -> None:
 
 SEED_REGISTRY: dict[str, SeedFn] = {
     "auth": seed_auth,
+    "profile": seed_profile,
     "analytics": seed_analytics,
     "news": seed_news,
     "projects": seed_projects,

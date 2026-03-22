@@ -287,7 +287,8 @@
   font-size: 14px;
 }
 
-.profile-form input {
+.profile-form input,
+.profile-form select {
   min-height: 50px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 14px;
@@ -295,6 +296,15 @@
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
   font-size: 15px;
+}
+
+.profile-form select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='rgba(255,255,255,0.7)'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
 }
 
 .profile-status {
@@ -410,7 +420,7 @@
 
 .article-reader-title {
   margin: 0;
-  font-size: clamp(40px, 3vw, 56px);
+  font-size: clamp(39px, 3vw, 39px);
   font-weight: 600;
   letter-spacing: -0.05em;
 }
@@ -433,7 +443,7 @@
 .article-reader-meta-icon {
   width: 17px;
   height: 17px;
-  display: block;
+  display: none;
   background: rgba(255, 255, 255, 0.78);
 }
 
@@ -501,6 +511,7 @@
 .article-reader-sidebar {
   display: grid;
   gap: 14px;
+  margin-top: 95px;
 }
 
 .article-reader-reco-card {
@@ -739,6 +750,23 @@
   margin: 8px 0 0;
   color: rgba(255, 255, 255, 0.68);
   font-size: 15px;
+}
+
+.project-create-auth-hint {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+}
+
+.project-create-auth-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgba(140, 190, 255, 0.95);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
 }
 
 .article-create-layout,

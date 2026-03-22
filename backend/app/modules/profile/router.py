@@ -9,9 +9,18 @@ from app.modules.auth.models import User
 from app.modules.profile.deps import get_profile_service
 from app.modules.profile.service import ProfileService
 from fastapi import APIRouter, Depends
-from schemas import ProfileInterestsAdd, ProfileMe, ProfileMePatch
+from schemas import ProfileInterestsAdd, ProfileMe, ProfileMePatch, ProfileUniversityOut
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
+
+
+@router.get("/universities", response_model=list[ProfileUniversityOut])
+async def list_universities(
+    _: User = Depends(current_active_user),
+    service: ProfileService = Depends(get_profile_service),
+):
+    """Список университетов для выбора при редактировании профиля."""
+    return await service.list_universities()
 
 
 @router.get("/me", response_model=ProfileMe)

@@ -210,6 +210,15 @@
     height: 52px;
   }
 
+  .mobile-shell {
+    display: none;
+  }
+
+  .mobile-url-bar,
+  .mobile-tab-dock {
+    display: none;
+  }
+
   .logo-wrap {
     position: relative;
     isolation: isolate;
@@ -1357,14 +1366,14 @@
   @media (max-width: 860px) {
     .viewport-frame,
     .design-canvas {
-      height: auto;
+      height: 100vh;
       min-height: 100vh;
     }
 
     .app-shell {
       min-height: 100vh;
-      overflow: visible;
-      padding: 16px 12px 84px;
+      overflow: hidden;
+      padding: calc(env(safe-area-inset-top, 0px) + 84px) 12px calc(env(safe-area-inset-bottom, 0px) + 108px);
     }
 
     .app-shell-news {
@@ -1372,52 +1381,163 @@
       padding-bottom: 0;
     }
 
-    .top-bar {
-      grid-template-columns: 1fr auto;
-      row-gap: 10px;
-    }
-
     .top-bar-news {
-      position: static;
-      min-height: auto;
-      border-radius: 14px;
-      padding: 6px 8px;
-      backdrop-filter: blur(14px) saturate(120%);
-      -webkit-backdrop-filter: blur(14px) saturate(120%);
+      display: none;
     }
 
-    .top-bar-news .logo-icon {
-      width: 48px;
-      height: 48px;
+    .mobile-shell {
+      display: block;
+      pointer-events: none;
     }
 
-    .top-bar-news .logo-text {
+    .mobile-url-bar {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 12px);
+      left: 12px;
+      right: 12px;
+      z-index: 74;
+      height: 56px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      padding: 0 8px 0 16px;
+      background: linear-gradient(180deg, rgba(66, 68, 78, 0.5), rgba(44, 46, 54, 0.58));
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(24px) saturate(120%);
+      -webkit-backdrop-filter: blur(24px) saturate(120%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .mobile-url-icon {
+      width: 20px;
+      height: 20px;
+      opacity: 0.78;
+    }
+
+    .mobile-url-text {
+      min-width: 0;
+      flex: 1;
+      color: rgba(255, 255, 255, 0.84);
       font-size: 16px;
+      font-weight: 550;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .menu-nav {
-      grid-column: 1 / -1;
-      justify-content: flex-start;
-      overflow-x: auto;
-      padding-bottom: 2px;
+    .mobile-url-refresh {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: grid;
+      place-items: center;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .mobile-url-refresh img {
+      width: 18px;
+      height: 18px;
+      opacity: 0.84;
+    }
+
+    .mobile-tab-dock {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      z-index: 74;
+      height: 76px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 9px;
+      background:
+        radial-gradient(circle at 16% 120%, rgba(190, 72, 255, 0.26), rgba(190, 72, 255, 0) 28%),
+        radial-gradient(circle at 88% 120%, rgba(255, 143, 73, 0.22), rgba(255, 143, 73, 0) 32%),
+        linear-gradient(180deg, rgba(56, 52, 61, 0.62), rgba(30, 28, 34, 0.72));
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(26px) saturate(126%);
+      -webkit-backdrop-filter: blur(26px) saturate(126%);
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      align-items: center;
+      pointer-events: auto;
+    }
+
+    .mobile-tab-item {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto;
+      border: 0;
+      border-radius: 50%;
+      padding: 0;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .mobile-tab-item-backdrop {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: #ffffff;
+      box-shadow: 0 16px 34px rgba(255, 255, 255, 0.22);
+    }
+
+    .mobile-tab-item-icon-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+
+    .mobile-tab-item-icon {
+      width: 24px;
+      height: 24px;
+      opacity: 0.8;
+      object-fit: contain;
+    }
+
+    .mobile-tab-item-active .mobile-tab-item-icon {
+      opacity: 1;
+      filter: brightness(0) saturate(100%);
+    }
+
+    .mobile-tab-item-ai.mobile-tab-item-active .mobile-tab-item-icon {
+      filter: none;
     }
 
     .dashboard-layout {
-      flex: none;
+      flex: 1;
       display: block;
-      margin-top: 20px;
+      margin-top: 0;
+      min-height: 0;
     }
 
     .dashboard-layout-news {
-      margin-top: 12px;
-      overflow: visible;
+      margin-top: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
       padding-right: 0;
-      padding-bottom: 0;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
     }
 
     .app-shell-news .dashboard-layout-news {
       margin-right: 0;
       padding-right: 0;
+      padding-top: 0;
     }
   }
 }
@@ -1577,20 +1697,36 @@
     }
 
     .ai-chat-shell {
-      width: calc(100% - 24px);
-      bottom: 68px;
-      transform: translateX(-50%);
+      left: 12px;
+      right: 12px;
+      width: auto;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 92px);
+      margin-left: 0;
+      transform: none;
+      z-index: 76;
+      border-radius: 20px;
+      padding: 10px 12px;
     }
 
     .ai-chat-bottom-blur {
-      bottom: -34px;
-      width: calc(100% + 36px);
-      height: 172px;
+      display: none;
     }
 
     .ai-suggestions {
-      margin-right: 28px;
+      margin-right: 24px;
       gap: 6px;
+    }
+
+    .chat-input-wrap {
+      height: 52px;
+      grid-template-columns: 40px minmax(0, 1fr) 42px;
+    }
+
+    .chat-logo-btn,
+    .chat-send-btn {
+      width: 40px;
+      height: 40px;
+      margin: 0;
     }
   }
 }

@@ -74,6 +74,7 @@ export function mapApiFeaturedNews(items = []) {
     description: normalizeString(item.description, ""),
     imageUrl: normalizeString(item.imageUrl, ""),
     ctaLabel: normalizeString(item.ctaLabel, "Участвовать"),
-    detailsUrl: normalizeString(item.detailsUrl, "/events")
+    detailsUrl: normalizeString(item.detailsUrl, "/events"),
+    participated: Boolean(item.participated)
   }));
 }

@@ -80,3 +80,40 @@ async def test_create_featured_ok_for_moderator():
     assert item is not None
     row = repo.add_featured.call_args[0][0]
     assert isinstance(row, NewsFeatured)
+
+
+@pytest.mark.asyncio
+async def test_participate_featured_ok():
+    repo = AsyncMock()
+    repo.get_featured = AsyncMock(return_value=MagicMock(id="f1"))
+    repo.add_participant = AsyncMock()
+    user = _user("user")
+    svc = NewsService(repo)
+    status, _ = await svc.participate_featured(user, "f1")
+    assert status == "ok"
+    repo.add_participant.assert_called_once_with(user.id, "f1")
+
+
+@pytest.mark.asyncio
+async def test_participate_featured_not_found():
+    repo = AsyncMock()
+    repo.get_featured = AsyncMock(return_value=None)
+    svc = NewsService(repo)
+    status, _ = await svc.participate_featured(_user("user"), "missing")
+    assert status == "not_found"
+    repo.add_participant.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_participate_featured_idempotent():
+    """Повторный вызов participate не падает и возвращает ok."""
+    repo = AsyncMock()
+    repo.get_featured = AsyncMock(return_value=MagicMock(id="f1"))
+    repo.add_participant = AsyncMock()
+    svc = NewsService(repo)
+    user = _user("user")
+    status1, _ = await svc.participate_featured(user, "f1")
+    status2, _ = await svc.participate_featured(user, "f1")
+    assert status1 == "ok"
+    assert status2 == "ok"
+    assert repo.add_participant.call_count == 2

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
+from datetime import datetime
 
 from app.modules.analytics.models import (
     AnalyticsInterestEvent,
     AnalyticsJoinRequest,
     AnalyticsLikeEvent,
 )
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -38,3 +41,22 @@ class AnalyticsRepository:
         )
         self._session.add(row)
         await self._session.flush()
+
+    async def get_join_requests_by_applicant_ids(
+        self, applicant_ids: Sequence[uuid.UUID]
+    ) -> list[tuple[int, str, uuid.UUID | None, datetime]]:
+        """Return (id, project_id, applicant_user_id, created_at) for given applicants."""
+        if not applicant_ids:
+            return []
+        stmt = (
+            select(
+                AnalyticsJoinRequest.id,
+                AnalyticsJoinRequest.project_id,
+                AnalyticsJoinRequest.applicant_user_id,
+                AnalyticsJoinRequest.created_at,
+            )
+            .where(AnalyticsJoinRequest.applicant_user_id.in_(applicant_ids))
+            .order_by(AnalyticsJoinRequest.created_at, AnalyticsJoinRequest.id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r[0], r[1], r[2], r[3]) for r in rows]

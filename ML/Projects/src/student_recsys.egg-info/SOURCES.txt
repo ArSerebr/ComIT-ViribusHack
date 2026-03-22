@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/student_recsys/__init__.py
+src/student_recsys/data_generation.py
+src/student_recsys/evaluation.py
+src/student_recsys/features.py
+src/student_recsys/pipeline.py
+src/student_recsys/schema.py
+src/student_recsys/training.py
+src/student_recsys.egg-info/PKG-INFO
+src/student_recsys.egg-info/SOURCES.txt
+src/student_recsys.egg-info/dependency_links.txt
+src/student_recsys.egg-info/requires.txt
+src/student_recsys.egg-info/top_level.txt

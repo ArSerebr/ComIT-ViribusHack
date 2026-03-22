@@ -7,7 +7,7 @@
 | Модуль | Таблицы | Назначение |
 |--------|---------|------------|
 | **auth** | `user` | Пользователи (fastapi-users: email, пароль, флаги) + роль (`user` / `moderator` / `admin`) |
-| **profile** | `user_profile`, `user_profile_interest` | Профиль (имя, био) и связь пользователя с опциями интересов из библиотеки |
+| **profile** | `user_profile`, `user_profile_interest`, `profile_university` | Профиль (имя, био, университет) и связь пользователя с опциями интересов из библиотеки; справочник университетов |
 | **projects** | `projects_column`, `projects_project`, `projects_project_detail` | Канбан-колонки, карточки проектов, детальная страница (JSON-блоки) |
 | **library** | `library_showcase_item`, `library_interest_option`, `library_article`, `library_tag`, `library_article_tag` | Витрина, опции интересов, статьи, теги, связь статья–тег |
 | **news** | `news_mini`, `news_featured` | Мини-новости и крупные новости |
@@ -17,7 +17,7 @@
 
 ## Связи (кратко)
 
-- `user` ← `user_profile` (1:1), `user_profile_interest` (M:N с `library_interest_option`).
+- `user` ← `user_profile` (1:1), `user_profile_interest` (M:N с `library_interest_option`). `user_profile.university_id` → `profile_university.id` (опционально, `ON DELETE SET NULL`).
 - `user` ← `projects_project.owner_user_id`, `library_article.owner_user_id`, `news_mini.author_user_id`, `news_featured.author_user_id` (все опционально, `ON DELETE SET NULL`).
 - `projects_column` → `projects_project` (`RESTRICT`); `projects_project` → `projects_project_detail` и `analytics_join_request` (`CASCADE`).
 - `library_article` ↔ `library_tag` через `library_article_tag` (`CASCADE` / `RESTRICT` на тег).
@@ -27,7 +27,7 @@
 - Уникальный: `user.email` (`ix_user_email`).
 - Составной: `projects_project` (`column_id`, `sort_order`) — `ix_projects_project_column_sort`.
 - Внешние ключи: `ix_projects_project_owner_user_id`, `ix_library_article_owner_user_id`, `ix_news_mini_author_user_id`, `ix_news_featured_author_user_id`.
-- Связующие: `ix_library_article_tag_tag_id`, `ix_user_profile_interest_interest_id`.
+- Связующие: `ix_library_article_tag_tag_id`, `ix_user_profile_interest_interest_id`, `ix_user_profile_university_id`.
 
 ---
 
@@ -56,10 +56,23 @@ Table "user" {
   Note: 'fastapi-users + role'
 }
 
+Table profile_university {
+  id varchar(64) [pk]
+  name varchar(255) [not null]
+  sort_order integer [not null, default: 0]
+
+  Note: 'Справочник университетов'
+}
+
 Table user_profile {
   user_id uuid [pk, ref: - "user".id]
   display_name varchar(255)
   bio text
+  university_id varchar(64) [ref: > profile_university.id, null]
+
+  indexes {
+    university_id [name: 'ix_user_profile_university_id']
+  }
 }
 
 Table library_interest_option {

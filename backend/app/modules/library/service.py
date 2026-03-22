@@ -111,8 +111,10 @@ class LibraryService:
         )
         await self._repo.add_article(row)
         await self._repo.replace_article_tags(body.id, list(body.tag_ids))
+        await self._repo.flush()
         tags = await self._repo.list_tags_for_article(body.id)
         iids = (await self._repo.list_interest_ids_for_articles([body.id])).get(body.id, [])
+        await self._repo.commit()
         return ("ok", _article_to_schema(row, tags, iids))
 
     async def update_article(
@@ -138,8 +140,10 @@ class LibraryService:
             row.author_avatar_url = body.author_avatar_url
         if body.tag_ids is not None:
             await self._repo.replace_article_tags(article_id, list(body.tag_ids))
+        await self._repo.flush()
         tags = await self._repo.list_tags_for_article(article_id)
         iids = (await self._repo.list_interest_ids_for_articles([article_id])).get(article_id, [])
+        await self._repo.commit()
         return ("ok", _article_to_schema(row, tags, iids))
 
     async def delete_article(
@@ -153,6 +157,7 @@ class LibraryService:
         if not can_edit_content(user, row.owner_user_id):
             return "forbidden"
         await self._repo.delete_article(article_id)
+        await self._repo.commit()
         return "ok"
 
     async def admin_create_showcase(
@@ -172,6 +177,7 @@ class LibraryService:
             sort_order=so,
         )
         await self._repo.add_showcase(row)
+        await self._repo.commit()
         return ("ok", _showcase_to_schema(row))
 
     async def admin_update_showcase(
@@ -194,12 +200,14 @@ class LibraryService:
             row.hero_json = body.hero.model_dump()
         if body.sort_order is not None:
             row.sort_order = body.sort_order
+        await self._repo.commit()
         return ("ok", _showcase_to_schema(row))
 
     async def admin_delete_showcase(self, item_id: str) -> Literal["ok", "not_found"]:
-        if await self._repo.delete_showcase(item_id):
-            return "ok"
-        return "not_found"
+        if not await self._repo.delete_showcase(item_id):
+            return "not_found"
+        await self._repo.commit()
+        return "ok"
 
     async def admin_create_interest(
         self,
@@ -215,6 +223,7 @@ class LibraryService:
             sort_order=so,
         )
         await self._repo.add_interest(row)
+        await self._repo.commit()
         return ("ok", InterestOption(id=row.id, label=row.label, selected=row.selected))
 
     async def admin_update_interest(
@@ -231,12 +240,14 @@ class LibraryService:
             row.selected = body.selected
         if body.sort_order is not None:
             row.sort_order = body.sort_order
+        await self._repo.commit()
         return ("ok", InterestOption(id=row.id, label=row.label, selected=row.selected))
 
     async def admin_delete_interest(self, interest_id: str) -> Literal["ok", "not_found"]:
-        if await self._repo.delete_interest(interest_id):
-            return "ok"
-        return "not_found"
+        if not await self._repo.delete_interest(interest_id):
+            return "not_found"
+        await self._repo.commit()
+        return "ok"
 
     async def admin_create_tag(
         self,
@@ -251,6 +262,7 @@ class LibraryService:
             sort_order=body.sort_order,
         )
         await self._repo.add_tag(row)
+        await self._repo.commit()
         return ("ok", ArticleTag(id=row.id, label=row.label, tone=row.tone))
 
     async def admin_update_tag(
@@ -267,6 +279,7 @@ class LibraryService:
             row.tone = body.tone
         if body.sort_order is not None:
             row.sort_order = body.sort_order
+        await self._repo.commit()
         return ("ok", ArticleTag(id=row.id, label=row.label, tone=row.tone))
 
     async def admin_delete_tag(self, tag_id: str) -> Literal["ok", "not_found", "in_use"]:
@@ -274,6 +287,7 @@ class LibraryService:
             return "not_found"
         if await self._repo.article_references_tag(tag_id):
             return "in_use"
-        if await self._repo.delete_tag(tag_id):
-            return "ok"
-        return "not_found"
+        if not await self._repo.delete_tag(tag_id):
+            return "not_found"
+        await self._repo.commit()
+        return "ok"

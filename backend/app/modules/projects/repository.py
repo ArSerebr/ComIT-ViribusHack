@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import uuid
+from collections.abc import Sequence
+
 from app.modules.projects.models import ProjectsColumn, ProjectsProject, ProjectsProjectDetail
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -67,6 +70,9 @@ class ProjectsRepository:
     async def add_detail(self, row: ProjectsProjectDetail) -> None:
         self._session.add(row)
 
+    async def commit(self) -> None:
+        await self._session.commit()
+
     async def delete_project(self, project_id: str) -> bool:
         res = await self._session.execute(
             delete(ProjectsProject).where(ProjectsProject.id == project_id)
@@ -90,3 +96,17 @@ class ProjectsRepository:
         stmt = select(func.coalesce(func.max(ProjectsColumn.sort_order), -1))
         v = (await self._session.execute(stmt)).scalar_one()
         return int(v) if v is not None else -1
+
+    async def get_projects_by_owner_ids(
+        self, owner_ids: Sequence[uuid.UUID]
+    ) -> list[tuple[str, str, uuid.UUID | None]]:
+        """Return (id, title, owner_user_id) for projects owned by given users."""
+        if not owner_ids:
+            return []
+        stmt = (
+            select(ProjectsProject.id, ProjectsProject.title, ProjectsProject.owner_user_id)
+            .where(ProjectsProject.owner_user_id.in_(owner_ids))
+            .order_by(ProjectsProject.owner_user_id, ProjectsProject.id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r[0], r[1], r[2]) for r in rows]

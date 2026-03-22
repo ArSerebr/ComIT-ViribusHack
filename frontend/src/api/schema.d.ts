@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liveness */
+        get: operations["liveness_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Readiness */
+        get: operations["readiness_ready_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/jwt/login": {
         parameters: {
             query?: never;
@@ -196,6 +230,23 @@ export interface paths {
         head?: never;
         /** Patch News Featured */
         patch: operations["patch_news_featured_api_news_featured__news_id__patch"];
+        trace?: never;
+    };
+    "/api/news/featured/{news_id}/participate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Participate Featured */
+        post: operations["participate_featured_api_news_featured__news_id__participate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/projects": {
@@ -460,6 +511,26 @@ export interface paths {
         patch: operations["admin_update_tag_api_admin_library_tags__tag_id__patch"];
         trace?: never;
     };
+    "/api/profile/universities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Universities
+         * @description Список университетов для выбора при редактировании профиля.
+         */
+        get: operations["list_universities_api_profile_universities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/me": {
         parameters: {
             query?: never;
@@ -476,6 +547,65 @@ export interface paths {
         head?: never;
         /** Patch My Profile */
         patch: operations["patch_my_profile_api_profile_me_patch"];
+        trace?: never;
+    };
+    "/api/profile/me/interests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post My Profile Interests
+         * @description Добавить интересы к профилю (уже выбранные и дубликаты в теле запроса игнорируются).
+         */
+        post: operations["post_my_profile_interests_api_profile_me_interests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/profile/universities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Admin List Universities
+         * @description Список университетов для админки.
+         */
+        get: operations["admin_list_universities_api_admin_profile_universities_get"];
+        put?: never;
+        /** Admin Create University */
+        post: operations["admin_create_university_api_admin_profile_universities_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/profile/universities/{university_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Admin Delete University */
+        delete: operations["admin_delete_university_api_admin_profile_universities__university_id__delete"];
+        options?: never;
+        head?: never;
+        /** Admin Update University */
+        patch: operations["admin_update_university_api_admin_profile_universities__university_id__patch"];
         trace?: never;
     };
     "/api/notifications": {
@@ -633,6 +763,8 @@ export interface components {
             ctaLabel: string;
             /** Detailsurl */
             detailsUrl: string;
+            /** Participated */
+            participated?: boolean | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -982,12 +1114,21 @@ export interface components {
             /** Label */
             label: string;
         };
+        /**
+         * ProfileInterestsAdd
+         * @description Добавить интересы к текущему набору (без удаления уже выбранных).
+         */
+        ProfileInterestsAdd: {
+            /** Interestids */
+            interestIds: string[];
+        };
         /** ProfileMe */
         ProfileMe: {
             /** Displayname */
             displayName?: string | null;
             /** Bio */
             bio?: string | null;
+            university?: components["schemas"]["ProfileUniversityOut"] | null;
             /** Interests */
             interests?: components["schemas"]["ProfileInterest"][];
         };
@@ -997,8 +1138,17 @@ export interface components {
             displayName?: string | null;
             /** Bio */
             bio?: string | null;
+            /** Universityid */
+            universityId?: string | null;
             /** Interestids */
             interestIds?: string[] | null;
+        };
+        /** ProfileUniversityOut */
+        ProfileUniversityOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** ProgressBlock */
         ProgressBlock: {
@@ -1208,6 +1358,22 @@ export interface components {
             /** Updatedlabel */
             updatedLabel: string;
         };
+        /** UniversityCreateBody */
+        UniversityCreateBody: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Sortorder */
+            sortOrder?: number | null;
+        };
+        /** UniversityUpdateBody */
+        UniversityUpdateBody: {
+            /** Name */
+            name?: string | null;
+            /** Sortorder */
+            sortOrder?: number | null;
+        };
         /**
          * UserCreate
          * @description Регистрация: роль с клиента не задаётся (только email/password + safe create).
@@ -1302,6 +1468,50 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    liveness_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    readiness_ready_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
     auth_jwt_login_api_auth_jwt_login_post: {
         parameters: {
             query?: never;
@@ -2061,6 +2271,44 @@ export interface operations {
             };
         };
     };
+    participate_featured_api_news_featured__news_id__participate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                news_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Мероприятие не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_project_api_projects_post: {
         parameters: {
             query?: never;
@@ -2085,15 +2333,6 @@ export interface operations {
             };
             /** @description Колонка не найдена */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorDetail"];
-                };
-            };
-            /** @description Проект с таким id уже есть */
-            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2918,6 +3157,26 @@ export interface operations {
             };
         };
     };
+    list_universities_api_profile_universities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileUniversityOut"][];
+                };
+            };
+        };
+    };
     get_my_profile_api_profile_me_get: {
         parameters: {
             query?: never;
@@ -2958,6 +3217,165 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileMe"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_my_profile_interests_api_profile_me_interests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileInterestsAdd"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileMe"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_list_universities_api_admin_profile_universities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileUniversityOut"][];
+                };
+            };
+        };
+    };
+    admin_create_university_api_admin_profile_universities_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UniversityCreateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileUniversityOut"];
+                };
+            };
+            /** @description Уже существует */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_delete_university_api_admin_profile_universities__university_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                university_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_update_university_api_admin_profile_universities__university_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                university_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UniversityUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileUniversityOut"];
                 };
             };
             /** @description Validation Error */

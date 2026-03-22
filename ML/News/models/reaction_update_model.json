@@ -1,0 +1,71 @@
+{
+  "trained_at": "2026-03-22T02:32:23.433490+00:00",
+  "training_file": "C:\\Users\\User\\OneDrive\\Desktop\\ML NEWS\\data\\processed\\news_ranker_training.csv",
+  "actions": {
+    "viewed": {
+      "trained_from_label": "open",
+      "positive_rate": 0.9343,
+      "feature_means": {
+        "topic_overlap_score": 0.8487,
+        "skill_overlap_score": 0.9077,
+        "skill_gain_score": 0.8546,
+        "freshness_alignment_score": 0.7742,
+        "source_loyalty_score": 0.7244,
+        "breaking_affinity_score": 0.5304
+      },
+      "interest_delta": 0.0156,
+      "required_skill_delta": 0.0118,
+      "gained_skill_delta": 0.0085,
+      "freshness_delta": 0.004,
+      "source_delta": 0.003,
+      "breaking_delta": 0.0022,
+      "redistribution_share": 0.3048
+    },
+    "liked": {
+      "trained_from_label": "like",
+      "positive_rate": 0.8722,
+      "feature_means": {
+        "topic_overlap_score": 0.8535,
+        "skill_overlap_score": 0.9129,
+        "skill_gain_score": 0.8587,
+        "freshness_alignment_score": 0.7745,
+        "source_loyalty_score": 0.7242,
+        "breaking_affinity_score": 0.5301
+      },
+      "interest_delta": 0.0181,
+      "required_skill_delta": 0.0138,
+      "gained_skill_delta": 0.0099,
+      "freshness_delta": 0.005,
+      "source_delta": 0.0038,
+      "breaking_delta": 0.0027,
+      "redistribution_share": 0.33
+    },
+    "read_more": {
+      "trained_from_label": "long_view",
+      "positive_rate": 0.7617,
+      "feature_means": {
+        "topic_overlap_score": 0.8536,
+        "skill_overlap_score": 0.9099,
+        "skill_gain_score": 0.858,
+        "freshness_alignment_score": 0.7702,
+        "source_loyalty_score": 0.725,
+        "breaking_affinity_score": 0.5297
+      },
+      "interest_delta": 0.0188,
+      "required_skill_delta": 0.0143,
+      "gained_skill_delta": 0.0104,
+      "freshness_delta": 0.0054,
+      "source_delta": 0.0041,
+      "breaking_delta": 0.0029,
+      "redistribution_share": 0.3408
+    }
+  },
+  "limits": {
+    "min_interest_weight": 0.2,
+    "max_interest_weight": 2.2,
+    "min_skill_weight": 0.2,
+    "max_skill_weight": 2.2,
+    "new_topic_cold_start": 0.62,
+    "new_skill_cold_start": 0.64
+  }
+}

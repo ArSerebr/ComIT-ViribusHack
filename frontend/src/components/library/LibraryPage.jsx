@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { assets } from "../../assets";
 import { LibraryArticleCard } from "./LibraryArticleCard";
 
@@ -181,6 +182,56 @@ function PreferenceButton({ option, isSelected, onToggle }) {
   );
 }
 
+function LibraryPreferencesCard({
+  className = "",
+  interestOptions,
+  selectedInterests,
+  onToggleInterest,
+  onSaveInterests,
+  onClose,
+  delay = 0.14
+}) {
+  const handleSave = () => {
+    onSaveInterests();
+    onClose?.();
+  };
+
+  return (
+    <motion.aside
+      className={`glass-card library-preferences-card ${className}`.trim()}
+      initial={{ opacity: 0, y: 22 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.34 }}
+    >
+      <div className="library-preferences-head">
+        <h2>Настрой свою ленту</h2>
+        {onClose ? (
+          <button className="library-preferences-close" type="button" aria-label="Закрыть фильтры" onClick={onClose}>
+            <img src={assets.group12021Icon} alt="" />
+          </button>
+        ) : null}
+      </div>
+
+      <p>Выбери темы и интересы для лучших рекомендаций</p>
+
+      <div className="library-preferences-grid">
+        {interestOptions.map((option) => (
+          <PreferenceButton
+            key={option.id}
+            option={option}
+            isSelected={Boolean(selectedInterests[option.id])}
+            onToggle={onToggleInterest}
+          />
+        ))}
+      </div>
+
+      <button className="library-save-btn" type="button" onClick={handleSave}>
+        Сохранить интересы
+      </button>
+    </motion.aside>
+  );
+}
+
 export function LibraryPage({
   heroItem,
   showcaseItems,
@@ -199,8 +250,81 @@ export function LibraryPage({
   isLoading = false,
   showOfflineFallbackNotice = false
 }) {
+  const [isMobilePreferencesOpen, setIsMobilePreferencesOpen] = useState(false);
+
   const activeShowcaseItem = showcaseItems[activeShowcaseIndex] || showcaseItems[0];
   const activeHeroItem = activeShowcaseItem?.hero || heroItem;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia("(min-width: 861px)");
+
+    const closeOnDesktop = (event) => {
+      if (event.matches) {
+        setIsMobilePreferencesOpen(false);
+      }
+    };
+
+    closeOnDesktop(mediaQuery);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", closeOnDesktop);
+      return () => mediaQuery.removeEventListener("change", closeOnDesktop);
+    }
+
+    mediaQuery.addListener(closeOnDesktop);
+    return () => mediaQuery.removeListener(closeOnDesktop);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobilePreferencesOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobilePreferencesOpen]);
+
+  const mobilePreferencesOverlay = (
+    <AnimatePresence>
+      {isMobilePreferencesOpen ? (
+        <motion.div
+          className="library-preferences-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={() => setIsMobilePreferencesOpen(false)}
+        >
+          <motion.div
+            className="library-preferences-overlay-shell"
+            initial={{ opacity: 0, y: 24, scale: 0.98, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: 16, scale: 0.98, filter: "blur(6px)" }}
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <LibraryPreferencesCard
+              className="library-preferences-card-mobile"
+              interestOptions={interestOptions}
+              selectedInterests={selectedInterests}
+              onToggleInterest={onToggleInterest}
+              onSaveInterests={onSaveInterests}
+              onClose={() => setIsMobilePreferencesOpen(false)}
+              delay={0}
+            />
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
 
   if (!showcaseItems.length) {
     return (
@@ -210,12 +334,20 @@ export function LibraryPage({
             <img src={assets.arrowSmallLeftIcon} alt="" />
           </button>
           <h1 className="library-page-title">Статьи и курсы</h1>
+          <button
+            className="library-filter-btn"
+            type="button"
+            aria-label="Открыть фильтры"
+            onClick={() => setIsMobilePreferencesOpen(true)}
+          >
+            <span className="library-filter-icon" aria-hidden="true" />
+          </button>
         </div>
 
         {isLoading ? (
           <div className="api-banner api-banner--loading" role="status" aria-live="polite">
             <span className="loading-spinner" aria-hidden />
-            Загрузка библиотеки…
+            Загрузка библиотеки...
           </div>
         ) : null}
         {showOfflineFallbackNotice ? (
@@ -228,36 +360,21 @@ export function LibraryPage({
           Не удалось загрузить витрину курсов. Проверьте сеть или что backend запущен.
         </p>
 
-        <motion.aside
-          className="glass-card library-preferences-card"
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14, duration: 0.34 }}
-        >
-          <h2>Настрой свою ленту</h2>
-          <p>Выбери темы и интересы для лучших рекомендаций</p>
-
-          <div className="library-preferences-grid">
-            {interestOptions.map((option) => (
-              <PreferenceButton
-                key={option.id}
-                option={option}
-                isSelected={Boolean(selectedInterests[option.id])}
-                onToggle={onToggleInterest}
-              />
-            ))}
-          </div>
-
-          <button className="library-save-btn" type="button" onClick={onSaveInterests}>
-            Сохранить интересы
-          </button>
-        </motion.aside>
+        <LibraryPreferencesCard
+          className="library-preferences-card-inline"
+          interestOptions={interestOptions}
+          selectedInterests={selectedInterests}
+          onToggleInterest={onToggleInterest}
+          onSaveInterests={onSaveInterests}
+        />
 
         <div className="library-articles-grid">
           {articleItems.map((item, index) => (
             <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} onOpen={onOpenArticle} />
           ))}
         </div>
+
+        {mobilePreferencesOverlay}
       </section>
     );
   }
@@ -269,12 +386,20 @@ export function LibraryPage({
           <img src={assets.arrowSmallLeftIcon} alt="" />
         </button>
         <h1 className="library-page-title">Статьи и курсы</h1>
+        <button
+          className="library-filter-btn"
+          type="button"
+          aria-label="Открыть фильтры"
+          onClick={() => setIsMobilePreferencesOpen(true)}
+        >
+          <span className="library-filter-icon" aria-hidden="true" />
+        </button>
       </div>
 
       {isLoading ? (
         <div className="api-banner api-banner--loading" role="status" aria-live="polite">
           <span className="loading-spinner" aria-hidden />
-          Загрузка библиотеки…
+          Загрузка библиотеки...
         </div>
       ) : null}
       {showOfflineFallbackNotice ? (
@@ -425,30 +550,13 @@ export function LibraryPage({
           </div>
         </motion.section>
 
-        <motion.aside
-          className="glass-card library-preferences-card"
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14, duration: 0.34 }}
-        >
-          <h2>Настрой свою ленту</h2>
-          <p>Выбери темы и интересы для лучших рекомендаций</p>
-
-          <div className="library-preferences-grid">
-            {interestOptions.map((option) => (
-              <PreferenceButton
-                key={option.id}
-                option={option}
-                isSelected={Boolean(selectedInterests[option.id])}
-                onToggle={onToggleInterest}
-              />
-            ))}
-          </div>
-
-          <button className="library-save-btn" type="button" onClick={onSaveInterests}>
-            Сохранить интересы
-          </button>
-        </motion.aside>
+        <LibraryPreferencesCard
+          className="library-preferences-card-inline"
+          interestOptions={interestOptions}
+          selectedInterests={selectedInterests}
+          onToggleInterest={onToggleInterest}
+          onSaveInterests={onSaveInterests}
+        />
       </div>
 
       <div className="library-articles-grid">
@@ -456,6 +564,8 @@ export function LibraryPage({
           <LibraryArticleCard key={item.id} item={item} delay={0.18 + index * 0.06} onOpen={onOpenArticle} />
         ))}
       </div>
+
+      {mobilePreferencesOverlay}
     </section>
   );
 }

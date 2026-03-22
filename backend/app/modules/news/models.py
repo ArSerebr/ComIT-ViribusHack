@@ -47,3 +47,20 @@ class NewsFeatured(Base):
         ForeignKey("user.id", ondelete="SET NULL"),
         nullable=True,
     )
+
+
+class NewsFeaturedParticipant(Base):
+    __tablename__ = "news_featured_participant"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+    featured_id: Mapped[str] = mapped_column(
+        String(255),
+        ForeignKey("news_featured.id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )

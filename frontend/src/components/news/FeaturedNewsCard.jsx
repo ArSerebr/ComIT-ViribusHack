@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export function FeaturedNewsCard({ item, onParticipate, delay = 0, className = "" }) {
+export function FeaturedNewsCard({ item, isParticipated = false, onParticipate, delay = 0, className = "" }) {
   const handleOpen = () => {
     onParticipate(item);
   };
@@ -31,12 +31,13 @@ export function FeaturedNewsCard({ item, onParticipate, delay = 0, className = "
         <button
           className="featured-news-cta"
           type="button"
+          disabled={isParticipated}
           onClick={(event) => {
             event.stopPropagation();
             handleOpen();
           }}
         >
-          + {item.ctaLabel}
+          {isParticipated ? "Вы участвуете" : `+ ${item.ctaLabel}`}
         </button>
       </div>
     </motion.article>

@@ -36,6 +36,69 @@
   letter-spacing: -0.04em;
 }
 
+.projects-hub-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.projects-hub-filter-btn {
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.04);
+  display: none;
+  place-items: center;
+  cursor: pointer;
+}
+
+.projects-hub-filter-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.projects-hub-filter-icon::before,
+.projects-hub-filter-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.projects-hub-filter-icon::before {
+  -webkit-mask:
+    radial-gradient(circle at 24% 20%, #000 0 18%, transparent 20%),
+    linear-gradient(#000, #000) center 20% / 90% 2px no-repeat,
+    radial-gradient(circle at 74% 50%, #000 0 18%, transparent 20%),
+    linear-gradient(#000, #000) center 50% / 90% 2px no-repeat,
+    radial-gradient(circle at 30% 80%, #000 0 18%, transparent 20%),
+    linear-gradient(#000, #000) center 80% / 90% 2px no-repeat;
+  mask:
+    radial-gradient(circle at 24% 20%, #000 0 18%, transparent 20%),
+    linear-gradient(#000, #000) center 20% / 90% 2px no-repeat,
+    radial-gradient(circle at 74% 50%, #000 0 18%, transparent 20%),
+    linear-gradient(#000, #000) center 50% / 90% 2px no-repeat,
+    radial-gradient(circle at 30% 80%, #000 0 18%, transparent 20%),
+    linear-gradient(#000, #000) center 80% / 90% 2px no-repeat;
+}
+
+.projects-hub-filter-icon::after {
+  opacity: 0.45;
+  filter: blur(4px);
+  -webkit-mask:
+    radial-gradient(circle at 24% 20%, #000 0 20%, transparent 22%),
+    radial-gradient(circle at 74% 50%, #000 0 20%, transparent 22%),
+    radial-gradient(circle at 30% 80%, #000 0 20%, transparent 22%);
+  mask:
+    radial-gradient(circle at 24% 20%, #000 0 20%, transparent 22%),
+    radial-gradient(circle at 74% 50%, #000 0 20%, transparent 22%),
+    radial-gradient(circle at 30% 80%, #000 0 20%, transparent 22%);
+}
+
 /* Kanban columns */
 .projects-hub-columns {
   display: grid;
@@ -217,7 +280,7 @@
   margin-top: auto;
   padding-top: 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -336,6 +399,10 @@
     gap: 16px;
   }
 
+  .projects-hub-head-actions {
+    width: 100%;
+  }
+
   .projects-hub-back-btn {
     width: 64px;
     height: 64px;
@@ -389,31 +456,57 @@
 
   .projects-hub-head {
     margin-bottom: 18px;
-    gap: 14px;
+    gap: 12px;
   }
 
   .projects-hub-title-wrap {
     align-items: center;
-    gap: 12px;
+    gap: 0;
+  }
+
+  .projects-hub-back-btn {
+    display: none;
   }
 
   .projects-hub-title {
-    font-size: 34px;
+    font-size: clamp(40px, 11vw, 56px);
+    line-height: 0.96;
+  }
+
+  .projects-hub-head-actions {
+    gap: 10px;
+  }
+
+  .projects-hub-create-btn {
+    flex: 1;
+    width: auto;
+    justify-content: flex-start;
+    padding: 0 20px;
+  }
+
+  .projects-hub-filter-btn {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    flex: 0 0 auto;
+  }
+
+  .projects-hub-columns {
+    gap: 14px;
   }
 
   .projects-hub-column-head {
-    min-height: 56px;
-    border-radius: 18px;
-    padding: 0 18px;
+    display: none;
   }
 
-  .projects-hub-column-head h2 {
-    font-size: 20px;
+  .projects-hub-card-list {
+    margin-top: 0;
+    gap: 12px;
   }
 
   .projects-hub-card {
     min-height: auto;
-    border-radius: 24px;
+    border-radius: 22px;
     padding: 16px 14px 14px;
   }
 
@@ -459,7 +552,7 @@
   }
 
   .project-hub-card-footer {
-    padding-top: 14px;
+    padding-top: 12px;
   }
 
   .project-hub-card-updated {

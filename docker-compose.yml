@@ -37,6 +37,7 @@ services:
     restart: unless-stopped
 
   backend:
+    profiles: ["core"]
     # Стабильные имена для Drone cleanup и прод-деплоя (не default project_service).
     image: comit-backend:latest
     build:
@@ -47,7 +48,8 @@ services:
       # Не из .env: там часто localhost для uvicorn на хосте; в сети compose хост Redis — имя сервиса `redis`.
       REDIS_URL: redis://redis:6379/0
       SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-false}
-      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      # Обязателен только при запуске профиля `core`; по умолчанию профиль выключен.
+      JWT_SECRET: ${JWT_SECRET:-disabled-core-jwt-secret}
       JWT_LIFETIME_SECONDS: ${JWT_LIFETIME_SECONDS:-3600}
       RESET_PASSWORD_TOKEN_SECRET: ${RESET_PASSWORD_TOKEN_SECRET:-}
       VERIFICATION_TOKEN_SECRET: ${VERIFICATION_TOKEN_SECRET:-}
@@ -77,11 +79,14 @@ services:
     restart: unless-stopped
 
   admin-panel:
+    profiles: ["core"]
     image: comit-admin-panel:latest
     build:
       context: ./admin-panel
       dockerfile: Dockerfile
     environment:
+      # Тот же DSN, что у backend — одна БД для FastAPI и Django admin.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-comit}
       POSTGRES_HOST: postgres
       POSTGRES_DB: ${POSTGRES_DB:-comit}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -92,14 +97,28 @@ services:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD:-admin12345}
+      WEB_CONCURRENCY: ${ADMIN_PANEL_WEB_CONCURRENCY:-2}
     ports:
       - "${ADMIN_PANEL_PORT:-8010}:8001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health/')",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
 
   frontend:
+    profiles: ["core"]
     image: comit-frontend:latest
     build:
       context: ./frontend
@@ -115,5 +134,21 @@ services:
       - backend
     restart: unless-stopped
 
+  frontend-analytics:
+    profiles: ["core"]
+    image: comit-frontend-analytics:latest
+    build:
+      context: ./frontend_analytics
+      dockerfile: Dockerfile
+    environment:
+      BACKEND_HOST: ${BACKEND_HOST:-backend}
+      BACKEND_PORT: ${BACKEND_UPSTREAM_PORT:-8000}
+    ports:
+      - "${FRONTEND_ANALYTICS_PORT:-8081}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  frontend_node_modules:

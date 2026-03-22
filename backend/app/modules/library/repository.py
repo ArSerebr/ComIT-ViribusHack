@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from collections.abc import Sequence
 
 from app.modules.library.models import (
@@ -88,6 +89,12 @@ class LibraryRepository:
     async def add_article(self, row: LibraryArticle) -> None:
         self._session.add(row)
 
+    async def flush(self) -> None:
+        await self._session.flush()
+
+    async def commit(self) -> None:
+        await self._session.commit()
+
     async def delete_article(self, article_id: str) -> bool:
         res = await self._session.execute(
             delete(LibraryArticle).where(LibraryArticle.id == article_id)
@@ -163,3 +170,22 @@ class LibraryRepository:
             select(LibraryArticleTag.article_id).where(LibraryArticleTag.tag_id == tag_id).limit(1)
         )
         return (await self._session.execute(stmt)).first() is not None
+
+    async def get_articles_by_owner_ids(
+        self, owner_ids: Sequence[uuid.UUID]
+    ) -> list[tuple[str, str, str, uuid.UUID | None]]:
+        """Return (id, title, author_name, owner_user_id) for articles owned by given users."""
+        if not owner_ids:
+            return []
+        stmt = (
+            select(
+                LibraryArticle.id,
+                LibraryArticle.title,
+                LibraryArticle.author_name,
+                LibraryArticle.owner_user_id,
+            )
+            .where(LibraryArticle.owner_user_id.in_(owner_ids))
+            .order_by(LibraryArticle.owner_user_id, LibraryArticle.id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r[0], r[1], r[2], r[3]) for r in rows]

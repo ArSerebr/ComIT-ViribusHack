@@ -1,0 +1,380 @@
+[
+  {
+    "id": "U001",
+    "name": "Аня Ковалева",
+    "role": "Product Manager",
+    "skills": [
+      "product management",
+      "prioritization",
+      "backlog management",
+      "research",
+      "roadmapping"
+    ],
+    "secondary_skills": [
+      "analytics",
+      "presentation",
+      "stakeholder management"
+    ],
+    "availability_hours_per_week": 16,
+    "current_load_hours": 12,
+    "max_parallel_tasks": 3,
+    "bio": "Product Manager со стеком product management, prioritization, backlog management, research. Дополнительно силен в analytics, presentation."
+  },
+  {
+    "id": "U002",
+    "name": "Илья Смирнов",
+    "role": "Business Analyst",
+    "skills": [
+      "research",
+      "customer development",
+      "requirements",
+      "documentation",
+      "user stories"
+    ],
+    "secondary_skills": [
+      "product discovery",
+      "analytics",
+      "sql"
+    ],
+    "availability_hours_per_week": 14,
+    "current_load_hours": 10,
+    "max_parallel_tasks": 4,
+    "bio": "Business Analyst со стеком research, customer development, requirements, documentation. Дополнительно силен в product discovery, analytics."
+  },
+  {
+    "id": "U003",
+    "name": "Маша Белова",
+    "role": "UX/UI Designer",
+    "skills": [
+      "ux design",
+      "ui design",
+      "figma",
+      "design systems",
+      "information architecture"
+    ],
+    "secondary_skills": [
+      "prototyping",
+      "user flow",
+      "branding"
+    ],
+    "availability_hours_per_week": 18,
+    "current_load_hours": 10,
+    "max_parallel_tasks": 2,
+    "bio": "UX/UI Designer со стеком ux design, ui design, figma, design systems. Дополнительно силен в prototyping, user flow."
+  },
+  {
+    "id": "U004",
+    "name": "Егор Павлов",
+    "role": "Frontend Engineer",
+    "skills": [
+      "react",
+      "typescript",
+      "frontend",
+      "state management",
+      "api integration"
+    ],
+    "secondary_skills": [
+      "next.js",
+      "performance",
+      "form validation"
+    ],
+    "availability_hours_per_week": 20,
+    "current_load_hours": 9,
+    "max_parallel_tasks": 3,
+    "bio": "Frontend Engineer со стеком react, typescript, frontend, state management. Дополнительно силен в next.js, performance."
+  },
+  {
+    "id": "U005",
+    "name": "София Громова",
+    "role": "Frontend Engineer",
+    "skills": [
+      "react",
+      "typescript",
+      "frontend",
+      "design systems",
+      "testing library"
+    ],
+    "secondary_skills": [
+      "accessibility",
+      "css",
+      "api integration"
+    ],
+    "availability_hours_per_week": 18,
+    "current_load_hours": 12,
+    "max_parallel_tasks": 3,
+    "bio": "Frontend Engineer со стеком react, typescript, frontend, design systems. Дополнительно силен в accessibility, css."
+  },
+  {
+    "id": "U006",
+    "name": "Данил Жуков",
+    "role": "Backend Engineer",
+    "skills": [
+      "python",
+      "fastapi",
+      "api development",
+      "sql",
+      "database design"
+    ],
+    "secondary_skills": [
+      "backend architecture",
+      "authentication",
+      "pytest"
+    ],
+    "availability_hours_per_week": 20,
+    "current_load_hours": 5,
+    "max_parallel_tasks": 3,
+    "bio": "Backend Engineer со стеком python, fastapi, api development, sql. Дополнительно силен в backend architecture, authentication."
+  },
+  {
+    "id": "U007",
+    "name": "Никита Орлов",
+    "role": "Backend Engineer",
+    "skills": [
+      "node.js",
+      "postgresql",
+      "api development",
+      "security",
+      "backend"
+    ],
+    "secondary_skills": [
+      "authentication",
+      "redis",
+      "backend architecture"
+    ],
+    "availability_hours_per_week": 16,
+    "current_load_hours": 1,
+    "max_parallel_tasks": 2,
+    "bio": "Backend Engineer со стеком node.js, postgresql, api development, security. Дополнительно силен в authentication, redis."
+  },
+  {
+    "id": "U008",
+    "name": "Полина Миронова",
+    "role": "Mobile Engineer",
+    "skills": [
+      "flutter",
+      "mobile",
+      "mobile ui",
+      "firebase",
+      "state management"
+    ],
+    "secondary_skills": [
+      "android",
+      "push notifications",
+      "api integration"
+    ],
+    "availability_hours_per_week": 16,
+    "current_load_hours": 6,
+    "max_parallel_tasks": 3,
+    "bio": "Mobile Engineer со стеком flutter, mobile, mobile ui, firebase. Дополнительно силен в android, push notifications."
+  },
+  {
+    "id": "U009",
+    "name": "Тимур Каримов",
+    "role": "Data Scientist",
+    "skills": [
+      "machine learning",
+      "python",
+      "embeddings",
+      "nlp",
+      "semantic search"
+    ],
+    "secondary_skills": [
+      "recommender systems",
+      "pandas",
+      "evaluation"
+    ],
+    "availability_hours_per_week": 14,
+    "current_load_hours": 8,
+    "max_parallel_tasks": 2,
+    "bio": "Data Scientist со стеком machine learning, python, embeddings, nlp. Дополнительно силен в recommender systems, pandas."
+  },
+  {
+    "id": "U010",
+    "name": "Вика Романова",
+    "role": "Data Analyst",
+    "skills": [
+      "analytics",
+      "sql",
+      "dashboarding",
+      "product metrics",
+      "event tracking"
+    ],
+    "secondary_skills": [
+      "a/b testing",
+      "visualization",
+      "experiments"
+    ],
+    "availability_hours_per_week": 14,
+    "current_load_hours": 9,
+    "max_parallel_tasks": 3,
+    "bio": "Data Analyst со стеком analytics, sql, dashboarding, product metrics. Дополнительно силен в a/b testing, visualization."
+  },
+  {
+    "id": "U011",
+    "name": "Артем Седов",
+    "role": "DevOps Engineer",
+    "skills": [
+      "devops",
+      "docker",
+      "github actions",
+      "linux",
+      "deployment"
+    ],
+    "secondary_skills": [
+      "monitoring",
+      "cloud",
+      "ci/cd"
+    ],
+    "availability_hours_per_week": 15,
+    "current_load_hours": 10,
+    "max_parallel_tasks": 2,
+    "bio": "DevOps Engineer со стеком devops, docker, github actions, linux. Дополнительно силен в monitoring, cloud."
+  },
+  {
+    "id": "U012",
+    "name": "Ксения Фролова",
+    "role": "QA Engineer",
+    "skills": [
+      "qa",
+      "manual testing",
+      "test design",
+      "regression testing",
+      "acceptance testing"
+    ],
+    "secondary_skills": [
+      "bug reporting",
+      "checklists",
+      "usability testing"
+    ],
+    "availability_hours_per_week": 15,
+    "current_load_hours": 2,
+    "max_parallel_tasks": 3,
+    "bio": "QA Engineer со стеком qa, manual testing, test design, regression testing. Дополнительно силен в bug reporting, checklists."
+  },
+  {
+    "id": "U013",
+    "name": "Руслан Виноградов",
+    "role": "QA Automation Engineer",
+    "skills": [
+      "qa automation",
+      "pytest",
+      "api testing",
+      "selenium",
+      "python"
+    ],
+    "secondary_skills": [
+      "ci/cd",
+      "test strategy",
+      "quality gates"
+    ],
+    "availability_hours_per_week": 14,
+    "current_load_hours": 0,
+    "max_parallel_tasks": 2,
+    "bio": "QA Automation Engineer со стеком qa automation, pytest, api testing, selenium. Дополнительно силен в ci/cd, test strategy."
+  },
+  {
+    "id": "U014",
+    "name": "Лера Демина",
+    "role": "Fullstack Engineer",
+    "skills": [
+      "react",
+      "python",
+      "fastapi",
+      "frontend",
+      "api development"
+    ],
+    "secondary_skills": [
+      "sql",
+      "docker",
+      "authentication"
+    ],
+    "availability_hours_per_week": 18,
+    "current_load_hours": 1,
+    "max_parallel_tasks": 3,
+    "bio": "Fullstack Engineer со стеком react, python, fastapi, frontend. Дополнительно силен в sql, docker."
+  },
+  {
+    "id": "U015",
+    "name": "Максим Титов",
+    "role": "Product Designer",
+    "skills": [
+      "ui design",
+      "figma",
+      "branding",
+      "prototyping",
+      "design systems"
+    ],
+    "secondary_skills": [
+      "ux design",
+      "presentation",
+      "motion design"
+    ],
+    "availability_hours_per_week": 12,
+    "current_load_hours": 4,
+    "max_parallel_tasks": 4,
+    "bio": "Product Designer со стеком ui design, figma, branding, prototyping. Дополнительно силен в ux design, presentation."
+  },
+  {
+    "id": "U016",
+    "name": "Оля Нестерова",
+    "role": "Growth Analyst",
+    "skills": [
+      "analytics",
+      "event tracking",
+      "dashboarding",
+      "visualization",
+      "growth"
+    ],
+    "secondary_skills": [
+      "sql",
+      "product metrics",
+      "experiments"
+    ],
+    "availability_hours_per_week": 12,
+    "current_load_hours": 11,
+    "max_parallel_tasks": 3,
+    "bio": "Growth Analyst со стеком analytics, event tracking, dashboarding, visualization. Дополнительно силен в sql, product metrics."
+  },
+  {
+    "id": "U017",
+    "name": "Саша Лебедев",
+    "role": "Backend / Security",
+    "skills": [
+      "backend",
+      "security",
+      "authentication",
+      "python",
+      "api development"
+    ],
+    "secondary_skills": [
+      "owasp",
+      "database design",
+      "monitoring"
+    ],
+    "availability_hours_per_week": 12,
+    "current_load_hours": 11,
+    "max_parallel_tasks": 2,
+    "bio": "Backend / Security со стеком backend, security, authentication, python. Дополнительно силен в owasp, database design."
+  },
+  {
+    "id": "U018",
+    "name": "Катя Власова",
+    "role": "Project Coordinator",
+    "skills": [
+      "project management",
+      "documentation",
+      "communication",
+      "planning",
+      "risk management"
+    ],
+    "secondary_skills": [
+      "backlog management",
+      "research",
+      "stakeholder management"
+    ],
+    "availability_hours_per_week": 10,
+    "current_load_hours": 2,
+    "max_parallel_tasks": 2,
+    "bio": "Project Coordinator со стеком project management, documentation, communication, planning. Дополнительно силен в backlog management, research."
+  }
+]

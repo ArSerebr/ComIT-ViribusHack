@@ -67,17 +67,6 @@ export function AuthPage({
           Согласитесь с правилами политики конфиденциальности и условиями использования платформы.
         </p>
 
-        <div className="auth-social-list">
-          <button type="button" className="auth-social-btn">
-            <span>A</span>
-            Войти с помощью Apple
-          </button>
-          <button type="button" className="auth-social-btn">
-            <span>G</span>
-            Войти с помощью Google
-          </button>
-        </div>
-
         <label className="auth-field">
           <span>Email</span>
           <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Введите почту" />

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { assets } from "../../assets";
 import { ProjectStatusColumn } from "./ProjectStatusColumn";
@@ -11,6 +12,7 @@ export function ProjectHubPage({
   isError = false,
   useStaticFallback = true
 }) {
+  const [activeColumnIndex, setActiveColumnIndex] = useState(0);
   const showSkeleton = isLoading && !columns?.length;
   const showEmpty = !showSkeleton && !columns?.length && isError && !useStaticFallback;
 
@@ -21,7 +23,10 @@ export function ProjectHubPage({
           <button className="news-back-btn projects-hub-back-btn" type="button" aria-label="Назад на главную" onClick={onBack}>
             <img src={assets.arrowSmallLeftIcon} alt="" />
           </button>
-          <h1 className="projects-hub-title">Проекты университета</h1>
+          <h1 className="projects-hub-title">
+            <span className="projects-hub-title-full">Проекты университета</span>
+            <span className="projects-hub-title-short">Проекты</span>
+          </h1>
         </div>
 
         <div className="projects-hub-head-actions">
@@ -37,20 +42,24 @@ export function ProjectHubPage({
             <span>Создать проект</span>
           </motion.button>
 
-          <motion.button
-            className="projects-hub-filter-btn"
-            type="button"
-            aria-label="Фильтры проектов"
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.16, duration: 0.3 }}
-            whileHover={{ y: -2, scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
-          >
-            <span className="projects-hub-filter-icon" aria-hidden="true" />
-          </motion.button>
         </div>
       </div>
+
+      {!showSkeleton && !showEmpty && columns.length > 0 ? (
+        <div className="projects-hub-column-tabs">
+          {columns.map((column, index) => (
+            <button
+              key={column.id}
+              type="button"
+              className={`projects-hub-column-tab ${activeColumnIndex === index ? "projects-hub-column-tab-active" : ""}`}
+              onClick={() => setActiveColumnIndex(index)}
+            >
+              {column.title}
+              <span className="projects-hub-column-tab-count">{column.count}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="projects-hub-columns">
         {showSkeleton ? (
@@ -67,7 +76,13 @@ export function ProjectHubPage({
         ) : null}
         {!showSkeleton && !showEmpty
           ? columns.map((column, index) => (
-              <ProjectStatusColumn key={column.id} column={column} columnIndex={index} onOpenProject={onOpenProject} />
+              <ProjectStatusColumn
+                key={column.id}
+                column={column}
+                columnIndex={index}
+                onOpenProject={onOpenProject}
+                mobileHidden={index !== activeColumnIndex}
+              />
             ))
           : null}
       </div>

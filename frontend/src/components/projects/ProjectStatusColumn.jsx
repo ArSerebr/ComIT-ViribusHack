@@ -1,8 +1,8 @@
 import { ProjectCard } from "./ProjectCard";
 
-export function ProjectStatusColumn({ column, columnIndex, onOpenProject }) {
+export function ProjectStatusColumn({ column, columnIndex, onOpenProject, mobileHidden = false }) {
   return (
-    <section className={`projects-hub-column projects-hub-column-${column.id}`}>
+    <section className={`projects-hub-column projects-hub-column-${column.id}${mobileHidden ? " projects-hub-column-mobile-hidden" : ""}`}>
       <header className={`projects-hub-column-head projects-hub-column-head-${column.id}`}>
         <h2>
           {column.title} ({column.count})

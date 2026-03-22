@@ -14,6 +14,7 @@ from app.modules.university_analytics import router as university_analytics_rout
 from app.modules.auth.router import router as auth_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.hackathons import router as hackathons_router
+from app.modules.it_news import router as it_news_router
 from app.modules.library import router as library_router
 from app.modules.library.admin_router import router as library_admin_router
 from app.modules.news import router as news_router
@@ -47,6 +48,7 @@ _MODULE_ROUTERS = [
     dashboard_router,
     recommendations_router,
     hackathons_router,
+    it_news_router,
 ]
 
 

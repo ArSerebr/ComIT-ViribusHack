@@ -24,3 +24,14 @@ class RecommendationCatalogRepository:
         rows = list(result.scalars().all())
         by_id = {r.id: r for r in rows}
         return [by_id[i] for i in ids if i in by_id]
+
+    async def list_active_ordered(self) -> list[RecommendationCatalogItem]:
+        result = await self._session.execute(
+            select(RecommendationCatalogItem)
+            .where(RecommendationCatalogItem.is_active.is_(True))
+            .order_by(
+                RecommendationCatalogItem.sort_order.asc(),
+                RecommendationCatalogItem.id.asc(),
+            )
+        )
+        return list(result.scalars().all())

@@ -9,6 +9,24 @@ from schemas import RecommendationCard
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+async def list_recommendation_catalog_ordered(
+    session: AsyncSession,
+) -> list[RecommendationCard]:
+    """Все активные карточки каталога в порядке sort_order (статический fallback)."""
+    repo = RecommendationCatalogRepository(session)
+    rows = await repo.list_active_ordered()
+    return [
+        RecommendationCard(
+            id=r.id,
+            title=r.title,
+            subtitle=r.subtitle,
+            image=r.image_url,
+            link=r.link_url,
+        )
+        for r in rows
+    ]
+
+
 async def get_catalog_cards_by_ids(
     session: AsyncSession, ids: Sequence[str]
 ) -> list[RecommendationCard]:

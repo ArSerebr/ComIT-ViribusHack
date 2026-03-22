@@ -24,6 +24,30 @@ class RecommendationsService:
         self._session = session
         self._ml = ml_client or MLRecommendationClient()
 
+    async def _static_recommendation_cards(self) -> list[RecommendationCard]:
+        """
+        Dashboard seed cards + recommendation_catalog (CSV/hackathons).
+        Same id: catalog row wins; catalog-only ids are appended after dashboard order.
+        """
+        dash = await dashboard_public_api.list_recommendation_cards_ordered(
+            self._session
+        )
+        catalog = await reco_catalog_public_api.list_recommendation_catalog_ordered(
+            self._session
+        )
+        cat_by_id = {c.id: c for c in catalog}
+        out: list[RecommendationCard] = []
+        seen: set[str] = set()
+        for c in dash:
+            merged = cat_by_id.get(c.id, c)
+            out.append(merged)
+            seen.add(c.id)
+        for c in catalog:
+            if c.id not in seen:
+                out.append(c)
+                seen.add(c.id)
+        return out
+
     async def list_recommendations(
         self, user_id: uuid.UUID | None, limit: int = 10
     ) -> list[RecommendationCard]:
@@ -32,18 +56,14 @@ class RecommendationsService:
         or static fallback for anonymous.
         """
         if user_id is None:
-            return await dashboard_public_api.list_recommendation_cards_ordered(
-                self._session
-            )
+            return await self._static_recommendation_cards()
 
         try:
             news_recs = await self._ml.recommend_news(str(user_id), limit=limit)
             event_recs = await self._ml.recommend_events(str(user_id), limit=limit)
         except Exception as e:
             logger.warning("ML recommendations failed, using static fallback: %s", e)
-            return await dashboard_public_api.list_recommendation_cards_ordered(
-                self._session
-            )
+            return await self._static_recommendation_cards()
 
         card_ids = []
         seen: set[str] = set()
@@ -54,9 +74,7 @@ class RecommendationsService:
                 card_ids.append(cid)
 
         if not card_ids:
-            return await dashboard_public_api.list_recommendation_cards_ordered(
-                self._session
-            )
+            return await self._static_recommendation_cards()
 
         cards_by_id = await self._resolve_cards(card_ids)
         return [

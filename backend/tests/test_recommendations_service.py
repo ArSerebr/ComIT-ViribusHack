@@ -28,11 +28,14 @@ def session():
 
 @pytest.mark.asyncio
 async def test_list_recommendations_anonymous_returns_static_fallback(session, mock_ml):
-    """Anonymous user gets static recommendations from dashboard."""
+    """Anonymous user gets dashboard + recommendation_catalog (merged)."""
     with (
         patch(
             "app.modules.recommendations.service.dashboard_public_api"
         ) as dash_api,
+        patch(
+            "app.modules.recommendations.service.reco_catalog_public_api"
+        ) as cat_api,
     ):
         dash_api.list_recommendation_cards_ordered = AsyncMock(
             return_value=[
@@ -41,11 +44,55 @@ async def test_list_recommendations_anonymous_returns_static_fallback(session, m
                 )
             ]
         )
+        cat_api.list_recommendation_catalog_ordered = AsyncMock(
+            return_value=[
+                RecommendationCard(
+                    id="cat1",
+                    title="From CSV",
+                    subtitle="",
+                    image="",
+                    link="",
+                )
+            ]
+        )
         svc = RecommendationsService(session, ml_client=mock_ml)
         out = await svc.list_recommendations(user_id=None)
-    assert len(out) == 1
+    assert len(out) == 2
     assert out[0].id == "s1"
+    assert out[1].id == "cat1"
+    assert out[1].title == "From CSV"
     mock_ml.recommend_news.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_static_recommendation_cards_catalog_overrides_dashboard(session, mock_ml):
+    """Same id in dashboard and catalog: catalog title wins."""
+    with (
+        patch(
+            "app.modules.recommendations.service.dashboard_public_api"
+        ) as dash_api,
+        patch(
+            "app.modules.recommendations.service.reco_catalog_public_api"
+        ) as cat_api,
+    ):
+        dash_api.list_recommendation_cards_ordered = AsyncMock(
+            return_value=[
+                RecommendationCard(
+                    id="x1", title="Dash", subtitle="", image="", link=""
+                )
+            ]
+        )
+        cat_api.list_recommendation_catalog_ordered = AsyncMock(
+            return_value=[
+                RecommendationCard(
+                    id="x1", title="Catalog", subtitle="", image="", link=""
+                )
+            ]
+        )
+        svc = RecommendationsService(session, ml_client=mock_ml)
+        out = await svc._static_recommendation_cards()
+    assert len(out) == 1
+    assert out[0].title == "Catalog"
 
 
 @pytest.mark.asyncio
@@ -83,12 +130,15 @@ async def test_list_recommendations_authenticated_calls_ml_and_resolves(session,
 
 @pytest.mark.asyncio
 async def test_list_recommendations_ml_failure_fallback(session, mock_ml):
-    """When ML fails, fallback to static recommendations."""
+    """When ML fails, fallback merges dashboard + catalog."""
     mock_ml.recommend_news.side_effect = Exception("ML timeout")
     with (
         patch(
             "app.modules.recommendations.service.dashboard_public_api"
         ) as dash_api,
+        patch(
+            "app.modules.recommendations.service.reco_catalog_public_api"
+        ) as cat_api,
     ):
         dash_api.list_recommendation_cards_ordered = AsyncMock(
             return_value=[
@@ -97,6 +147,7 @@ async def test_list_recommendations_ml_failure_fallback(session, mock_ml):
                 )
             ]
         )
+        cat_api.list_recommendation_catalog_ordered = AsyncMock(return_value=[])
         svc = RecommendationsService(session, ml_client=mock_ml)
         out = await svc.list_recommendations(user_id=uuid.uuid4())
     assert len(out) == 1

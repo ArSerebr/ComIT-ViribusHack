@@ -1010,14 +1010,6 @@ function App() {
     void postRecommendationFeedback(sessionToken, body).catch(() => {});
   };
 
-  const rotateDeck = () => {
-    setDeck((prev) => {
-      if (prev.length === 0) return prev;
-      const [first, ...rest] = prev;
-      return [...rest, { ...first, instanceId: `${first.id}-${Date.now()}` }];
-    });
-  };
-
   const dismissTopCard = (gesture) => {
     if (!canDismiss) {
       return;
@@ -1600,12 +1592,14 @@ function App() {
     sendMessage(chatInput);
   };
 
-  const handleTopCardExitComplete = () => {
-    if (dismissDirection) {
-      rotateDeck();
-      setDismissDirection(null);
-    }
-  };
+  const handleTopCardExitComplete = useCallback(() => {
+    setDeck((prev) => {
+      if (prev.length === 0) return prev;
+      const [first, ...rest] = prev;
+      return [...rest, { ...first, instanceId: `${first.id}-${Date.now()}` }];
+    });
+    setDismissDirection(null);
+  }, []);
 
   const mainContent = showOnboarding ? (
     <OnboardingPage

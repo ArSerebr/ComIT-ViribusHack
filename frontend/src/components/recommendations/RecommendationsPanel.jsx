@@ -1,415 +1,309 @@
-import { useEffect, useRef } from "react";
-import {
-  AnimatePresence,
-  animate,
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useTransform
-} from "framer-motion";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { assets } from "../../assets";
 
-const RETURN_SPRING = {
-  type: "spring",
-  stiffness: 340,
-  damping: 28,
-  mass: 0.9
-};
+const DISMISS_PX = 120;
+const DISMISS_VEL = 500;
 
-const EXIT_SPRING = {
-  type: "spring",
-  stiffness: 250,
-  damping: 24,
-  mass: 0.88
-};
+const EXIT_SPRING = { type: "spring", stiffness: 380, damping: 32, mass: 0.85 };
 
-const DISMISS_DISTANCE = 150;
-const DISMISS_VELOCITY = 820;
-const EXIT_COMPLETE_DELAY = 320;
+function recoKindFromCard(card) {
+  const id = String(card?.id || "");
+  if (id.startsWith("proj_")) return { label: "Проект", className: "reco-badge--project" };
+  if (id.startsWith("course_")) return { label: "Курс", className: "reco-badge--course" };
+  if (id.startsWith("article_")) return { label: "Статья", className: "reco-badge--article" };
+  if (id.startsWith("hack_")) return { label: "Хакатон", className: "reco-badge--hackathon" };
+  return { label: "Для вас", className: "reco-badge--default" };
+}
 
 function stopCardDrag(event) {
   event.stopPropagation();
 }
 
-const STACK_STYLE = {
-  1: { "--stack-scale": 0.94, "--stack-shift-y": "6px" },
-  2: { "--stack-scale": 0.9, "--stack-shift-y": "12px" }
-};
-
-function DraggableCard({
-  card,
-  canDismiss,
-  dismissDirection,
-  topCardExitAnimation,
-  onDismissTopCard,
-  onTopCardExitComplete,
-  isLiked,
-  onToggleLike,
-  onOpen,
-  onShare
-}) {
+/**
+ * Сброс motion values при смене карточки + выход по dismissDirection через Promise (без setTimeout).
+ */
+function useRecoSwipeExit({ cardInstanceId, dismissDirection, exitTarget, onExitComplete }) {
   const dragX = useMotionValue(0);
   const dragY = useMotionValue(0);
-  const cardOpacity = useMotionValue(1);
-  const cardScale = useMotionValue(1);
-  const hasExitedRef = useRef(false);
-
-  const dragProgress = useTransform([dragX, dragY], ([latestX, latestY]) =>
-    Math.min(1, Math.hypot(latestX, latestY) / 260)
-  );
-  const cardRotate = useTransform([dragX, dragY], ([latestX, latestY]) =>
-    Math.max(-24, Math.min(24, latestX / 18 + latestY / 36))
+  const opacity = useMotionValue(1);
+  const scale = useMotionValue(1);
+  const rotate = useTransform([dragX, dragY], ([x, y]) =>
+    Math.max(-14, Math.min(14, (x || 0) / 22 + (y || 0) / 40))
   );
 
-  const imageScale = useTransform(dragProgress, [0, 1], [1, 1.06]);
-  const imageX = useTransform(dragX, [-240, 0, 240], [-14, 0, 14]);
-  const imageY = useTransform(dragY, [-240, 0, 240], [-12, 0, 12]);
-  const actionsY = useTransform(dragProgress, [0, 1], [0, -10]);
-  const actionsScale = useTransform(dragProgress, [0, 1], [1, 1.035]);
+  const onDoneRef = useRef(onExitComplete);
+  onDoneRef.current = onExitComplete;
 
-  const glowOpacity = useTransform(dragProgress, [0, 0.18, 1], [0, 0.14, 1]);
-  const glowX = useTransform(dragX, [-260, 0, 260], ["18%", "50%", "82%"]);
-  const glowY = useTransform(dragY, [-260, 0, 260], ["18%", "50%", "82%"]);
-  const glowBackground = useMotionTemplate`radial-gradient(circle at ${glowX} ${glowY}, rgba(255, 255, 255, 0.24) 0%, rgba(162, 106, 255, 0.22) 18%, rgba(255, 92, 176, 0.14) 34%, rgba(8, 8, 12, 0) 62%)`;
+  useLayoutEffect(() => {
+    dragX.set(0);
+    dragY.set(0);
+    opacity.set(1);
+    scale.set(1);
+  }, [cardInstanceId, dragX, dragY, opacity, scale]);
 
-  useEffect(() => {
-    if (!dismissDirection) {
-      if (hasExitedRef.current) return undefined;
-      dragX.set(0);
-      dragY.set(0);
-      cardOpacity.set(0);
-      cardScale.set(0.96);
-      const c1 = animate(cardOpacity, 1, { duration: 0.24, ease: [0.22, 1, 0.36, 1] });
-      const c2 = animate(cardScale, 1, RETURN_SPRING);
-      return () => {
-        c1.stop();
-        c2.stop();
-      };
-    }
-    return undefined;
-  }, [cardOpacity, cardScale, dismissDirection, dragX, dragY]);
+  const exitGeneration = useRef(0);
 
   useEffect(() => {
     if (!dismissDirection) return undefined;
 
-    hasExitedRef.current = true;
-    const c1 = animate(dragX, topCardExitAnimation.x, EXIT_SPRING);
-    const c2 = animate(dragY, topCardExitAnimation.y, EXIT_SPRING);
-    const c3 = animate(cardScale, topCardExitAnimation.scale ?? 0.96, {
-      duration: 0.26,
-      ease: [0.22, 1, 0.36, 1]
-    });
-    const c4 = animate(cardOpacity, topCardExitAnimation.opacity ?? 0, {
-      duration: 0.24,
-      ease: [0.4, 0, 1, 1]
-    });
+    const gen = ++exitGeneration.current;
+    const targetX = exitTarget.x ?? 0;
+    const targetY = exitTarget.y ?? 0;
+    const targetOpacity = exitTarget.opacity ?? 0;
+    const targetScale = exitTarget.scale ?? 0.94;
 
-    const timeoutId = window.setTimeout(onTopCardExitComplete, EXIT_COMPLETE_DELAY);
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        await Promise.all([
+          animate(dragX, targetX, EXIT_SPRING),
+          animate(dragY, targetY, EXIT_SPRING),
+          animate(opacity, targetOpacity, { duration: 0.22, ease: [0.4, 0, 0.2, 1] }),
+          animate(scale, targetScale, { duration: 0.22, ease: [0.4, 0, 0.2, 1] })
+        ]);
+      } catch {
+        // ignore
+      }
+      if (!cancelled && gen === exitGeneration.current) {
+        onDoneRef.current();
+      }
+    };
+
+    void run();
 
     return () => {
-      window.clearTimeout(timeoutId);
-      c1.stop();
-      c2.stop();
-      c3.stop();
-      c4.stop();
+      cancelled = true;
+      exitGeneration.current += 1;
     };
   }, [
-    cardOpacity,
-    cardScale,
     dismissDirection,
+    cardInstanceId,
     dragX,
     dragY,
-    onTopCardExitComplete,
-    topCardExitAnimation
+    opacity,
+    scale,
+    exitTarget.x,
+    exitTarget.y,
+    exitTarget.opacity,
+    exitTarget.scale
   ]);
 
-  const resetDraggedCard = () => {
-    animate(dragX, 0, RETURN_SPRING);
-    animate(dragY, 0, RETURN_SPRING);
-    animate(cardOpacity, 1, { duration: 0.18, ease: [0.22, 1, 0.36, 1] });
-    animate(cardScale, 1, RETURN_SPRING);
-  };
+  return { dragX, dragY, opacity, scale, rotate };
+}
+
+function RecoCardFace({ card, compact }) {
+  const kind = recoKindFromCard(card);
+  return (
+    <>
+      <div className="reco-deck-card__media">
+        <img src={card.image} alt="" className="reco-deck-card__img" draggable={false} />
+        <div className="reco-deck-card__media-shade" aria-hidden />
+      </div>
+      <div className={`reco-deck-card__body${compact ? " reco-deck-card__body--compact" : ""}`}>
+        <span className={`reco-deck-card__badge ${kind.className}`}>{kind.label}</span>
+        <h3 className="reco-deck-card__title">{card.title}</h3>
+        {card.subtitle ? <p className="reco-deck-card__subtitle">{card.subtitle}</p> : null}
+        {!compact ? (
+          <p className="reco-deck-card__hint">Свайпните в сторону или вверх / вниз — показать следующую</p>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
+function DesktopTopCard({
+  card,
+  canDismiss,
+  dismissDirection,
+  exitTarget,
+  onDismissSwipe,
+  onExitComplete,
+  likedRecommendations,
+  onToggleLike,
+  onOpen,
+  onShare
+}) {
+  const { dragX, dragY, opacity, scale, rotate } = useRecoSwipeExit({
+    cardInstanceId: card.instanceId,
+    dismissDirection,
+    exitTarget,
+    onExitComplete
+  });
+
+  const isLiked = Boolean(likedRecommendations[card.id]);
 
   return (
     <motion.article
-      key={card.instanceId}
-      className="recommendation-card top-card"
+      className="reco-deck-card reco-deck-card--top"
       style={{
         x: dragX,
         y: dragY,
-        rotate: cardRotate,
-        opacity: cardOpacity,
-        scale: cardScale
+        opacity,
+        scale,
+        rotate
       }}
       drag={canDismiss}
-      dragElastic={0.12}
+      dragConstraints={false}
+      dragElastic={0.18}
       dragMomentum={false}
-      onDragStart={() => {
-        if (!canDismiss) return;
-        animate(cardScale, 1.02, { duration: 0.14, ease: [0.22, 1, 0.36, 1] });
-      }}
+      whileDrag={{ cursor: "grabbing" }}
       onDragEnd={(_, info) => {
         if (!canDismiss) return;
-        const projectedX = info.offset.x + info.velocity.x * 0.18;
-        const projectedY = info.offset.y + info.velocity.y * 0.18;
-        const velocity = Math.hypot(info.velocity.x, info.velocity.y);
-        if (
-          Math.hypot(projectedX, projectedY) > DISMISS_DISTANCE ||
-          velocity > DISMISS_VELOCITY
-        ) {
-          onDismissTopCard({ x: projectedX, y: projectedY });
-          return;
+        const ox = info.offset.x;
+        const oy = info.offset.y;
+        const vx = info.velocity.x;
+        const vy = info.velocity.y;
+        const dist = Math.hypot(ox, oy);
+        const speed = Math.hypot(vx, vy);
+        if (dist > DISMISS_PX || speed > DISMISS_VEL) {
+          onDismissSwipe({ x: ox + vx * 0.2, y: oy + vy * 0.2 });
+        } else {
+          animate(dragX, 0, EXIT_SPRING);
+          animate(dragY, 0, EXIT_SPRING);
         }
-        resetDraggedCard();
       }}
     >
-      <motion.div
-        className="recommendation-drag-glow"
-        style={{ opacity: glowOpacity, background: glowBackground }}
-      />
-      <motion.div
-        style={{
-          width: "100%",
-          height: "100%",
-          scale: imageScale,
-          x: imageX,
-          y: imageY
-        }}
-      >
-        <img
-          className="recommendation-image recommendation-image-hero"
-          src={card.image}
-          alt={card.title}
-          draggable={false}
-        />
-      </motion.div>
-      <motion.div
-        className="recommendation-actions"
-        style={{ y: actionsY, scale: actionsScale }}
-      >
+      <RecoCardFace card={card} compact={false} />
+      <div className="reco-deck-card__actions">
         <motion.button
-          className={`action-btn ${isLiked ? "action-btn-active" : ""}`}
           type="button"
+          className={`reco-deck-action${isLiked ? " reco-deck-action--active" : ""}`}
           aria-label="Лайкнуть"
           onPointerDown={stopCardDrag}
           onClick={() => onToggleLike(card.id)}
-          whileHover={{ y: -3, scale: 1.04 }}
-          whileTap={{ scale: 0.92 }}
+          whileTap={{ scale: 0.94 }}
         >
-          <AnimatePresence initial={false}>
-            {isLiked ? (
-              <motion.span
-                key="like-burst"
-                className="action-btn-burst"
-                initial={{ opacity: 0, scale: 0.55 }}
-                animate={{ opacity: [0, 0.85, 0], scale: [0.55, 1.18, 1.38] }}
-                exit={{ opacity: 0, scale: 1.42 }}
-                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-              />
-            ) : null}
-          </AnimatePresence>
-          <motion.img
-            src={isLiked ? assets.heartFilledIcon : assets.heartOutlineIcon}
-            alt=""
-            className={isLiked ? "action-btn-icon-active" : ""}
-            animate={isLiked ? { scale: [1, 1.18, 1], rotate: [0, -10, 0] } : { scale: 0.94, rotate: 0 }}
-            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-          />
+          <img src={isLiked ? assets.heartFilledIcon : assets.heartOutlineIcon} alt="" />
         </motion.button>
         <motion.button
-          className="action-btn action-btn-open"
           type="button"
-          aria-label="Открыть ссылку"
+          className="reco-deck-action reco-deck-action--primary"
+          aria-label="Открыть"
           onPointerDown={stopCardDrag}
           onClick={() => onOpen(card)}
-          whileHover={{ y: -3, scale: 1.04 }}
           whileTap={{ scale: 0.94 }}
         >
           <img src={assets.linkAltIcon} alt="" />
         </motion.button>
         <motion.button
-          className="action-btn action-btn-share"
           type="button"
+          className="reco-deck-action"
           aria-label="Поделиться"
           onPointerDown={stopCardDrag}
           onClick={() => onShare(card)}
-          whileHover={{ y: -3, scale: 1.04 }}
           whileTap={{ scale: 0.94 }}
         >
           <img src={assets.shareIcon} alt="" />
         </motion.button>
-      </motion.div>
+      </div>
     </motion.article>
   );
 }
 
-function MobileRecoOverlay({
-  topCard,
-  stackedCards,
+function MobileTopCard({
+  card,
   canDismiss,
   dismissDirection,
-  topCardExitAnimation,
-  onDismissTopCard,
-  onTopCardExitComplete,
+  exitTarget,
+  onDismissSwipe,
+  onExitComplete,
   likedRecommendations,
-  onToggleRecommendationLike,
-  onShareRecommendation,
-  onOpenRecommendation,
-  onClose,
-  totalCount
+  onToggleLike,
+  onOpen,
+  onShare,
+  stackIndex,
+  stackTotal
 }) {
-  const dragY = useMotionValue(0);
-  const cardOpacity = useMotionValue(1);
-  const cardScale = useMotionValue(1);
+  const { dragX, dragY, opacity, scale, rotate } = useRecoSwipeExit({
+    cardInstanceId: card.instanceId,
+    dismissDirection,
+    exitTarget,
+    onExitComplete
+  });
 
-  const cardRotate = useTransform(dragY, [-200, 0, 200], [-4, 0, 4]);
-
-  useEffect(() => {
-    if (!topCard || dismissDirection) return undefined;
-    dragY.set(0);
-    cardOpacity.set(0);
-    cardScale.set(0.96);
-    const controls = [
-      animate(cardOpacity, 1, { duration: 0.24, ease: [0.22, 1, 0.36, 1] }),
-      animate(cardScale, 1, RETURN_SPRING)
-    ];
-    return () => controls.forEach((c) => c.stop());
-  }, [cardOpacity, cardScale, dismissDirection, dragY, topCard]);
-
-  useEffect(() => {
-    if (!topCard || !dismissDirection) return undefined;
-    const controls = [
-      animate(dragY, topCardExitAnimation.y, EXIT_SPRING),
-      animate(cardScale, topCardExitAnimation.scale ?? 0.96, { duration: 0.26, ease: [0.22, 1, 0.36, 1] }),
-      animate(cardOpacity, topCardExitAnimation.opacity ?? 0, { duration: 0.24, ease: [0.4, 0, 1, 1] })
-    ];
-    const timeoutId = window.setTimeout(() => {
-      onTopCardExitComplete();
-    }, EXIT_COMPLETE_DELAY);
-    return () => {
-      window.clearTimeout(timeoutId);
-      controls.forEach((c) => c.stop());
-    };
-  }, [cardOpacity, cardScale, dismissDirection, dragY, onTopCardExitComplete, topCard, topCardExitAnimation]);
-
-  const resetDrag = () => {
-    animate(dragY, 0, RETURN_SPRING);
-    animate(cardOpacity, 1, { duration: 0.18, ease: [0.22, 1, 0.36, 1] });
-    animate(cardScale, 1, RETURN_SPRING);
-  };
-
-  const isTopCardLiked = topCard ? Boolean(likedRecommendations[topCard.id]) : false;
-  const currentIndex = totalCount - (stackedCards.length + (topCard ? 1 : 0));
+  const isLiked = Boolean(likedRecommendations[card.id]);
 
   return (
     <motion.div
-      className="mobile-reco-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.22 }}
+      className="reco-deck-card reco-mobile-card reco-deck-card--top"
+      style={{
+        x: dragX,
+        y: dragY,
+        opacity,
+        scale,
+        rotate
+      }}
+      drag={canDismiss}
+      dragElastic={0.14}
+      dragMomentum={false}
+      onDragEnd={(_, info) => {
+        if (!canDismiss) return;
+        const ox = info.offset.x;
+        const oy = info.offset.y;
+        const vx = info.velocity.x;
+        const vy = info.velocity.y;
+        const dist = Math.hypot(ox, oy);
+        const speed = Math.hypot(vx, vy);
+        if (dist > DISMISS_PX || speed > DISMISS_VEL) {
+          onDismissSwipe({ x: ox + vx * 0.2, y: oy + vy * 0.2 });
+        } else {
+          animate(dragX, 0, EXIT_SPRING);
+          animate(dragY, 0, EXIT_SPRING);
+        }
+      }}
     >
-      <button className="mobile-reco-close" type="button" aria-label="Закрыть" onClick={onClose}>
-        <img src={assets.group12021Icon} alt="" />
-      </button>
-
-      <AnimatePresence mode="wait">
-        {topCard ? (
-          <motion.div
-            key={topCard.instanceId}
-            className="mobile-reco-card-wrap"
-            drag={canDismiss ? "y" : false}
-            dragElastic={0.08}
-            dragMomentum={false}
-            style={{ y: dragY, rotate: cardRotate, opacity: cardOpacity, scale: cardScale }}
-            onDragStart={() => {
-              if (!canDismiss) return;
-              animate(cardScale, 1.02, { duration: 0.14, ease: [0.22, 1, 0.36, 1] });
-            }}
-            onDragEnd={(_, info) => {
-              if (!canDismiss) return;
-              const projectedY = info.offset.y + info.velocity.y * 0.18;
-              const velocityY = Math.abs(info.velocity.y);
-              if (Math.abs(projectedY) > DISMISS_DISTANCE || velocityY > DISMISS_VELOCITY) {
-                onDismissTopCard({ x: 0, y: projectedY });
-                return;
-              }
-              resetDrag();
-            }}
-          >
-            <span className="mobile-reco-counter">
-              {currentIndex + 1} / {totalCount}
-            </span>
-            <img className="mobile-reco-image" src={topCard.image} alt={topCard.title} draggable={false} />
-          </motion.div>
-        ) : (
-          <div
-            className="mobile-reco-card-wrap"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>Карточки закончились</p>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <div className="mobile-reco-actions">
-        {topCard ? (
-          <>
-            <motion.button
-              className={`action-btn ${isTopCardLiked ? "action-btn-active" : ""}`}
-              type="button"
-              aria-label="Лайкнуть"
-              onPointerDown={stopCardDrag}
-              onClick={() => onToggleRecommendationLike(topCard.id)}
-              whileHover={{ y: -3, scale: 1.04 }}
-              whileTap={{ scale: 0.92 }}
-            >
-              <AnimatePresence initial={false}>
-                {isTopCardLiked ? (
-                  <motion.span
-                    key="like-burst"
-                    className="action-btn-burst"
-                    initial={{ opacity: 0, scale: 0.55 }}
-                    animate={{ opacity: [0, 0.85, 0], scale: [0.55, 1.18, 1.38] }}
-                    exit={{ opacity: 0, scale: 1.42 }}
-                    transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                ) : null}
-              </AnimatePresence>
-              <motion.img
-                src={isTopCardLiked ? assets.heartFilledIcon : assets.heartOutlineIcon}
-                alt=""
-                className={isTopCardLiked ? "action-btn-icon-active" : ""}
-                animate={isTopCardLiked ? { scale: [1, 1.18, 1], rotate: [0, -10, 0] } : { scale: 0.94, rotate: 0 }}
-                transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </motion.button>
-            <motion.button
-              className="action-btn action-btn-open"
-              type="button"
-              aria-label="Открыть ссылку"
-              onPointerDown={stopCardDrag}
-              onClick={() => onOpenRecommendation(topCard)}
-              whileHover={{ y: -3, scale: 1.04 }}
-              whileTap={{ scale: 0.94 }}
-            >
-              <img src={assets.linkAltIcon} alt="" />
-            </motion.button>
-            <motion.button
-              className="action-btn action-btn-share"
-              type="button"
-              aria-label="Поделиться"
-              onPointerDown={stopCardDrag}
-              onClick={() => onShareRecommendation(topCard)}
-              whileHover={{ y: -3, scale: 1.04 }}
-              whileTap={{ scale: 0.94 }}
-            >
-              <img src={assets.shareIcon} alt="" />
-            </motion.button>
-          </>
-        ) : null}
+      <span className="reco-mobile-card__counter">
+        {stackIndex + 1} / {stackTotal}
+      </span>
+      <RecoCardFace card={card} compact />
+      <div className="reco-mobile-card__actions">
+        <button
+          type="button"
+          className={`reco-deck-action${isLiked ? " reco-deck-action--active" : ""}`}
+          aria-label="Лайкнуть"
+          onPointerDown={stopCardDrag}
+          onClick={() => onToggleLike(card.id)}
+        >
+          <img src={isLiked ? assets.heartFilledIcon : assets.heartOutlineIcon} alt="" />
+        </button>
+        <button
+          type="button"
+          className="reco-deck-action reco-deck-action--primary"
+          aria-label="Открыть"
+          onPointerDown={stopCardDrag}
+          onClick={() => onOpen(card)}
+        >
+          <img src={assets.linkAltIcon} alt="" />
+        </button>
+        <button
+          type="button"
+          className="reco-deck-action"
+          aria-label="Поделиться"
+          onPointerDown={stopCardDrag}
+          onClick={() => onShare(card)}
+        >
+          <img src={assets.shareIcon} alt="" />
+        </button>
       </div>
     </motion.div>
+  );
+}
+
+function StackedPreview({ card, depth }) {
+  const kind = recoKindFromCard(card);
+  return (
+    <div className={`reco-deck-card reco-deck-card--stack reco-deck-card--stack-${depth}`}>
+      <div className="reco-deck-card__media reco-deck-card__media--stack">
+        <img src={card.image} alt="" className="reco-deck-card__img" draggable={false} />
+        <div className="reco-deck-card__media-shade" aria-hidden />
+      </div>
+      <div className="reco-deck-card__stack-caption">
+        <span className={`reco-deck-card__badge ${kind.className}`}>{kind.label}</span>
+        <p className="reco-deck-card__stack-title">{card.title}</p>
+      </div>
+    </div>
   );
 }
 
@@ -430,6 +324,21 @@ export function RecommendationsPanel({
   onShareRecommendation,
   isLoading = false
 }) {
+  const exitTarget = useMemo(
+    () => ({
+      x: topCardExitAnimation.x ?? 0,
+      y: topCardExitAnimation.y ?? 0,
+      opacity: topCardExitAnimation.opacity ?? 0,
+      scale: topCardExitAnimation.scale ?? 0.94
+    }),
+    [
+      topCardExitAnimation.x,
+      topCardExitAnimation.y,
+      topCardExitAnimation.opacity,
+      topCardExitAnimation.scale
+    ]
+  );
+
   const totalCount = stackedCards.length + (topCard ? 1 : 0);
 
   return (
@@ -437,7 +346,7 @@ export function RecommendationsPanel({
       <button
         className="deck-fab"
         type="button"
-        aria-label={isOpen ? "Скрыть карточки" : "Показать карточки"}
+        aria-label={isOpen ? "Скрыть рекомендации" : "Показать рекомендации"}
         aria-expanded={isOpen}
         onClick={onToggleOpen}
       >
@@ -447,47 +356,44 @@ export function RecommendationsPanel({
       <AnimatePresence>
         {isOpen && (
           <motion.aside
-            className="recommendations-popover"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            className="recommendations-popover recommendations-popover--v2"
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.97 }}
-            transition={{ duration: 0.22 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
           >
-            <button className="deck-close-btn" type="button" aria-label="Закрыть карточки" onClick={onClose}>
-              <img src={assets.group12021Icon} alt="" />
-            </button>
+            <div className="reco-popover-head">
+              <p className="reco-popover-head__title">Рекомендации</p>
+              <button className="reco-popover-head__close" type="button" aria-label="Закрыть" onClick={onClose}>
+                <img src={assets.group12021Icon} alt="" />
+              </button>
+            </div>
 
-            <div className={`deck-wrap${isLoading ? " deck-wrap--busy" : ""}`} aria-busy={isLoading || undefined}>
+            <div className={`reco-deck-wrap${isLoading ? " reco-deck-wrap--busy" : ""}`} aria-busy={isLoading || undefined}>
               {stackedCards
                 .slice()
                 .reverse()
-                .map((card, index) => (
-                  <motion.article
-                    key={card.instanceId}
-                    className={`recommendation-card stacked-card stacked-${index + 1}`}
-                    style={STACK_STYLE[index + 1] || STACK_STYLE[2]}
-                  >
-                    <img className="recommendation-image" src={card.image} alt={card.title} draggable={false} />
-                  </motion.article>
+                .map((card, i) => (
+                  <StackedPreview key={card.instanceId} card={card} depth={stackedCards.length - i} />
                 ))}
 
-              <AnimatePresence mode="wait">
-                {topCard ? (
-                  <DraggableCard
-                    key={topCard.instanceId}
-                    card={topCard}
-                    canDismiss={canDismiss}
-                    dismissDirection={dismissDirection}
-                    topCardExitAnimation={topCardExitAnimation}
-                    onDismissTopCard={onDismissTopCard}
-                    onTopCardExitComplete={onTopCardExitComplete}
-                    isLiked={Boolean(likedRecommendations[topCard.id])}
-                    onToggleLike={onToggleRecommendationLike}
-                    onOpen={onOpenRecommendation}
-                    onShare={onShareRecommendation}
-                  />
-                ) : null}
-              </AnimatePresence>
+              {topCard ? (
+                <DesktopTopCard
+                  key={topCard.instanceId}
+                  card={topCard}
+                  canDismiss={canDismiss}
+                  dismissDirection={dismissDirection}
+                  exitTarget={exitTarget}
+                  onDismissSwipe={onDismissTopCard}
+                  onExitComplete={onTopCardExitComplete}
+                  likedRecommendations={likedRecommendations}
+                  onToggleLike={onToggleRecommendationLike}
+                  onOpen={onOpenRecommendation}
+                  onShare={onShareRecommendation}
+                />
+              ) : (
+                <div className="reco-deck-empty">На сегодня всё — загляните позже</div>
+              )}
             </div>
           </motion.aside>
         )}
@@ -495,21 +401,48 @@ export function RecommendationsPanel({
 
       <AnimatePresence>
         {isOpen && (
-          <MobileRecoOverlay
-            topCard={topCard}
-            stackedCards={stackedCards}
-            canDismiss={canDismiss}
-            dismissDirection={dismissDirection}
-            topCardExitAnimation={topCardExitAnimation}
-            onDismissTopCard={onDismissTopCard}
-            onTopCardExitComplete={onTopCardExitComplete}
-            likedRecommendations={likedRecommendations}
-            onToggleRecommendationLike={onToggleRecommendationLike}
-            onShareRecommendation={onShareRecommendation}
-            onOpenRecommendation={onOpenRecommendation}
-            onClose={onClose}
-            totalCount={totalCount}
-          />
+          <motion.div
+            className="mobile-reco-overlay mobile-reco-overlay--v2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <button className="mobile-reco-close" type="button" aria-label="Закрыть" onClick={onClose}>
+              <img src={assets.group12021Icon} alt="" />
+            </button>
+
+            <div className="reco-mobile-deck">
+              {stackedCards
+                .slice()
+                .reverse()
+                .map((card, i) => (
+                  <div key={card.instanceId} className={`reco-mobile-stack reco-mobile-stack--${stackedCards.length - i}`}>
+                    <StackedPreview card={card} depth={stackedCards.length - i} />
+                  </div>
+                ))}
+
+              {topCard ? (
+                <MobileTopCard
+                  key={topCard.instanceId}
+                  card={topCard}
+                  canDismiss={canDismiss}
+                  dismissDirection={dismissDirection}
+                  exitTarget={exitTarget}
+                  onDismissSwipe={onDismissTopCard}
+                  onExitComplete={onTopCardExitComplete}
+                  likedRecommendations={likedRecommendations}
+                  onToggleLike={onToggleRecommendationLike}
+                  onOpen={onOpenRecommendation}
+                  onShare={onShareRecommendation}
+                  stackIndex={totalCount - stackedCards.length - 1}
+                  stackTotal={Math.max(1, totalCount)}
+                />
+              ) : (
+                <p className="reco-mobile-empty">Карточки закончились</p>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

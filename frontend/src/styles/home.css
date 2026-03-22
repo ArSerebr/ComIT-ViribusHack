@@ -536,6 +536,287 @@
   display: none;
 }
 
+/* --- Recommendations deck v2 (popover + cards) --- */
+.recommendations-popover--v2 {
+  display: flex;
+  flex-direction: column;
+  padding: 0 14px 14px;
+  gap: 10px;
+}
+
+.reco-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px 4px;
+  flex-shrink: 0;
+}
+
+.reco-popover-head__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.reco-popover-head__close {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.reco-popover-head__close img {
+  width: 22px;
+  height: 22px;
+  transform: rotate(45deg);
+  opacity: 0.85;
+}
+
+.reco-deck-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 20px;
+}
+
+.reco-deck-wrap--busy {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.reco-deck-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.reco-deck-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(165deg, rgba(32, 28, 44, 0.98) 0%, rgba(14, 12, 22, 0.99) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  user-select: none;
+  touch-action: none;
+}
+
+.reco-deck-card--top {
+  z-index: 5;
+  cursor: grab;
+}
+
+.reco-deck-card--top:active {
+  cursor: grabbing;
+}
+
+.reco-deck-card--stack {
+  pointer-events: none;
+  filter: saturate(0.72) brightness(0.78);
+}
+
+.reco-deck-card--stack.reco-deck-card--stack-2 {
+  z-index: 1;
+  transform: translate(10px, 18px) scale(0.9);
+}
+
+.reco-deck-card--stack.reco-deck-card--stack-1 {
+  z-index: 2;
+  transform: translate(-6px, 9px) scale(0.95);
+}
+
+.reco-deck-card__media {
+  position: relative;
+  flex: 0 0 44%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reco-deck-card__media--stack {
+  flex-basis: 55%;
+}
+
+.reco-deck-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.reco-deck-card__media-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(8, 8, 12, 0.75) 100%);
+  pointer-events: none;
+}
+
+.reco-deck-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 52px;
+  min-height: 0;
+}
+
+.reco-deck-card__body--compact {
+  padding-bottom: 16px;
+}
+
+.reco-deck-card__badge {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.reco-badge--project {
+  background: rgba(99, 179, 237, 0.22);
+  color: #9fd4ff;
+}
+
+.reco-badge--course {
+  background: rgba(183, 121, 255, 0.22);
+  color: #e0c4ff;
+}
+
+.reco-badge--article {
+  background: rgba(110, 231, 183, 0.18);
+  color: #9cf5d4;
+}
+
+.reco-badge--hackathon {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+}
+
+.reco-badge--default {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.reco-deck-card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reco-deck-card__subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.58);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reco-deck-card__hint {
+  margin: auto 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.reco-deck-card__stack-caption {
+  padding: 10px 12px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.reco-deck-card__stack-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.82);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reco-deck-card__actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.reco-deck-card__actions .reco-deck-action {
+  pointer-events: auto;
+}
+
+.reco-deck-action {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(24, 24, 30, 0.92);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(12px);
+}
+
+.reco-deck-action img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.75;
+}
+
+.reco-deck-action--active {
+  background: linear-gradient(135deg, #db855d 0%, #a15bbe 100%);
+}
+
+.reco-deck-action--active img {
+  opacity: 1;
+}
+
+.reco-deck-action--primary img {
+  opacity: 0.95;
+}
+
 /* ==========================================================================
    Home Responsive
    ========================================================================== */
@@ -813,6 +1094,104 @@
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(8px);
+  }
+
+  .mobile-reco-overlay--v2 {
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  }
+
+  .reco-mobile-deck {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reco-mobile-stack {
+    position: absolute;
+    width: calc(100vw - 36px);
+    max-width: 392px;
+    aspect-ratio: 3 / 4.1;
+    max-height: min(68dvh, 520px);
+    pointer-events: none;
+  }
+
+  .reco-mobile-stack--2 {
+    transform: translate(8px, 14px) scale(0.9);
+    opacity: 0.65;
+    z-index: 1;
+  }
+
+  .reco-mobile-stack--1 {
+    transform: translate(-5px, 7px) scale(0.95);
+    opacity: 0.8;
+    z-index: 2;
+  }
+
+  .reco-mobile-card.reco-deck-card {
+    position: relative;
+    inset: auto;
+    width: calc(100vw - 28px);
+    max-width: 400px;
+    height: auto;
+    aspect-ratio: 3 / 4.1;
+    max-height: min(72dvh, 560px);
+    border-radius: 24px;
+    overflow: hidden;
+    touch-action: none;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    z-index: 5;
+  }
+
+  .reco-mobile-stack .reco-deck-card {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+  }
+
+  .reco-mobile-card .reco-deck-card__media {
+    flex-basis: 48%;
+  }
+
+  .reco-mobile-card__counter {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 4;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+  }
+
+  .reco-mobile-card__actions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    pointer-events: none;
+  }
+
+  .reco-mobile-card__actions .reco-deck-action {
+    pointer-events: auto;
+  }
+
+  .reco-mobile-empty {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 16px;
+    text-align: center;
+    padding: 24px;
   }
 
   .app-shell{

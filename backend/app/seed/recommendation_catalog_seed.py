@@ -14,7 +14,8 @@ from app.modules.hackathons.models import Hackathon
 from app.modules.hackathons.upcoming import hackathon_is_upcoming
 from app.modules.recommendations.models import RecommendationCatalogItem
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "recommendation_catalog"
+# __file__ = backend/app/seed/... → parents[2] = корень пакета backend (рядом с data/)
+DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "recommendation_catalog"
 
 DEFAULT_IMG_PROJECT = "/img/poster-120-1.jpg"
 DEFAULT_IMG_COURSE = "/img/course-image.png"

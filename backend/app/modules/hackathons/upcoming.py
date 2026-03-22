@@ -103,7 +103,6 @@ def hackathon_is_upcoming(h: Hackathon, *, now: datetime | None = None) -> bool:
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
     now = now.astimezone(timezone.utc)
-    today = now.date()
 
     end_dt, end_d = _parse_end(h.end_date)
     start_dt, start_d = _parse_start(h.start_date)

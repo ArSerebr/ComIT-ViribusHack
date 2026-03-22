@@ -46,11 +46,12 @@ class Agent:
         input_data = {field: memory.get(field, "") for field in self.input_fields}
 
         try:
-            formatted_system_prompt = (
-                system_prompt.format(**memory)
-                if (system_prompt and self.use_context)
-                else system_prompt
-            )
+            if system_prompt and self.use_context:
+                formatted_system_prompt = system_prompt.format(**memory)
+            elif system_prompt and input_data:
+                formatted_system_prompt = system_prompt.format(**input_data)
+            else:
+                formatted_system_prompt = system_prompt
         except (KeyError, IndexError, ValueError) as e:
             logger.warning(
                 f"Agent {self.name}: Error formatting system prompt: {e}"

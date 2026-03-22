@@ -52,7 +52,14 @@ function IntegrationBrand({ brand }) {
   );
 }
 
-export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToken, onOpenTasks }) {
+export function ProjectDetailsPage({
+  project,
+  onBack,
+  onJoinProject,
+  sessionToken,
+  onOpenTasks,
+  isJoining = false
+}) {
   return (
     <section className="project-details-page">
       <div className="project-details-head">
@@ -69,9 +76,15 @@ export function ProjectDetailsPage({ project, onBack, onJoinProject, sessionToke
           </div>
         </div>
 
-        <button className="projects-hub-create-btn project-details-join-btn" type="button" onClick={() => onJoinProject(project)}>
+        <button
+          className="projects-hub-create-btn project-details-join-btn"
+          type="button"
+          disabled={isJoining}
+          aria-busy={isJoining}
+          onClick={() => onJoinProject(project)}
+        >
           <img src={assets.plusSmallIcon} alt="" />
-          <span>{project.joinLabel}</span>
+          <span>{isJoining ? "Отправка…" : project.joinLabel}</span>
         </button>
       </div>
 

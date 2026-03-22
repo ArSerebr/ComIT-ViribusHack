@@ -60,6 +60,11 @@
   white-space: nowrap;
 }
 
+.project-details-join-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 /* Main grid */
 .project-details-grid {
   display: grid;
